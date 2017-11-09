@@ -1,0 +1,371 @@
+move the egg from inventory .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+move the egg from inventory .	AGA1PIIWM8I8D	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+actually  stop building the stairs .	A3EAUAU8V3B5S7	{"Stop": {}}	
+actually  stop building the stairs .	A23CTGXNDDW5LC	{"Stop": {}}	
+actually  stop building the stairs .	AIU30D5BNNCWH	{"Stop": {}}	
+bot  can you forge a cast iron kettle ?	A3EAUAU8V3B5S7	{"Answer": {}}	
+bot  can you forge a cast iron kettle ?	AGA1PIIWM8I8D	{"Answer": {}}	
+bot  can you forge a cast iron kettle ?	AIU30D5BNNCWH	{"Answer": {}}	
+bot  what is around the corner ?	AGA1PIIWM8I8D	{"Answer": {}}	
+bot  what is around the corner ?	A3EAUAU8V3B5S7	{"Answer": {}}	
+bot  what is around the corner ?	A23CTGXNDDW5LC	{"Answer": {}}	
+bot can you mow the grass ?	AGA1PIIWM8I8D	{"Answer": {}}	
+bot can you mow the grass ?	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}	
+bot can you mow the grass ?	A3EAUAU8V3B5S7	{"Answer": {}}	
+bot click the back button to undo the program	A3EAUAU8V3B5S7	{"Undo": {}}	
+bot click the back button to undo the program	A23CTGXNDDW5LC	{"Undo": {}}	
+bot click the back button to undo the program	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}	
+bot come over and answer the phone	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [6, 6]}}}	
+bot come over and answer the phone	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "Other"}}}	
+bot come over and answer the phone	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [6, 6]}}}	
+bot go destroy the cat in the back	AIU30D5BNNCWH	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+bot go destroy the cat in the back	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 7]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+bot go destroy the cat in the back	A23CTGXNDDW5LC	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 7]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+build a 2x2 fireplace in the middle of the room with glass around it .	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 9]}}, "schematic": {"has_name_": [3, 3]}}}	
+build a 2x2 fireplace in the middle of the room with glass around it .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 9]}}, "schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}	
+build a 2x2 fireplace in the middle of the room with glass around it .	AIU30D5BNNCWH	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}, "schematic": {"has_name_": [3, 11], "has_width_": [2, 2]}}}	
+build a 50 foot statue of me	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_height_": [2, 3], "has_name_": [4, 4], "has_size_": [2, 3]}}}	
+build a 50 foot statue of me	AIU30D5BNNCWH	{"Build": {"schematic": {"has_height_": [2, 3], "has_name_": [4, 4]}}}	
+build a 50 foot statue of me	AGA1PIIWM8I8D	{"Build": {"schematic": {"has_height_": [2, 3], "has_name_": [4, 4]}}}	
+build a block .	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a block .	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a block .	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a box .	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a box .	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a box .	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a castle .	A3EAUAU8V3B5S7	{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}	
+build a castle .	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a castle .	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a castle made of sand .	AIU30D5BNNCWH	{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}	
+build a castle made of sand .	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}	
+build a castle made of sand .	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}	
+build a copy of the pyramid 10 spaces north of the other one	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [5, 5]}}}	
+build a copy of the pyramid 10 spaces north of the other one	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [5, 5]}}}	
+build a copy of the pyramid 10 spaces north of the other one	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [5, 5]}}}	
+build a greenhouse	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a greenhouse	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a greenhouse	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build a window in the nearest wall	A23CTGXNDDW5LC	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2]}}}	
+build a window in the nearest wall	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2]}}}	
+build a window in the nearest wall	AIU30D5BNNCWH	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 2]}}}	
+build fireplace	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_name_": [1, 1]}}}	
+build fireplace	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [1, 1]}}}	
+build fireplace	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_name_": [1, 1]}}}	
+build flowerpots around the base of pyramid	AIU30D5BNNCWH	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [1, 1]}}}	
+build flowerpots around the base of pyramid	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 6]}}, "schematic": {"has_name_": [1, 1]}}}	
+build flowerpots around the base of pyramid	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [1, 1]}}}	
+build me stairs to get to the roof .	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [2, 2]}}}	
+build me stairs to get to the roof .	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}	
+build me stairs to get to the roof .	A23CTGXNDDW5LC	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 7]}}, "schematic": {"has_name_": [2, 2]}}}	
+build on top of the pyramid by placing one block at the center of it .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [4, 5]}}}}	
+build on top of the pyramid by placing one block at the center of it .	AGA1PIIWM8I8D	{"Freebuild": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [9, 9]}}}	
+build on top of the pyramid by placing one block at the center of it .	A3EAUAU8V3B5S7	{"Freebuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 12]}}, "schematic": {"has_block_type_": [9, 9], "has_name_": [5, 5]}}}	
+can you mine me minerals	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}	
+can you mine me minerals	AGA1PIIWM8I8D	{"Answer": {}}	
+can you mine me minerals	A23CTGXNDDW5LC	{"Answer": {}}	
+can you tell me if anything is in the hole next to you ?	A3EAUAU8V3B5S7	{"Answer": {}}	
+can you tell me if anything is in the hole next to you ?	A23CTGXNDDW5LC	{"Answer": {}}	
+can you tell me if anything is in the hole next to you ?	AIU30D5BNNCWH	{"Answer": {}}	
+climb the steps up the pyramid .	A1FGKIKJYSL1MI	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [2, 2]}}}, "repeat": {"repeat_type": "ALL"}}	
+climb the steps up the pyramid .	A2ZZW6KME1FUDU	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [5, 5]}}}	
+climb the steps up the pyramid .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+climb those stairs	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+climb those stairs	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+climb those stairs	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+climb to the top	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": null, "location_reference_object": {"has_name_": [3, 3]}}}}	
+climb to the top	A23CTGXNDDW5LC	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}}}	
+climb to the top	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}	
+climb to the top of the pyramid .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [6, 6]}}}	
+climb to the top of the pyramid .	A1FGKIKJYSL1MI	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [5, 6]}}}}	
+climb to the top of the pyramid .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+complete building of the tower .	AIU30D5BNNCWH	{"Build": {"schematic": {"has_name_": [4, 4]}}}	
+complete building of the tower .	A3EAUAU8V3B5S7	{"Freebuild": {"schematic": {"has_name_": [4, 4]}}}	
+complete building of the tower .	A23CTGXNDDW5LC	{"Freebuild": {"schematic": {"has_name_": [4, 4]}}}	
+complete the window structuring of the house .	A23CTGXNDDW5LC	{"Freebuild": {"schematic": {"has_name_": [2, 3]}}}	
+complete the window structuring of the house .	AGA1PIIWM8I8D	{"Freebuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 3]}}}	
+complete the window structuring of the house .	A3EAUAU8V3B5S7	{"Freebuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 6]}}}	
+construct for me  from polished granite  a ziggurat worthy of a babylonian god - king	AGA1PIIWM8I8D	{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [9, 9]}}}	
+construct for me  from polished granite  a ziggurat worthy of a babylonian god - king	AIU30D5BNNCWH	{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [9, 9]}}}	
+construct for me  from polished granite  a ziggurat worthy of a babylonian god - king	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [9, 9]}}}	
+copy all of the paintings to put in the guest house .	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}, "repeat": {"repeat_type": "ALL"}}	
+copy all of the paintings to put in the guest house .	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 10]}}, "action_reference_object": {"has_name_": [4, 4]}}, "repeat": {"repeat_type": "ALL"}}	
+copy all of the paintings to put in the guest house .	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 10]}}, "action_reference_object": {"has_name_": [4, 4]}}, "repeat": {"repeat_type": "ALL"}}	
+copy that house and build another one directly to the south of it	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+copy that house and build another one directly to the south of it	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "SpeakerLook", "location_reference_object": {"has_name_": [1, 2]}}, "action_reference_object": {"has_name_": [1, 2]}}}	
+copy that house and build another one directly to the south of it	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+copy the pyramid .	A3EAUAU8V3B5S7	{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}	
+copy the pyramid .	AGA1PIIWM8I8D	{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}	
+copy the pyramid .	A23CTGXNDDW5LC	{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy enemy house in the northwest .	AIU30D5BNNCWH	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy enemy house in the northwest .	A23CTGXNDDW5LC	{"Destroy": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [1, 2]}}}	
+destroy enemy house in the northwest .	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [1, 2]}}}	
+destroy the back wall	A3EAUAU8V3B5S7	{"Destroy": {"action_reference_object": {"has_name_": [2, 3]}}}	
+destroy the back wall	A23CTGXNDDW5LC	{"Destroy": {"action_reference_object": {"has_name_": [2, 3]}}}	
+destroy the back wall	AIU30D5BNNCWH	{"Destroy": {"action_reference_object": {"has_name_": [2, 3]}}}	
+destroy the dining room table	A23CTGXNDDW5LC	{"Destroy": {"action_reference_object": {"has_name_": [2, 4]}}}	
+destroy the dining room table	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+destroy the dining room table	AIU30D5BNNCWH	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+destroy the door	A23CTGXNDDW5LC	{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the door	AIU30D5BNNCWH	{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the door	A3EAUAU8V3B5S7	{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the door to your right	AIU30D5BNNCWH	{"Destroy": {"location": {"location_type": "AgentPos", "location_reference_object": {"has_name_": [4, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the door to your right	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [3, 4]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the door to your right	A23CTGXNDDW5LC	{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [4, 4]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the pyramid .	A23CTGXNDDW5LC	{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the pyramid .	A3EAUAU8V3B5S7	{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the pyramid .	AIU30D5BNNCWH	{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the wall to the left .	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the wall to the left .	AGA1PIIWM8I8D	{"Destroy": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the wall to the left .	A23CTGXNDDW5LC	{"Destroy": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [1, 2]}}}	
+destroy the wall to your left until you reach the pot of gold	AGA1PIIWM8I8D	{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the wall to your left until you reach the pot of gold	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [3, 4]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy the wall to your left until you reach the pot of gold	AIU30D5BNNCWH	{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}	
+destroy three huts next to the water	AIU30D5BNNCWH	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "ALL"}}	
+destroy three huts next to the water	A23CTGXNDDW5LC	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+destroy three huts next to the water	A3EAUAU8V3B5S7	{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+destroy walls	A3EAUAU8V3B5S7	{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}	
+destroy walls	A23CTGXNDDW5LC	{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}, "repeat": {"repeat_type": "ALL"}}	
+destroy walls	AIU30D5BNNCWH	{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}	
+dig a 2 by 2 square down to level 16	A23CTGXNDDW5LC	{"Dig": {"has_depth_": [6, 9], "has_height_": [4, 4], "has_width_": [2, 2]}}	
+dig a 2 by 2 square down to level 16	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 9]}}}}	
+dig a 2 by 2 square down to level 16	AGA1PIIWM8I8D	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 9]}}, "has_height_": [4, 4], "has_size_": [2, 4], "has_width_": [2, 2]}}	
+dig a 2x1 hole all the way through the brick pyramid one time .	A1FGKIKJYSL1MI	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 10]}}, "has_depth_": [4, 10], "has_size_": [2, 2]}}	
+dig a 2x1 hole all the way through the brick pyramid one time .	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 10]}}, "has_width_": [2, 2]}, "repeat": {"repeat_type": "FOR", "repeat_count": [11, 12]}}	
+dig a 2x1 hole all the way through the brick pyramid one time .	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 10]}}, "has_height_": [2, 2], "has_width_": [2, 2]}}	
+dig a hole .	A3EAUAU8V3B5S7	{"Dig": {}}	
+dig a hole .	A23CTGXNDDW5LC	{"Dig": {}}	
+dig a hole .	AGA1PIIWM8I8D	{"Dig": {}}	
+dig a hole 1 mile down	A1FGKIKJYSL1MI	{"Dig": {"has_depth_": [3, 4]}}	
+dig a hole 1 mile down	A3EAUAU8V3B5S7	{"Dig": {"has_depth_": [3, 5]}}	
+dig a hole 1 mile down	AIU30D5BNNCWH	{"Dig": {"has_depth_": [3, 5]}}	
+dig a hole by the end of the wall	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}}}	
+dig a hole by the end of the wall	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}}}	
+dig a hole by the end of the wall	A1FGKIKJYSL1MI	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 8]}}}}	
+dig a hole in the yard .	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+dig a hole in the yard .	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+dig a hole in the yard .	A23CTGXNDDW5LC	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+dig a hole next to the pyramid	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+dig a hole next to the pyramid	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+dig a hole next to the pyramid	A23CTGXNDDW5LC	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+dig a hole to the left of the steps .	A1FGKIKJYSL1MI	{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [7, 8]}}}}	
+dig a hole to the left of the steps .	AGA1PIIWM8I8D	{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}}}	
+dig a hole to the left of the steps .	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}}}	
+dig a hole with dimensions 3x5x8 feet .	AIU30D5BNNCWH	{"Dig": {"has_size_": [5, 6]}}	
+dig a hole with dimensions 3x5x8 feet .	A3EAUAU8V3B5S7	{"Dig": {"has_depth_": [5, 5], "has_height_": [5, 5], "has_size_": [5, 5], "has_width_": [5, 5]}}	
+dig a hole with dimensions 3x5x8 feet .	A23CTGXNDDW5LC	{"Dig": {"has_size_": [5, 6]}}	
+dig a large hole to the right of the stairs	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [9, 9]}}, "has_size_": [2, 2]}}	
+dig a large hole to the right of the stairs	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [9, 9]}}, "has_size_": [2, 2]}}	
+dig a large hole to the right of the stairs	A23CTGXNDDW5LC	{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [8, 9]}}, "has_size_": [2, 2]}}	
+dig a really deep hole	AIU30D5BNNCWH	{"Dig": {}}	
+dig a really deep hole	A23CTGXNDDW5LC	{"Dig": {"has_depth_": [2, 3]}}	
+dig a really deep hole	A3EAUAU8V3B5S7	{"Dig": {"has_depth_": [2, 3], "has_size_": [2, 3]}}	
+dig a water well	AGA1PIIWM8I8D	{"Dig": {}}	
+dig a water well	A3EAUAU8V3B5S7	{"Dig": {}}	
+dig a water well	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+dig down for materials .	A3EAUAU8V3B5S7	{"Dig": {}}	
+dig down for materials .	AGA1PIIWM8I8D	{"Dig": {}}	
+dig down for materials .	A1FGKIKJYSL1MI	{"Dig": {}}	
+dig down in the middle of the room	A23CTGXNDDW5LC	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 7]}}}}	
+dig down in the middle of the room	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}}}	
+dig down in the middle of the room	A3EAUAU8V3B5S7	{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}}}	
+dig grave	A3EAUAU8V3B5S7	{"Dig": {}}	
+dig grave	AGA1PIIWM8I8D	{"Dig": {}}	
+dig grave	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}	
+dig in a straight line until you reach the water .	AIU30D5BNNCWH	{"Dig": {}}	
+dig in a straight line until you reach the water .	A1FGKIKJYSL1MI	{"Dig": {}}	
+dig in a straight line until you reach the water .	A3EAUAU8V3B5S7	{"Dig": {"has_depth_": [5, 9]}}	
+dig some coal	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+dig some coal	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+dig some coal	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+dig up the dirt and find the hidden sword .	A1FGKIKJYSL1MI	{"Dig": {}}	
+dig up the dirt and find the hidden sword .	AGA1PIIWM8I8D	{"Dig": {}}	
+dig up the dirt and find the hidden sword .	A2ZZW6KME1FUDU	{"OtherAction": {"action_reference_object": {"has_name_": [8, 8]}}}	
+fill the garden with plants .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}, "action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}	
+fill the garden with plants .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+fill the garden with plants .	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 2]}}, "action_reference_object": {"has_name_": [4, 4]}}}	
+fill the hole with dirt	A23CTGXNDDW5LC	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with dirt	AGA1PIIWM8I8D	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with dirt	A3EAUAU8V3B5S7	{"Fill": {}}	
+fill the hole with rocks	A23CTGXNDDW5LC	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with rocks	A3EAUAU8V3B5S7	{"Fill": {"location": {"location_type": "Other"}, "action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with rocks	A1FGKIKJYSL1MI	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with sand .	A23CTGXNDDW5LC	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with sand .	A3EAUAU8V3B5S7	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the hole with sand .	AGA1PIIWM8I8D	{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}	
+fill the remaining portion of wall that you are standing under .	AGA1PIIWM8I8D	{"Freebuild": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [5, 5]}}}	
+fill the remaining portion of wall that you are standing under .	A1FGKIKJYSL1MI	{"Freebuild": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [5, 5]}}}	
+fill the remaining portion of wall that you are standing under .	A3EAUAU8V3B5S7	{"Freebuild": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [5, 5]}}}	
+fill up the hole with dirt .	A3EAUAU8V3B5S7	{"Fill": {"action_reference_object": {"has_block_type_": [5, 5]}}}	
+fill up the hole with dirt .	AIU30D5BNNCWH	{"Fill": {"action_reference_object": {"has_block_type_": [5, 5]}}}	
+fill up the hole with dirt .	A23CTGXNDDW5LC	{"Fill": {"action_reference_object": {"has_block_type_": [5, 5]}}}	
+go chop me some wood	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}	
+go chop me some wood	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}	
+go chop me some wood	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}	
+go through the door in front of you .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [3, 3]}}}}	
+go through the door in front of you .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [2, 3]}}}}	
+go through the door in front of you .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+i need you to go stand next to the door behind me .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "SpeakerPos"}}}	
+i need you to go stand next to the door behind me .	A1FGKIKJYSL1MI	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}}}	
+i need you to go stand next to the door behind me .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "SpeakerPos"}}}	
+lay the blue box down against the back wall .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}	
+lay the blue box down against the back wall .	A1FGKIKJYSL1MI	{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 8]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}	
+lay the blue box down against the back wall .	AGA1PIIWM8I8D	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}	
+look ut the window	AGA1PIIWM8I8D	{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}	
+look ut the window	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}	
+look ut the window	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "action_reference_object": {"has_name_": [3, 3]}}}	
+make firewood out of the door	A23CTGXNDDW5LC	{"Build": {"schematic": {"has_block_type_": [4, 5], "has_name_": [1, 1]}}}	
+make firewood out of the door	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_block_type_": [5, 5], "has_name_": [1, 1]}}}	
+make firewood out of the door	AGA1PIIWM8I8D	{"Build": {}}	
+move around the pyramid counter clockwise .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move around the pyramid counter clockwise .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move around the pyramid counter clockwise .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move in front of the tower .	A1FGKIKJYSL1MI	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move in front of the tower .	A23CTGXNDDW5LC	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move in front of the tower .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move left to outside the house .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [3, 5]}}}}	
+move left to outside the house .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move left to outside the house .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move the box to the hole .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+move the box to the hole .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move the box to the hole .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}	
+move the brick by the front door	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+move the brick by the front door	AGA1PIIWM8I8D	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+move the brick by the front door	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+move the top layer of the pyramid to the bottom	A1FGKIKJYSL1MI	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}, "action_reference_object": {"has_name_": [2, 6]}}}	
+move the top layer of the pyramid to the bottom	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move the top layer of the pyramid to the bottom	A2ZZW6KME1FUDU	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move this treasure chest into the hole	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 6]}}, "action_reference_object": {"has_name_": [2, 3]}}}	
+move this treasure chest into the hole	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+move this treasure chest into the hole	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}}}	
+move through the door just to your right .	A1FGKIKJYSL1MI	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "BACK", "location_reference_object": {"has_name_": [2, 7]}}}}	
+move through the door just to your right .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move through the door just to your right .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move to the character with blonde hair .	A23CTGXNDDW5LC	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 6]}}}}	
+move to the character with blonde hair .	AIU30D5BNNCWH	{"Move": {}}	
+move to the character with blonde hair .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}	
+move to the doorway	A23CTGXNDDW5LC	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}}}	
+move to the doorway	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move to the doorway	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move to the end of the building .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move to the end of the building .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move to the end of the building .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move to the kitchen and spawn a zombie	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move to the kitchen and spawn a zombie	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move to the kitchen and spawn a zombie	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+move to the top of that hill and plant a tree	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move to the top of that hill and plant a tree	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}	
+move to the top of that hill and plant a tree	AGA1PIIWM8I8D	{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [10, 10]}}}	
+move to the top of the pyramid .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move to the top of the pyramid .	A23CTGXNDDW5LC	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}}}	
+move to the top of the pyramid .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}	
+move to the top of the pyramid structure .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move to the top of the pyramid structure .	A23CTGXNDDW5LC	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 7]}}}}	
+move to the top of the pyramid structure .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}	
+move toward the wall where the other character is standing .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 9]}}}}	
+move toward the wall where the other character is standing .	A1FGKIKJYSL1MI	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 9]}}}, "repeat": {"stop_condition": {"condition_type": "NEVER"}}}	
+move toward the wall where the other character is standing .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}}}	
+open that door	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+open that door	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}	
+open that door	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}	
+open the door in front of that person	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+open the door in front of that person	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [6, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+open the door in front of that person	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [6, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+place that block on top of the pyramid .	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+place that block on top of the pyramid .	AGA1PIIWM8I8D	{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [4, 7]}}}}	
+place that block on top of the pyramid .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+please build a couch next to wall in front of you .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 10]}}, "schematic": {"has_name_": [3, 3]}}}	
+please build a couch next to wall in front of you .	AIU30D5BNNCWH	{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [3, 3]}}}	
+please build a couch next to wall in front of you .	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "Other", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [3, 3]}}}	
+please finish filling in the hole in front of the tree over there .	A3EAUAU8V3B5S7	{"Fill": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [10, 12]}}}}	
+please finish filling in the hole in front of the tree over there .	A1FGKIKJYSL1MI	{"Fill": {"location": {"location_type": "SpeakerLook"}}}	
+please finish filling in the hole in front of the tree over there .	AGA1PIIWM8I8D	{"Fill": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [10, 10]}}}}	
+please start a fire	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}	
+please start a fire	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}	
+please start a fire	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}	
+put the box in the hole	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+put the box in the hole	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+put the box in the hole	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}	
+resume digging next to the green building .	A3EAUAU8V3B5S7	{"Resume": {}}	
+resume digging next to the green building .	AGA1PIIWM8I8D	{"Resume": {}}	
+resume digging next to the green building .	AIU30D5BNNCWH	{"Resume": {}}	
+resume harvesting stone by the cave .	A3EAUAU8V3B5S7	{"Resume": {}}	
+resume harvesting stone by the cave .	A23CTGXNDDW5LC	{"Resume": {}}	
+resume harvesting stone by the cave .	AIU30D5BNNCWH	{"Resume": {}}	
+resume moving towards the grey form next to the tree .	A3EAUAU8V3B5S7	{"Resume": {}}	
+resume moving towards the grey form next to the tree .	A23CTGXNDDW5LC	{"Resume": {}}	
+resume moving towards the grey form next to the tree .	AIU30D5BNNCWH	{"Resume": {}}	
+robot  please build a moat for my mansion .	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "Other"}, "schematic": {"has_name_": [5, 5]}}}	
+robot  please build a moat for my mansion .	AIU30D5BNNCWH	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [5, 5]}}}	
+robot  please build a moat for my mansion .	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [5, 5]}}}	
+robot  please complete the construction of my mansion .	A3EAUAU8V3B5S7	{"Freebuild": {"schematic": {"has_name_": [8, 8]}}}	
+robot  please complete the construction of my mansion .	A23CTGXNDDW5LC	{"Freebuild": {"schematic": {"has_name_": [8, 8]}}}	
+robot  please complete the construction of my mansion .	AGA1PIIWM8I8D	{"Freebuild": {"schematic": {"has_name_": [8, 8]}}}	
+robot  please spawn a garden full of 100 different colors of flowers .	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_colour_": [8, 10], "has_name_": [5, 12]}}}	
+robot  please spawn a garden full of 100 different colors of flowers .	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [12, 12]}}, "repeat": {"repeat_type": "ALL"}}	
+robot  please spawn a garden full of 100 different colors of flowers .	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_block_type_": [10, 12], "has_name_": [5, 5]}}}	
+spawn 46 ghost warriors at location 48:34:87 .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 3]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 46 ghost warriors at location 48:34:87 .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 46 ghost warriors at location 48:34:87 .	A23CTGXNDDW5LC	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 3]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 5 chickens .	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 5 chickens .	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 5 chickens .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 5 trees in the yard .	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 5 trees in the yard .	A23CTGXNDDW5LC	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 5 trees in the yard .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 6 sheep in the yard .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 6 sheep in the yard .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn 6 sheep in the yard .	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn a cow .	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+spawn a cow .	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+spawn a cow .	AIU30D5BNNCWH	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+spawn a pickaxe to dig hole under wall behind you .	AIU30D5BNNCWH	{"Dig": {"location": {"location_type": "AgentPos"}}}	
+spawn a pickaxe to dig hole under wall behind you .	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+spawn a pickaxe to dig hole under wall behind you .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [2, 2]}}}	
+spawn a sledge hammer in your hand .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 3]}}}	
+spawn a sledge hammer in your hand .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [2, 3]}}}	
+spawn a sledge hammer in your hand .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "AgentPos", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_block_type_": [2, 3], "has_name_": [3, 3]}}}	
+spawn eleven witches in the cave	A23CTGXNDDW5LC	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 5]}}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn eleven witches in the cave	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn eleven witches in the cave	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn five chickens near the entrance .	A23CTGXNDDW5LC	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn five chickens near the entrance .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn five chickens near the entrance .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn in the kitchen and build a wood oven for pizza .	AIU30D5BNNCWH	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "schematic": {"has_block_type_": [7, 7], "has_name_": [8, 8]}}}	
+spawn in the kitchen and build a wood oven for pizza .	A3EAUAU8V3B5S7	{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 3]}}, "schematic": {"has_block_type_": [7, 7], "has_name_": [8, 8]}}}	
+spawn in the kitchen and build a wood oven for pizza .	AGA1PIIWM8I8D	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "action_reference_object": {"has_block_type_": [7, 7], "has_name_": [8, 8]}}}	
+spawn three blocks of diamond in a row along the wall .	AGA1PIIWM8I8D	{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [10, 10]}}, "schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn three blocks of diamond in a row along the wall .	A1FGKIKJYSL1MI	{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [9, 10]}}, "schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+spawn three blocks of diamond in a row along the wall .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 10]}}, "action_reference_object": {"has_name_": [2, 4]}}, "repeat": {"repeat_type": "FOR", "repeat_count": [1, 1]}}	
+start building a pyramid  with rock blocks	AGA1PIIWM8I8D	{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [3, 3]}}}	
+start building a pyramid  with rock blocks	A3EAUAU8V3B5S7	{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [3, 3]}}}	
+start building a pyramid  with rock blocks	A1FGKIKJYSL1MI	{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [3, 3]}}, "repeat": {"stop_condition": {"condition_type": "NEVER"}}}	
+start digging the hole for the pool again .	A3EAUAU8V3B5S7	{"Resume": {}}	
+start digging the hole for the pool again .	AIU30D5BNNCWH	{"Dig": {}}	
+start digging the hole for the pool again .	A23CTGXNDDW5LC	{"Resume": {}}	
+start mining the coal near you .	AIU30D5BNNCWH	{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [3, 3]}}}	
+start mining the coal near you .	A1FGKIKJYSL1MI	{"Dig": {"location": {"location_type": "AgentPos"}}, "repeat": {"stop_condition": {"condition_type": "NEVER"}}}	
+start mining the coal near you .	A3EAUAU8V3B5S7	{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [3, 3]}}}	
+stop and wait for a few seconds .	A3EAUAU8V3B5S7	{"Stop": {}}	
+stop and wait for a few seconds .	A23CTGXNDDW5LC	{"Stop": {}}	
+stop and wait for a few seconds .	AGA1PIIWM8I8D	{"Stop": {}}	
+stop digging .	AIU30D5BNNCWH	{"Stop": {}}	
+stop digging .	A23CTGXNDDW5LC	{"Stop": {}}	
+stop digging .	A3EAUAU8V3B5S7	{"Stop": {}}	
+tell me how many blocks are in the pyramid .	AIU30D5BNNCWH	{"Answer": {}}	
+tell me how many blocks are in the pyramid .	A23CTGXNDDW5LC	{"Answer": {}}	
+tell me how many blocks are in the pyramid .	A3EAUAU8V3B5S7	{"Answer": {}}	
+throw the thing in your hand	A3EAUAU8V3B5S7	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+throw the thing in your hand	A23CTGXNDDW5LC	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+throw the thing in your hand	AGA1PIIWM8I8D	{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}	
+undo the house that was just made .	A23CTGXNDDW5LC	{"Undo": {}}	
+undo the house that was just made .	A3EAUAU8V3B5S7	{"Undo": {}}	
+undo the house that was just made .	A1FGKIKJYSL1MI	{"Undo": {}}	
+undo the last action that was completed	A3EAUAU8V3B5S7	{"Undo": {}}	
+undo the last action that was completed	AGA1PIIWM8I8D	{"Undo": {}}	
+undo the last action that was completed	A23CTGXNDDW5LC	{"Undo": {}}	
+walk around the pyramid .	A3EAUAU8V3B5S7	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+walk around the pyramid .	A23CTGXNDDW5LC	{"OtherAction": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [3, 3]}}}	
+walk around the pyramid .	AIU30D5BNNCWH	{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}	
+where am i ?	A23CTGXNDDW5LC	{"Answer": {}}	
+where am i ?	AIU30D5BNNCWH	{"Answer": {}}	
+where am i ?	A3EAUAU8V3B5S7	{"Answer": {}}	
