@@ -1,0 +1,43 @@
+{% macro survey() %}
+  <form action="/survey" method="POST" style="margin-top: 100px;">
+    <input name="instance_id" type="hidden" value="{{instance_id}}" />
+    <div><b>Please complete this survey after interacting with the bot for 10 minutes</b></div>
+    <div class="form-group">
+      <label for="helpful-score">How helpful was the bot overall?</label>
+      <select class="form-control" name="helpful-score">
+        <option>1 - Not helpful at all</option> <option>2</option>
+        <option>3</option> <option>4</option>
+        <option>5</option> <option>6</option>
+        <option>7</option> <option>8</option>
+        <option>9</option> <option>10 - Extremely helpful</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="helpful-score">How well did the bot understand what you were saying?</label>
+      <select class="form-control" name="helpful-score">
+        <option>1 - Not at all</option> <option>2</option>
+        <option>3</option> <option>4</option>
+        <option>5</option> <option>6</option>
+        <option>7</option> <option>8</option>
+        <option>9</option> <option>10 - Extremely clearly</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="frustrating-q">What was most frustrating when interacting with the bot? Please be as detailed as possible.</label>
+      <textarea class="form-control" name="frustrating-q"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="new-commands-q">What new commands would you like for the bot to be able to handle? Please give some examples.</label>
+      <textarea class="form-control" name="new-commands-q"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="new-dialogues-q">What kinds of dialogues would you like for the bot to be able to have? Please give some examples.</label>
+      <textarea class="form-control" name="new-dialogues-q"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="new-capabilities-q">What else would you like for the bot to be able to do?</label>
+      <textarea class="form-control" name="new-capabilities-q"></textarea>
+    </div>
+    <input type="submit" class="btn btn-primary"/ >
+  </form>
+{% endmacro %}

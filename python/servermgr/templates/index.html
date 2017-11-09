@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from 'launch_button.html' import launch_button %}
+
+{% block container %}
+<div>
+    <h3>Welcome to the Minecraft Assistant project!</h3>
+
+    <p>In this project, you will play Minecraft with a bot that is there to
+    help you. Use the in-game chat to talk to the bot. Tell it where to go.
+    Tell it what to do. Try to build something with its help.</p>
+
+    <p>For this project, you are asked to interact with the bot for
+    <b>10 minutes</b>. You may ask it to do anything you'd like. Explore
+    what the bot can and cannot do.</p>
+
+    <p>The bot may ask you questions so that it can learn over time. Please try
+    to answer the questions it asks.</p>
+
+    <p>When you are done, you will be asked to fill out a quick survey to help
+    the bot improve.</p>
+
+    <h3>To Proceed</h3>
+
+    <ol>
+    <li>Please make sure you have downloaded Minecraft and have a valid license.
+        <a href="https://help.mojang.com/customer/portal/articles/1475923-changing-game-versions">Follow the instructions here</a> to change your version to 1.12</li>
+    <li>Press the green Launch button to access the loading screen.</li>
+    <li>After 1-2 minutes, you will see an IP address, like <i>123.123.123.123</i>.
+        Open Minecraft, navigate to <b>Multiplayer</b> > <b>Direct Connect</b>, enter the address, and click <b>Join Server</b>.</li>
+    <li>Play with the bot for <b>10 minutes</b>. When you are done, exit Minecraft or press <b>Escape > Disconnect</b>.</li>
+    <li>Please fill out the short survey on the next page.</li>
+    </ol>
+
+</div>
+
+{{ launch_button("/launch") }}
+
+{% endblock %}
+
+

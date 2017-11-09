@@ -1,0 +1,14 @@
+python/*.so
+logs
+__pycache__
+*.pyc
+*.ipynb
+*.log
+*.sql
+!memory_schema.sql
+*~
+bin/*
+writeups/*.pdf
+writeups/*.aux
+writeups/*.gz
+writeups/*.out

@@ -1,0 +1,19 @@
+destroy the dome
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+{"Destroy": {"action_reference_object": {"has_name_": [1, 2]}}}
+
+build a small cottage here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build 4 towers
+{"Build": {"schematic": {"has_name_": [2, 2]}}, "repeat": {"repeat_type": "FOR", "repeat_count": {"repeat_for": [1, 1]}}}
+
+go wash the dishes
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 3]}}}
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 3]}}, "repeat": {"repeat_type": "ALL"}}
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}, "repeat": {"repeat_type": "ALL"}}
+
+remove all of the large trees
+{"Destroy": {"action_reference_object": {"has_name_": [5, 5], "has_size_": [4, 4]}}, "repeat": {"repeat_type": "ALL"}}
