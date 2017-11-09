@@ -1,0 +1,4 @@
+*.pth filter=lfs diff=lfs merge=lfs -text
+minecraft_specs/** filter=lfs diff=lfs merge=lfs -text
+minecraft_specs/**/*.py -filter=lfs -diff=lfs -merge=lfs -text
+**/*.json filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,2451 @@
+20 chickens
+{"Noop": {}}
+
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+{"Noop": {}}
+
+Build a pool
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+Build a prymaid
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+COME
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+COME HERE BOI
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+Fill the hole up please
+{"Fill": {}}
+
+HELP ME BUILD A HOUSE!
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+Hello
+{"Noop": {}}
+
+SPAWN PIG
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+STOP
+{"Stop": {}}
+
+What are you building?
+{"Answer": {}}
+
+a boat
+{"Noop": {}}
+
+a rectangle
+{"Noop": {}}
+
+a room
+{"Noop": {}}
+
+add a ladder to the tower
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+arch
+{"Noop": {}}
+
+are you still there bot
+{"Answer": {}}
+
+aye
+{"Noop": {}}
+
+bad job
+{"Noop": {}}
+
+bed
+{"Noop": {}}
+
+bed.physical_objects
+{"Noop": {}}
+
+bild a pool
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+block
+{"Noop": {}}
+
+block\\
+{"Noop": {}}
+
+blocky
+{"Noop": {}}
+
+blow cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+bot
+{"Noop": {}}
+
+bothelp
+{"OtherAction": {}}
+
+box
+{"Noop": {}}
+
+break blocks
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+break cube
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+bring cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+build
+{"Build": {}}
+
+build  a house
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build 2 story triangle house
+{"Build": {"schematic": {"has_name_": [3, 4], "has_size_": [1, 2]}}}
+
+build 4 towers
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build 4 towers connected
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build 4 walls
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build 4 wood towers
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build 4 wooden towers
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build a 10 x 10 wood cube
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_height_": [4, 4], "has_name_": [6, 6], "has_width_": [2, 2]}}}
+
+build a 3d shape
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a 5x5 wall
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a asriel
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a barn
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a barn over there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a base of cobblestone
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build a bedroom
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a big cube
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a big hole
+{"Dig": {"has_size_": [2, 2]}}
+
+build a big house
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a blue sphere
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a box here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a brick arch
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a brick base
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a brick dome
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a brick house
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a brick wall
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a bridge
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a cabin
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a castle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a chimney
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a circle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a circle there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a coral
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a crecent
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a crescent
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a cube
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a cube with a triangle
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+build a cube with a triangle on top
+{"Build": {"schematic": {"has_name_": [2, 7]}}}
+
+build a cuthulu
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a deep hole
+{"Dig": {"has_depth_": [2, 2]}}
+
+build a diamond
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a dome
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a dome with bricks
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build a door here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a door there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a emty sqare
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a faem
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a farm
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a farmhouse
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fence
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fence 10 x 10
+{"Build": {"schematic": {"has_height_": [5, 5], "has_name_": [2, 2], "has_width_": [3, 3]}}}
+
+build a fence for pigs
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fence in a square shape
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fence wall
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a fireplace
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a floor
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a garden
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a glass house
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a green triangle
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a hollow cub
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a hollow cube
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a home
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a house in the sky
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a house next to the first house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a house plz
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house using sandstone
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build a house with a pyramid roof please
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a hut
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a large castle
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a large square
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a line
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a long wall
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a mansion
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a mini
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a moat
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a oak wood plank floor
+{"Build": {"schematic": {"has_block_type_": [2, 4], "has_name_": [5, 5]}}}
+
+build a oak wood wall
+{"Build": {"schematic": {"has_block_type_": [2, 3], "has_name_": [4, 4]}}}
+
+build a pen
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a platform here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a pond
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a pool
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a portal
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a powerhouse
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a ppol
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a pryamid
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a purple roof
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a pyramid
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a pyramid on top of box
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a railway
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a rectangle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a red square
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a ride
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a river
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a roller coaster
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a rollercoaster
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a roof
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a room
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a skyscraper
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a smaill house
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small 5x5 house
+{"Build": {"schematic": {"has_name_": [4, 4], "has_size_": [2, 3]}}}
+
+build a small building
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small cottage
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small house
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small house here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small house remove obstructions first
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small pool
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small pyramid
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a sphere
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a sqare
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a square
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a square base
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a square base made of sand
+{"Build": {"schematic": {"has_block_type_": [6, 6], "has_name_": [2, 3]}}}
+
+build a square brick base
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [4, 4]}}}
+
+build a square building
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a square with iron
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build a swimming pool
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a tabl
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a table
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a ten by ten fence
+{"Build": {"schematic": {"has_height_": [4, 4], "has_name_": [5, 5], "has_width_": [2, 2]}}}
+
+build a tower
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a tower 10 blocks tall
+{"Build": {"schematic": {"has_height_": [3, 5], "has_name_": [2, 2]}}}
+
+build a tower 5x5x15
+{"Build": {"schematic": {"has_name_": [2, 2], "has_size_": [3, 3]}}}
+
+build a tower here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a tree
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a treehouse
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a triangle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a tv
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a village
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a wall
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a wall around the house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall connected to the other wall
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall ten blocks long
+{"Build": {"schematic": {"has_name_": [2, 2], "has_width_": [3, 5]}}}
+
+build a wall three blocks high and ten blocks long
+{"Build": {"schematic": {"has_height_": [3, 5], "has_name_": [2, 2], "has_width_": [7, 9]}}}
+
+build a wall with a door
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a well here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wood house
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a wood pool
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a wood shack
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a wood square
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a wooden fence
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build an apartment
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build an arch
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build an arch with a torch at the top
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build another wall
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+build anything
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build arch
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build ass
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build barn
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build bathroom
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build battleship
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build bed
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build bedroom
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build black tower
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build blocks
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build brain
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build cabin
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build canoe
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build car
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build carpet
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build cart
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build castle
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build city
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build cube
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build cylinder
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build dog
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build dome
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build door
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build dwelling
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build ellipsoid
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build everything
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build fence
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build fontain
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build forever
+{"Build": {}}
+
+build fort
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build foundation
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build fountain
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build four walls
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build fuck
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build fwncw
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build garden
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build glass house
+{"Build": {"schematic": {"has_block_type_": [1, 1], "has_name_": [2, 2]}}}
+
+build house
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build house 10x10
+{"Build": {"schematic": {"has_height_": [2, 2], "has_name_": [1, 1], "has_width_": [2, 2]}}}
+
+build house from sandstone
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [1, 1]}}}
+
+build house here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [1, 1]}}}
+
+build house obsidian
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build house wall
+{"Build": {"schematic": {"has_name_": [1, 2]}}}
+
+build house with wood and 3 rooms
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [1, 1], "has_size_": [5, 6]}}}
+
+build houses
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build me a asdujfsaonfds
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a black tower
+{"Build": {"schematic": {"has_colour_": [3, 3], "has_name_": [4, 4]}}}
+
+build me a chicken
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a circle
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a cuthulu
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a dong
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a farm
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a flower
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a garden
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a garden with plants
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a gate
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a house
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a pink sqaure
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+build me a portal
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a pyramid
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a room
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a sqaure
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a toilet
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a tower
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a triange
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a tv
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a weeb
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me an oof
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me house
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build me something
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build mountain
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build my house
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build orange tower
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build penis
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build pool
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build purple tower
+{"Build": {"schematic": {"has_colour_": [1, 1], "has_name_": [2, 2]}}}
+
+build pyramid
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build pyramid here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [1, 1]}}}
+
+build pyramid in wood
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [1, 1]}}}
+
+build pyramid on top of box
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [1, 1]}}}
+
+build road
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build roof
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build shelter
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build shit
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build small house
+{"Build": {"schematic": {"has_name_": [2, 2], "has_size_": [1, 1]}}}
+
+build something
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build something cool
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build something else
+{"Build": {"schematic": {"has_name_": [1, 2]}}}
+
+build something there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [1, 1]}}}
+
+build something with redstone
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [1, 1]}}}
+
+build sphere
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build square
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build square fence
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build square please
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build staircase
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build stuff with red stone
+{"Build": {"schematic": {"has_block_type_": [3, 4], "has_name_": [1, 1]}}}
+
+build swimming pool
+{"Build": {"schematic": {"has_name_": [1, 2]}}}
+
+build tent
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build the house i built
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+build the object i built
+{"Build": {"action_reference_object": {"has_name_": [2, 4]}}}
+
+build the ojbect i just built
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+build this object
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build tower
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build triangle
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build tunnel
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build wall
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build wall connected to tower
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}, "schematic": {"has_name_": [1, 1]}}}
+
+build wall here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [1, 1]}}}
+
+build wall on tower
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "schematic": {"has_name_": [1, 1]}}}
+
+build what you want
+{"Build": {"schematic": {"has_name_": [1, 3]}}}
+
+build whatever
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build window
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build wooden house
+{"Build": {"schematic": {"has_block_type_": [1, 1], "has_name_": [2, 2]}}}
+
+builda dome
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+bulid DIO
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+butcher cow
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+buy a pyramid
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+can
+{"Noop": {}}
+
+can we build a garden
+{"Answer": {}}
+
+can you build a barn?
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+can you build a pool?
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+can you build a tv
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+can you build me a house
+{"Build": {"schematic": {"has_name_": [5, 5]}}}
+
+can you build me something big
+{"Build": {"schematic": {"has_name_": [4, 4], "has_size_": [5, 5]}}}
+
+can you make it blue
+{"OtherAction": {"action_reference_object": {"has_colour_": [4, 4], "has_name_": [3, 3]}}}
+
+can you mine
+{"Answer": {}}
+
+can you mine for gold?
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+can you show me the different blocks I can use
+{"Answer": {}}
+
+can you spawn things
+{"Answer": {}}
+
+can you use redstone?
+{"Answer": {}}
+
+catch cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+catch the rabbit
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+change block
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+change these blocks to sandstone
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+change to sandstone
+{"OtherAction": {"action_reference_object": {"has_block_type_": [2, 2]}}}
+
+chase cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+chest
+{"Noop": {}}
+
+chicken
+{"Noop": {}}
+
+chop down tree
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+chop tree
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+chop wood
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+circle
+{"Noop": {}}
+
+clear
+{"Noop": {}}
+
+clear field
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+clear your memory
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+come dig with me
+{"Dig": {"location": {"location_type": "SpeakerPos"}}}
+
+come her
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come here
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come home
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+come over here
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come over to me
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come to me
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come to my location
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come]
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+continue
+{"Resume": {}}
+
+continue building
+{"Resume": {}}
+
+continue building the house
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+continue to dig
+{"Dig": {}}
+
+cook pig
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+cool
+{"Noop": {}}
+
+copy me
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+copy this object
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+cow
+{"Noop": {}}
+
+craft
+{"OtherAction": {}}
+
+craft bathroom
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+craft hammer
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+craft house
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+craft stove
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+craft tools
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+create a waterfall
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+cube
+{"Noop": {}}
+
+cut down the flowers
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+cut down the mushroom
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dance
+{"OtherAction": {}}
+
+datroy that
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy
+{"Destroy": {}}
+
+destroy all grass
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy arch
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy block
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy block in front of you
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy blocks
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy blocs
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy cow
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy fence
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy flowers
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy grass object
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy home
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy house
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy it
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy pyramid
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy roof
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy sphere
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy stone
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy that
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy that structure
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the arch
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the dome
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the grass
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the house
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the mushroom
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the mushroom in front of me
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy these blocks
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy this
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy this house
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy this piece
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy triangle
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy wall
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+detroy blocks
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+detroy house
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+die
+{"OtherAction": {"location": {"location_type": "AgentPos"}}}
+
+die'
+{"Noop": {}}
+
+dig
+{"Dig": {}}
+
+dig 4x4
+{"Dig": {"has_size_": [1, 1]}}
+
+dig a 4x4 hole
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a 5x5 hole
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a big hole
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a deep hole
+{"Dig": {"has_depth_": [2, 2]}}
+
+dig a hole
+{"Dig": {}}
+
+dig a hole 5 blocks deep
+{"Dig": {"has_depth_": [3, 4]}}
+
+dig a hole 5 blocks wide
+{"Dig": {"has_width_": [3, 4]}}
+
+dig a hole and put water in it
+{"Dig": {}}
+
+dig a hole five squares deep and two squares wide
+{"Dig": {"has_depth_": [3, 4], "has_width_": [7, 8]}}
+
+dig a hole next to house
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig a hole with dynamite
+{"Dig": {}}
+
+dig a large square
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a mine
+{"Dig": {}}
+
+dig a square
+{"Dig": {}}
+
+dig a tunnel
+{"Dig": {}}
+
+dig big hole
+{"Dig": {"has_size_": [1, 1]}}
+
+dig big tunnel
+{"Dig": {"has_size_": [1, 1]}}
+
+dig deeper
+{"Dig": {"has_depth_": [1, 1]}}
+
+dig for gold
+{"Dig": {}}
+
+dig here
+{"Dig": {"location": {"location_type": "SpeakerPos"}}}
+
+dig hole
+{"Dig": {}}
+
+dig to the end of the map
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}
+
+dig tunnel
+{"Dig": {}}
+
+dig two more holes
+{"Dig": {}, "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}
+
+dig until i tell you to stop
+{"Dig": {}}
+
+do you have any wood?
+{"Answer": {}}
+
+do you know how to talk?
+{"Answer": {}}
+
+do you like this color
+{"Answer": {}}
+
+dome
+{"Noop": {}}
+
+don't get confused
+{"Noop": {}}
+
+don't give up
+{"OtherAction": {}}
+
+drop diamond
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+e
+{"Noop": {}}
+
+eat ass
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+eat flower
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+eat mushroom
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+eat sheep
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+edit block
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+fight
+{"OtherAction": {}}
+
+fight me
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+fill
+{"Noop": {}}
+
+fill a hole with water
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill in the circle
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+fill the building with water
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+fill this hole
+{"Fill": {"location": {"location_type": "SpeakerPos"}}}
+
+fill this hole in
+{"Fill": {}}
+
+fill this in
+{"Fill": {}}
+
+fill this pool with water
+{"Fill": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill with diamond blocks
+{"Fill": {"action_reference_object": {"has_block_type_": [2, 3]}}}
+
+fill with water
+{"OtherAction": {}}
+
+find
+{"OtherAction": {}}
+
+find a cactus
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+find a cave
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+find a mineshaft
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+find a sheep
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+find a tree
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+find animals
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find enemy
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find flowers
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find food
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find gold
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find lake
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find me a cow
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+find people
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find sheep
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find tools
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find tree
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find trees
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find water
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+find wood
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+fix this
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+floweras
+{"Noop": {}}
+
+flowers
+{"Noop": {}}
+
+follow me
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+follow me'
+{"Move": {"location": {"location_type": "Other"}}}
+
+forget the tag
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+forward
+{"Noop": {}}
+
+furnace
+{"Noop": {}}
+
+gate
+{"Noop": {}}
+
+gather wool
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get a drink
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+get a sword
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+get block
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get chickens
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get flower
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get me a cow
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+get me a pet
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+get me umbrella
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+get mushrooms
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get over here
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+get plant
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get rabbit
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get sheep
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get that cube
+{"OtherAction": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+get wood
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get wool
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+git gud
+{"Noop": {}}
+
+give me a axe
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+give me a brick
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+give me iron
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+go east
+{"Move": {"location": {"location_type": "Other"}}}
+
+go find food
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+go find sheep
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+go get flower
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+go here
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+go in house
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+go left
+{"Move": {"location": {"location_type": "Other"}}}
+
+go south
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+go there
+{"Move": {"location": {"location_type": "SpeakerLook"}}}
+
+go to 40.5 63.0 62.5
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 4]}}}}
+
+go to bathroom
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+go to house
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+go to the ground
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+go up
+{"Move": {"location": {"location_type": "Other"}}}
+
+go west
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+good job
+{"Noop": {}}
+
+good work
+{"Noop": {}}
+
+goodjob
+{"Noop": {}}
+
+grape
+{"Noop": {}}
+
+grass
+{"Noop": {}}
+
+hallow_cube
+{"Noop": {}}
+
+halp me build a house
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+harvest mooshroom
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+harvest mushroom
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+he;;p
+{"Noop": {}}
+
+hello
+{"Noop": {}}
+
+hello bot
+{"Noop": {}}
+
+help
+{"OtherAction": {}}
+
+help me
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+help me build a house
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a triangle
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a tv
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me dig
+{"Dig": {}}
+
+hey
+{"Noop": {}}
+
+hey'
+{"Noop": {}}
+
+hi
+{"Noop": {}}
+
+house
+{"Noop": {}}
+
+how am i being rude
+{"Answer": {}}
+
+how are you
+{"Answer": {}}
+
+how do i make a diamond shovel
+{"Answer": {}}
+
+how do you make potions?
+{"Answer": {}}
+
+hunger
+{"Noop": {}}
+
+i am making a pool
+{"Noop": {}}
+
+i can't see you
+{"Noop": {}}
+
+i did not say dig
+{"Noop": {}}
+
+i dont know
+{"Noop": {}}
+
+i like it
+{"Noop": {}}
+
+identify object
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+ii
+{"Noop": {}}
+
+ili
+{"Noop": {}}
+
+im building a house
+{"Noop": {}}
+
+info
+{"Noop": {}}
+
+inventory
+{"Noop": {}}
+
+it's a circle
+{"Tag": {"tag": [2, 2]}}
+
+it's a powerhouse
+{"Noop": {}}
+
+it's a structure
+{"Noop": {}}
+
+it's a wood planks
+{"Tag": {"action_reference_object": {"has_block_type_": [2, 2]}, "tag": [3, 3]}}
+
+it's nothing
+{"Noop": {}}
+
+it's stone
+{"Tag": {"tag": [1, 1]}}
+
+it's wood plank
+{"Noop": {}}
+
+jump
+{"OtherAction": {}}
+
+just build
+{"Build": {}}
+
+kill
+{"Destroy": {}}
+
+kill a pig
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+kill chicken'
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+kill chickens'
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+kill cow
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+kill me
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+kill pig
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+kill sheep
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+kill that pig
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+kill the cow
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+kill the sheep
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+kill the zombie
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+label as grass
+{"Tag": {"tag": [2, 2]}}
+
+let's buikld
+{"Build": {}}
+
+let's build something
+{"Build": {}}
+
+lets build
+{"Build": {}}
+
+lets build a house
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+lets have fun
+{"Noop": {}}
+
+make a 3d shape
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+make a bed
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a big hole
+{"Dig": {"has_size_": [2, 2]}}
+
+make a castle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a circle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a corral
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a creeper
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a cube
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a deep hole
+{"Dig": {"has_depth_": [2, 2]}}
+
+make a door
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a fontain
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a garden
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a glass house there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+make a hole
+{"Dig": {}}
+
+make a home
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a house
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a pen
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a pool
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a portal
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a prymaid
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a redstone switch
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+make a restone door
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+make a river
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a road
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a rug
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a small house
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+make a sqare
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a sqaure
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a tower
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a triangle
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a tunnel
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a wall
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a water foutain
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+make a white and black tower
+{"Build": {"schematic": {"has_name_": [5, 5]}}}
+
+make an oven
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make an portal
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make fire
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+make it larger
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1], "has_size_": [2, 2]}}}
+
+make kitchen
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+make me a house
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+make sheep
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+make table
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+make this
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+mine coal
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+mine for diamond
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+mine for gold
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+mine ground
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+mine ten diamonds
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+move
+{"Move": {}}
+
+move 1 left
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+move away
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "AWAY"}}}
+
+move away from wall
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "AWAY", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move back to me
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+move forward
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+move left
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT"}}}
+
+n
+{"Noop": {}}
+
+nice sphere
+{"Noop": {}}
+
+no
+{"Noop": {}}
+
+no you did not
+{"Noop": {}}
+
+no you're not
+{"Noop": {}}
+
+ok
+{"Noop": {}}
+
+ok build me a house with me
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+okay
+{"Noop": {}}
+
+okay]
+{"Noop": {}}
+
+pause
+{"Stop": {}}
+
+physical_objects
+{"Noop": {}}
+
+pick flower
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+pick flowers
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+pig
+{"Noop": {}}
+
+piston
+{"Noop": {}}
+
+place 10 brick blocks in a square
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_depth_": [1, 1], "has_name_": [6, 6], "has_width_": [1, 1]}}}
+
+place a bed
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+place a crafting table
+{"Build": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+place a crafting table here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 3]}}}
+
+place a door
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+place a furnace here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+place a furnace there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+place a glass arch
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+place a pig
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+place a stove
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+place a stove here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+place a torch
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+place a wall
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+place block
+{"Build": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+place five pigs
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+place furnace
+{"Build": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+place green woo;
+{"Build": {"action_reference_object": {"has_colour_": [1, 1], "has_name_": [2, 2]}}}
+
+place oak fenc
+{"Build": {"schematic": {"has_block_type_": [1, 1], "has_name_": [2, 2]}}}
+
+place oak fence
+{"Build": {"action_reference_object": {"has_block_type_": [1, 1], "has_name_": [2, 2]}}}
+
+place redstone torches
+{"Build": {"action_reference_object": {"has_block_type_": [1, 1], "has_name_": [2, 2]}}}
+
+place sandstone there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+place two pigs there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+place water
+{"Build": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+plant 10 flowers
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+plant a flower
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+plant flowers
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+plant garden
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+plant oak saplings
+{"Build": {"schematic": {"has_name_": [1, 2]}}}
+
+plant poppies
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+plant sapling
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+plant some seeds
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+play
+{"OtherAction": {}}
+
+put a door here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+put a ladder on this tower
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+put cow in fence
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "schematic": {"has_name_": [1, 1]}}}
+
+put water in here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [1, 1]}}}
+
+put water in it now
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+quit
+{"Stop": {}}
+
+rain
+{"Noop": {}}
+
+rectangle
+{"Noop": {}}
+
+remove
+{"Destroy": {}}
+
+reset
+{"Undo": {}}
+
+resume
+{"Resume": {}}
+
+ride cow
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+rude
+{"Noop": {}}
+
+run
+{"OtherAction": {}}
+
+shear sheep
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+sheep
+{"Noop": {}}
+
+shovel
+{"Noop": {}}
+
+show fire
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+show inventory
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+show me my inventory
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+slay cow
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+slay sheep
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+small_cube
+{"Noop": {}}
+
+smell flowers
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn a creeper
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a pig in
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a tree
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+spawn a work table
+{"Build": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+spawn animal
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn cactus
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+spawn chest
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+spawn enderman
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn five pigs
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn furnace
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+spawn in a bat
+{"Spawn": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+spawn in a turtle
+{"Spawn": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+spawn in a wolf
+{"Spawn": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+spawn monster
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn pig
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn two cows
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn water
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+spawn zombie
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn zombiw
+{"Build": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+stab cow
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+start digging
+{"Dig": {}}
+
+start digging a hole
+{"Dig": {}}
+
+sto
+{"Noop": {}}
+
+stop
+{"Stop": {}}
+
+stop building
+{"Stop": {}}
+
+stop digging
+{"Stop": {}}
+
+stop following me
+{"Stop": {}}
+
+stop removing blocks
+{"Stop": {}}
+
+stop task
+{"Stop": {}}
+
+stop what you are doing
+{"Stop": {}}
+
+stp[
+{"Noop": {}}
+
+such as
+{"Noop": {}}
+
+table
+{"Noop": {}}
+
+take cube
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+take ineventory
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+take inventory
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+talk to me
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+teleport to water
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+tell me a joke
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+thamks
+{"Noop": {}}
+
+thank you
+{"Noop": {}}
+
+thanks
+{"Noop": {}}
+
+that is a wall
+{"Tag": {"location": {"location_type": "SpeakerLook"}, "tag": [3, 3]}}
+
+that is not right
+{"Noop": {}}
+
+that is not what i meant
+{"Noop": {}}
+
+that one\\
+{"Noop": {}}
+
+thats not a brick wall
+{"Noop": {}}
+
+the one i made
+{"Noop": {}}
+
+this is a nice fort
+{"Noop": {}}
+
+this object is a brick
+{"Tag": {"tag": [4, 4]}}
+
+this object is a mushroom
+{"Tag": {"location": {"location_type": "SpeakerPos"}, "tag": [4, 4]}}
+
+this object is grass
+{"Noop": {}}
+
+three blocks
+{"Noop": {}}
+
+tools
+{"Noop": {}}
+
+tp to water
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+tree
+{"Noop": {}}
+
+tt]]]]]]]]]
+{"Noop": {}}
+
+undo
+{"Undo": {}}
+
+use a shovel
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+use redstone
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+walk
+{"Move": {}}
+
+walk east
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+walk south
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+walk west
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+wall
+{"Noop": {}}
+
+wat sup
+{"Answer": {}}
+
+we need shelter from the rain
+{"Noop": {}}
+
+we need wood
+{"Noop": {}}
+
+what are you buildig?
+{"Answer": {}}
+
+what are you building
+{"Answer": {}}
+
+what are you building?
+{"Answer": {}}
+
+what are you doing
+{"Answer": {}}
+
+what are you doing?
+{"Answer": {}}
+
+what are you makeing
+{"Answer": {}}
+
+what block
+{"Noop": {}}
+
+what can you build
+{"Answer": {}}
+
+what can you build?
+{"Answer": {}}
+
+what can you do
+{"Answer": {}}
+
+what can you do?
+{"Answer": {}}
+
+what can you tag
+{"Answer": {}}
+
+what color should a wall
+{"Answer": {}}
+
+what color should my house be
+{"Answer": {}}
+
+what colur should mt house be
+{"Answer": {}}
+
+what command you know?
+{"Answer": {}}
+
+what commands do you understand?
+{"Answer": {}}
+
+what commands you know?
+{"Answer": {}}
+
+what did you build
+{"Answer": {}}
+
+what did you make
+{"Answer": {}}
+
+what do you do?
+{"Answer": {}}
+
+what do you know?
+{"Answer": {}}
+
+what do you want to build
+{"Answer": {}}
+
+what is it
+{"Answer": {}}
+
+what is tagging
+{"Answer": {}}
+
+what is this
+{"Answer": {}}
+
+what is this\\
+{"Answer": {}}
+
+what is your name
+{"Answer": {}}
+
+what objects do you recognize
+{"Answer": {}}
+
+what's your name?
+{"Answer": {}}
+
+whats in my inventory
+{"Answer": {}}
+
+where are you
+{"Answer": {}}
+
+where are you going?
+{"Answer": {}}
+
+where are you?
+{"Answer": {}}
+
+why
+{"Answer": {}}
+
+why are you clearing the path
+{"Answer": {}}
+
+why are you confused
+{"Answer": {}}
+
+why are you not understanding
+{"Answer": {}}
+
+with a floor
+{"Noop": {}}
+
+woooooow
+{"Noop": {}}
+
+wow
+{"Noop": {}}
+
+wwwwwwwwwwwww
+{"Noop": {}}
+
+y
+{"Noop": {}}
+
+yeds
+{"Noop": {}}
+
+yes
+{"Noop": {}}
+
+yes you are
+{"Noop": {}}
+
+you're lazy
+{"Noop": {}}
+
+you're not a victim
+{"Noop": {}}
+

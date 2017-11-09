@@ -1,0 +1,3819 @@
+` house target game
+{"Noop": {}}
+
+a boy   is waiting
+{"Noop": {}}
+
+actually  stop building the stairs .
+{"Stop": {}}
+
+add a roof to the building .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+add blocks to the right side of the house .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [1, 1]}}}
+
+add seven sheep to the pasture located at cooredinates 72 21 35
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 11]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+aid me in constructing this fence
+{"FreeBuild": {"schematic": {"has_name_": [5, 5]}}}
+
+alert me if any threats are approaching .
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+answer how far below the ground i am now
+{"Answer": {}}
+
+answer the door .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+approximately how many steps are there to get to the top of the structure ?
+{"Answer": {}}
+
+are there any animals in the area ?
+{"Answer": {}}
+
+are there any animals nearby ?
+{"Answer": {}}
+
+are there any buildings in the area
+{"Answer": {}}
+
+are there any mobs nearby ?
+{"Answer": {}}
+
+are there any monsters nearby
+{"Answer": {}}
+
+are there any ponds or lakes nearby ? we need food .
+{"Answer": {}}
+
+are there diamonds in that cave ?
+{"Answer": {}}
+
+are you able to jump out of this cave ?
+{"Answer": {}}
+
+are you and all of your robot friends going to take all our jobs ?
+{"Answer": {}}
+
+are you sass mouthin ' me ? say that again !
+{"Answer": {}}
+
+bot can you forge a cast iron kettle ?
+{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [7, 7]}}}
+
+bot  can you tell me anything about this red flower ?
+{"Answer": {}}
+
+bot move these blocks to the top of the pyramid .
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [9, 9]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+bot  what is around the corner ?
+{"Answer": {}}
+
+bot boy  let 's go swimming in some lava ! do n't forget your protective gear  now .
+{"Noop": {}}
+
+bot can you mow the grass ?
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+bot click the back button to undo the program
+{"Undo": {}}
+
+bot have you seen my pair of spectacles ?
+{"Answer": {}}
+
+bot stop moving  go into hibernation .
+{"Stop": {}}
+
+brake the wall
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+break that window and jump through it .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+bring a shovel to location 29 16 32 and dig a tunnel .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+bring me some water
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+build
+{"Build": {}}
+
+build 2 walls in the courtyard .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build 5 green pyramids to the left of the house .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [9, 9]}}, "schematic": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build 5 new colony buildings
+{"Build": {"schematic": {"has_name_": [3, 4], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build a 10 by 10 by 20 tower
+{"Build": {"schematic": {"has_depth_": [6, 6], "has_height_": [4, 4], "has_name_": [7, 7], "has_width_": [2, 2]}}}
+
+build a 1x1 tower as tall as possible .
+{"Build": {"schematic": {"has_height_": [4, 7], "has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a 4x4 tower out of stone bricks 40 blocks high .
+{"Build": {"schematic": {"has_block_type_": [6, 7], "has_height_": [8, 9], "has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a 5 x 5 base .
+{"Build": {"schematic": {"has_height_": [4, 4], "has_name_": [5, 5], "has_width_": [2, 2]}}}
+
+build a barrier around my house .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a bed in my house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a bed in the grey room .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a block .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a blue house .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a boat from this wood that looks like a viking ship
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+build a box .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a brick wall .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a bridge between two towers
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a bridge over a river
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a bridge over the river
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a building with wood
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build a cabin next to the lake .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a car
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a castle .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a castle made of sand .
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+build a castle to the left of the river
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [7, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a castle where i am standing .
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a chair
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a chimney onto the home
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a church
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a computer
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a cubical structure here .
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 3]}}}
+
+build a diamond pickaxe .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a diamond sword .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a door at the front of this house .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a door in front of the wall
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a door in the building .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a door in the right corner of the room .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 9]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a door on the side of the building
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a doorway
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fence
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fence 5x7 blocks around the tree
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2], "has_size_": [3, 3]}}}
+
+build a fence around my property .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a fence around the house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a fence around the lava
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a fence that is 20 blocks long made of acacia wood .
+{"Build": {"schematic": {"has_block_type_": [10, 11], "has_name_": [2, 2], "has_width_": [5, 6]}}}
+
+build a fence to keep large animals inside it .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fire here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a fireplace
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a fort from wood i gathered from those trees .
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build a fort out of blue blocks .
+{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [2, 2]}}}
+
+build a fort using cardboard boxes .
+{"Build": {"schematic": {"has_block_type_": [4, 5], "has_name_": [2, 2]}}}
+
+build a foundation for the house .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a furnace .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a green pyramid .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a green tower next to the purple one
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "schematic": {"has_name_": [3, 3]}}}
+
+build a green tower with 2 windows on each side
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a greenhouse
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house for shelter
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a house on top of the basement .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a house on top of the pyramid .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a house out of wood .
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+build a house that is two stories tall .
+{"Build": {"schematic": {"has_height_": [5, 6], "has_name_": [2, 2]}}}
+
+build a house to the right of the forest .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a ladder to climb the next wall
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a ladder to escape to the sky .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a ladder up that hill .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a large wooden badger .
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [4, 4], "has_size_": [2, 2]}}}
+
+build a large pyramid
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a large tower .
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a little well using only mossy cobblestone .
+{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a mineshaft and find diamonds
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a moat around the building
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a new colony
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a new door out of red blocks .
+{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [3, 3]}}}
+
+build a new farm to raise cattle .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a new fort
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a new house
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a new kitchen inside the house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [3, 3]}}}
+
+build a new staircase .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a new wall .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a new window
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build a pc and use it to mine crypto currency for me
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a pile of dirt three blocks high
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_height_": [5, 6], "has_name_": [2, 2]}}}
+
+build a pillar 150 blocks high .
+{"Build": {"schematic": {"has_height_": [3, 4], "has_name_": [2, 2]}}}
+
+build a pillar of stone 2 blocks high .
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_height_": [5, 6], "has_name_": [2, 2]}}}
+
+build a platform .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a pyramid in the middle of the bap
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a pyramid with the blocks .
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+build a replica of the white house over there .
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_colour_": [5, 5], "has_name_": [6, 6]}}}
+
+build a safe zone for us
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a sentry gun
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a sentry post on top of the tower .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 3]}}}
+
+build a set of stairs for the 3rd floor
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "schematic": {"has_name_": [4, 4]}}}
+
+build a set of stairs leading to the roof
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+build a set of stairs that extend to the ceiling .
+{"Build": {"schematic": {"has_height_": [7, 9], "has_name_": [4, 4]}}}
+
+build a shelter .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a small building with a door .
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small house
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small house for me .
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small shed next to the house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small shelter out of dirt to hide in .
+{"Build": {"schematic": {"has_block_type_": [6, 6], "has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small tower .
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+build a small wall 3 blocks by 3 blocks
+{"Build": {"schematic": {"has_height_": [7, 8], "has_name_": [3, 3], "has_size_": [2, 2], "has_width_": [4, 5]}}}
+
+build a staircase
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a staircase .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a stairway .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a storage area .
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a table
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a tall swing set near the yellow house .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_colour_": [7, 7], "has_name_": [8, 8]}}, "schematic": {"has_height_": [2, 2], "has_name_": [3, 4]}}}
+
+build a temple in front of a tree
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a tiki bar directly in front of you .
+{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [2, 3]}}}
+
+build a tower inside the extinct volcano .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a tower next to the closest tree .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a tower using ice cubes
+{"Build": {"schematic": {"has_block_type_": [4, 5], "has_name_": [2, 2]}}}
+
+build a tree house .
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a tree house for my child .
+{"Build": {"schematic": {"has_name_": [2, 3]}}}
+
+build a trench next to the house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a village
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a wall .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a wall 300 wide 2 deep 12 high .
+{"Build": {"schematic": {"has_depth_": [5, 5], "has_height_": [7, 7], "has_name_": [2, 2], "has_width_": [3, 3]}}}
+
+build a wall around the castle
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall at your location
+{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall from here to the river .
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall immediately behind the steps .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "BACK", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall next to the pyramid .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall to divide the largest room in the house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 10]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wall to keep others out
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a waste disposal area
+{"Build": {"schematic": {"has_name_": [2, 4]}}}
+
+build a well that is 10 feet deep .
+{"Build": {"schematic": {"has_depth_": [5, 6], "has_name_": [2, 2]}}}
+
+build a window .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build a window in the nearest wall
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a window to the left of the door .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+build a wood fence .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build a wooden bunk bed .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 4]}}}
+
+build a wooden table with four wooden chairs
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build an outhouse .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build an underwater house
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}, "schematic": {"has_name_": [3, 3]}}}
+
+build another stair .
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+build chess board
+{"Build": {"schematic": {"has_name_": [1, 2]}}}
+
+build chess pieces
+{"Build": {"schematic": {"has_name_": [1, 2]}}}
+
+build fireplace
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build house frame with milled wood .
+{"Build": {"schematic": {"has_block_type_": [4, 5], "has_name_": [1, 2]}}}
+
+build me a bridge over the water
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [3, 3]}}}
+
+build me a door
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a drone big enough to fly me to florida .
+{"Build": {"schematic": {"has_name_": [3, 3], "has_size_": [4, 4]}}}
+
+build me a fence around the house .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_name_": [3, 3]}}}
+
+build me a house
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a house out of these bricks .
+{"Build": {"schematic": {"has_block_type_": [7, 7], "has_name_": [3, 3]}}}
+
+build me a new tree to get wood from
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+build me a phone .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a private jet
+{"Build": {"schematic": {"has_name_": [3, 4]}}}
+
+build me a pyramid of iron slabs .
+{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [3, 3]}}}
+
+build me a scaffold
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a school .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a shed from sheet metal .
+{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [3, 3]}}}
+
+build me a stone structure by that tree
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_block_type_": [3, 3], "has_name_": [4, 4]}}}
+
+build me a swimming pool .
+{"Build": {"schematic": {"has_name_": [3, 4]}}}
+
+build me a tent .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me a wall over there .
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [3, 3]}}}
+
+build me an axe
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build me stairs to get to the roof .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build stairs .
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+build stairs out of this pit
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 5]}}, "schematic": {"has_name_": [1, 1]}}}
+
+build stairs up to the top of the hole .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [1, 1]}}}
+
+build steps to the outdoors .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}, "schematic": {"has_name_": [1, 1]}}}
+
+build the brown pyramid
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build the concrete foundation for my fortress
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+build the house with brick instead of stone .
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+build the wall
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+build three houses in the southeast corner .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build three large structures to your left
+{"Build": {"location": {"location_type": "AgentPos"}, "schematic": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build three sets of bookshelves .
+{"Build": {"schematic": {"has_name_": [4, 4], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+build up a pyramid structure
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+build window
+{"Build": {"schematic": {"has_name_": [1, 1]}}}
+
+built a pyramid out of those mud bricks but be sure to make it hollow with door and a skylight .
+{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [2, 2]}}}
+
+burn down some trees
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+buy 3 rubies from the shopkeeper .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+can i build a house here ?
+{"Answer": {}}
+
+can you change the color of the house exterior to blue ?
+{"Answer": {}}
+
+can you chop down that tree for me ?
+{"Answer": {}}
+
+can you come build a shed around me ?
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [5, 5]}}}
+
+can you destroy the top layer of the pyramid ?
+{"Answer": {}}
+
+can you destry a tree that just north of my player .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 10]}}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+can you drive a car and drop me to the shopping mall ?
+{"Answer": {}}
+
+can you find the closest water source ?
+{"Answer": {}}
+
+can you go to the lighthouse and switch this painting with the one on the wall there ?
+{"Answer": {}}
+
+can you go up to the house with a blue roof and knock on the door to see if anyone is home ?
+{"Answer": {}}
+
+can you imitate one the voice of one of the cnn news anchors ?
+{"Answer": {}}
+
+can you make the roof of the house circular somehow ?
+{"Answer": {}}
+
+can you mine me minerals
+{"Answer": {}}
+
+can you move this bolder ?
+{"Answer": {}}
+
+can you place a torch here
+{"Answer": {}}
+
+can you please build a 3 stories castle ?
+{"Build": {"schematic": {"has_height_": [5, 6], "has_name_": [7, 7]}}}
+
+can you please move to the top right corner .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 8]}}}}
+
+can you see a way to get out of this room ?
+{"Answer": {}}
+
+can you see any enemies nearby ?
+{"Answer": {}}
+
+can you show me where the nearest location is to mine gold .
+{"Answer": {}}
+
+can you sing me a song to calm my nerves ?
+{"Answer": {}}
+
+can you take me to the tallest tree .
+{"Answer": {}}
+
+can you tell humans how to stop global warming ?
+{"Answer": {}}
+
+can you tell me if anything is in the hole next to you ?
+{"Answer": {}}
+
+can you tell me the weather ?
+{"Answer": {}}
+
+can you tell me today date
+{"Answer": {}}
+
+can you tell me what the color of that object is ?
+{"Answer": {}}
+
+can you undo the explosion that broke my house ?
+{"Undo": {}}
+
+can you upgrade that axe for me ?
+{"Answer": {}}
+
+carry some of my inventory .
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+change color of this wood block to blue .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 4], "has_colour_": [7, 7], "has_name_": [5, 5]}}}
+
+change fence to an 8 foot fence .
+{"OtherAction": {"action_reference_object": {"has_height_": [4, 5], "has_name_": [1, 1]}}}
+
+change out the door for a window .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+change the bed in this room to be king size with a 4 poster canopy frame .
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+change the color of my car to purple
+{"OtherAction": {"action_reference_object": {"has_colour_": [7, 7], "has_name_": [5, 5]}}}
+
+check the bushes over there for rabbits .
+{"OtherAction": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+check to see what time my flight is to london .
+{"OtherAction": {"action_reference_object": {"has_name_": [6, 6]}}}
+
+chop down five trees
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [2, 2]}}}}
+
+chop down that tree
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+chop down that tree over there .
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+chop down the tree next to this house
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+clean
+{"OtherAction": {}}
+
+clean up the mess caused by the tornado .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+clear out the top two layers of the blocks so that we can redesign it slightly .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 8]}}}
+
+climb pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+climb the steps up the pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+climb those brick stairs .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}}
+
+climb to the top
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}}}
+
+climb to the top of the pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+climb up the brick pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_block_type_": [3, 3], "has_name_": [4, 4]}}}}
+
+climb up the hill .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+collect water
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+combine three different nuts to make an original butter .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+come build a house around me .
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [3, 3]}}}
+
+come to my location
+{"Move": {"location": {"location_type": "SpeakerPos"}}}
+
+come with me outside the house .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+complete boat sails construction .
+{"FreeBuild": {"schematic": {"has_name_": [1, 2]}}}
+
+complete building of the tower .
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+complete building the bridge that has been left unfinished .
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+complete building the castle .
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+complete building the house
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+complete building the wall .
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+complete construction of the green pyramid .
+{"FreeBuild": {"schematic": {"has_name_": [5, 5]}}}
+
+complete mining this obsidian for me will you ?
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+complete the brick house
+{"FreeBuild": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+complete the bridge
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+complete the bridge .
+{"FreeBuild": {"schematic": {"has_name_": [2, 2]}}}
+
+complete the bridge near the waterfall .
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+complete the construction of the church steeple at location 34:65:12 .
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}, "schematic": {"has_name_": [5, 6]}}}
+
+complete the house that we started .
+{"FreeBuild": {"schematic": {"has_name_": [2, 2]}}}
+
+complete the production of the unfinished home .
+{"FreeBuild": {"schematic": {"has_name_": [6, 6]}}}
+
+complete the red building at my location
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [3, 3]}}}
+
+complete the rest of the wall to this library
+{"FreeBuild": {"schematic": {"has_name_": [5, 5]}}}
+
+complete the roof
+{"FreeBuild": {"schematic": {"has_name_": [2, 2]}}}
+
+complete the roof of the structure .
+{"FreeBuild": {"schematic": {"has_name_": [2, 2]}}}
+
+complete the storage shed
+{"FreeBuild": {"schematic": {"has_name_": [2, 3]}}}
+
+complete the tower that you have been building
+{"FreeBuild": {"schematic": {"has_name_": [2, 2]}}}
+
+complete this replica painting of the mona lisa .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+complete this tower .
+{"FreeBuild": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+complete your flower picking
+{"Resume": {}}
+
+compound jumping
+{"Noop": {}}
+
+computer  resume building the town hall .
+{"Resume": {}}
+
+construct
+{"Noop": {}}
+
+construct a building near the closest tower .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "schematic": {"has_name_": [2, 2]}}}
+
+construct a furnace here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+construct a new pyramid using red and blue blocks .
+{"Build": {"schematic": {"has_block_type_": [5, 8], "has_name_": [3, 3]}}}
+
+construct a tower on top of the pyramid
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+construct a wall in front of the house .
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [2, 2]}}}
+
+construct for me from polished granite a ziggurat worthy of a babylonian god - king
+{"Build": {"schematic": {"has_block_type_": [4, 5], "has_name_": [7, 7]}}}
+
+construct new structures here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [2, 2]}}}
+
+copy 4 times the red square that is located over there
+{"Build": {"action_reference_object": {"has_colour_": [4, 4], "has_name_": [5, 5], "location": {"location_type": "SpeakerLook"}}}, "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}
+
+copy a new pyramid .
+{"Build": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+copy all of the paintings to put in the guest house .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 10]}}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+copy all the items to the left
+{"Build": {"action_reference_object": {"repeat": {"repeat_key": "ALL"}, "has_name_": [3, 3], "location": {"relative_direction": "LEFT"}}}}
+
+copy multiple diamond armor sets .
+{"Build": {"action_reference_object": {"has_block_type_": [2, 2], "has_name_": [3, 4]}}}
+
+copy must tax return information
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+copy that bed
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+copy that building i made
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+copy the block .
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+copy the design in front of you .
+{"Build": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+copy the ender dragon .
+{"Build": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+copy the greenhouse
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+copy the house using wood instead of brick .
+{"Build": {"action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+copy the pink clay house four more times on a row along the road .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [13, 13]}}, "action_reference_object": {"has_block_type_": [3, 3], "has_colour_": [2, 2], "has_name_": [4, 4], "repeat": {"repeat_key": "FOR", "repeat_count": [5, 5]}}}}
+
+copy the pyramid .
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+copy the red pyramid over there
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+copy the tree .
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+copy this mountain onto this empty plane .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+copy this structure .
+{"Build": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+could you climb the pyramid ?
+{"Answer": {}}
+
+could you please stop digging right away .
+{"Stop": {}}
+
+count the amount of ants in my backyard .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+craft a blanket from the wool you collected .
+{"Build": {"schematic": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+craft me a sword
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+create a barn under the cave
+{"Build": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+create a door
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+create a nether portal using the design that uses less obsidian .
+{"Build": {"schematic": {"has_block_type_": [10, 10], "has_name_": [2, 3]}}}
+
+create a new window for the house .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+create a palace to keep my purple unicorns in
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+create a pyramid shaped structure with gold blocks .
+{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [2, 2]}}}
+
+create a staircase with stone
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+create a stone pickaxe for me .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+create another window in the house .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+create some torches for some light .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+create three new mines next to the large tree
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "schematic": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+cut down the tree over there
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+cut down the trees that are lining the field .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+dance
+{"OtherAction": {}}
+
+deconstruct the purple pyramid
+{"Destroy": {"action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+delete all of the large grey rocks
+{"Destroy": {"action_reference_object": {"has_colour_": [5, 5], "has_name_": [6, 6], "has_size_": [4, 4]}}}
+
+demolish
+{"Destroy": {}}
+
+demolish the guest house in the backyard .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 3]}}}
+
+destroy
+{"Destroy": {}}
+
+destroy 2 trees .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+destroy a hole
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy a pile of trash .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 4]}}}
+
+destroy a structure .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy all caves located near the farmhouse
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy all creatures that come around at night .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy all enemy crops .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+destroy all of the surrounding walls .
+{"Destroy": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+destroy all of the walls .
+{"Destroy": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+destroy all the railroad tracks .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 4]}}}
+
+destroy all the red towers next to the mine .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_colour_": [3, 3], "has_name_": [4, 4]}}}
+
+destroy all the trees found in the backyard .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy all the trees in your way .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy all those small shrubs near the wooden house .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "action_reference_object": {"has_name_": [4, 4], "has_size_": [3, 3]}}}
+
+destroy all trees in this location
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy and rebuild the purple pyramid
+{"Destroy": {"action_reference_object": {"has_colour_": [4, 4], "has_name_": [5, 5]}}}
+
+destroy any tree stumps in your view .
+{"Destroy": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [2, 3]}}}
+
+destroy block in front of tree
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy building then dig next to it .
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy cactus in front of castle
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy clock
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destroy enemy house in the northwest .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [1, 2]}}}
+
+destroy every door .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy every enemy that comes near the village .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy one wall that is next to the garden so you can build a open air patio
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy that animal near my building
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy that fort
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy that fortress over there .
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy that skeleton mob spawner ahead of me !
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 4]}}}
+
+destroy that table
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy that wall in the house so the living room will seem much bigger .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy that wooden building over there
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the base of the structure so we can start over .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 5]}}}
+
+destroy the big brick box .
+{"Destroy": {"action_reference_object": {"has_block_type_": [3, 3], "has_name_": [4, 4], "has_size_": [2, 2]}}}
+
+destroy the black towers .
+{"Destroy": {"action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the blocks
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the bottom level of the red pyramid .
+{"Destroy": {"action_reference_object": {"has_colour_": [6, 6], "has_name_": [2, 7]}}}
+
+destroy the box .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the box by pounding it with your hand .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the brown pyramid over there .
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the building .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the building next to the river .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the building that 's in front of you .
+{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the building you are on .
+{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the dining room table
+{"Destroy": {"action_reference_object": {"has_name_": [2, 4]}}}
+
+destroy the door
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the door in the building .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the door on the side of this house .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the door to your right
+{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the enemy
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the entire pyramid with me so we can build a new one .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy the evidence .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the fence in front of you .
+{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the five buildings under the tree
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [2, 2]}}}}
+
+destroy the fort
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the green castle near the hill .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the hinges on the door so that it will fall down when opened .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the house .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the huge house where you are located
+{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+destroy the large forest to the south of the magic city .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 10]}}, "action_reference_object": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+destroy the large wall .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+destroy the locked wooden gate .
+{"Destroy": {"action_reference_object": {"has_block_type_": [3, 3], "has_name_": [4, 4]}}}
+
+destroy the nether portal .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy the next obstacle that you come across .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy the old colony
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy the pillar directly below you to return to ground level .
+{"Destroy": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the purple tower
+{"Destroy": {"action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the purple tower completely
+{"Destroy": {"action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the pyramid
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the pyramid .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the pyramid structure
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the rock
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the roof on the stable .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the southern cave entrance
+{"Destroy": {"action_reference_object": {"has_name_": [2, 4]}}}
+
+destroy the tower near the lake
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the tree .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the tree near the house
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the trees around the house
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall by breaking it down .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall in front of me so that i can proceed into the field .
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall in front of the castle .
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the wall to the north .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy the western wall of the building .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+destroy the wooden house
+{"Destroy": {"action_reference_object": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy the wooden staircase on the outside of the house .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}, "action_reference_object": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+destroy their base then get back .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy this building to ground level .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy this hill .
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy this wall
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy this wall so we can go through .
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy those bushes
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy those rocks over there
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+destroy three huts next to the water
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+destroy walls
+{"Destroy": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+destruct
+{"Destroy": {}}
+
+determine if the brown horse or the black horse is faster .
+{"Answer": {}}
+
+did you build that sweet pyramid ?
+{"Answer": {}}
+
+dig a hole in the backyard that is two feet deep
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "has_depth_": [8, 9]}}
+
+dig 20 levels down
+{"Dig": {"has_depth_": [1, 2]}}
+
+dig 20x20 hole .
+{"Dig": {"has_size_": [1, 1]}}
+
+dig 30 meters deep
+{"Dig": {"has_depth_": [1, 2]}}
+
+dig a 10 square meter hole right here
+{"Dig": {"location": {"location_type": "SpeakerPos"}, "has_size_": [2, 4]}}
+
+dig a 15 foot hole to build a subway station .
+{"Dig": {"has_depth_": [2, 3]}}
+
+dig a 2x1 hole all the way through the brick pyramid one time .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 10]}}, "has_size_": [2, 2]}}
+
+dig a 3 by 3 meter hole down as far as you can .
+{"Dig": {"has_depth_": [4, 4], "has_width_": [2, 2]}}
+
+dig a 3x3 hole
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a 3x3 hole at this spot .
+{"Dig": {"location": {"location_type": "SpeakerPos"}, "has_size_": [2, 2]}}
+
+dig a 3x4 hole in the dirt .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "has_size_": [2, 2]}}
+
+dig a 50 wide by 20 deep hole
+{"Dig": {"has_depth_": [5, 5], "has_width_": [2, 2]}}
+
+dig a big hole
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a deep hole in the ground .
+{"Dig": {"has_depth_": [2, 2]}}
+
+dig a deep hole to create a water well .
+{"Dig": {"has_depth_": [2, 2]}}
+
+dig a hole
+{"Dig": {}}
+
+dig a hole  then fill it in .
+{"Dig": {}}
+
+dig a hole .
+{"Dig": {}}
+
+dig a hole 1 mile down
+{"Dig": {"has_depth_": [3, 4]}}
+
+dig a hole 100 blocks deep .
+{"Dig": {"has_depth_": [3, 4]}}
+
+dig a hole 3 feet deep .
+{"Dig": {"has_depth_": [3, 4]}}
+
+dig a hole 3x3x3
+{"Dig": {"has_size_": [3, 3]}}
+
+dig a hole 6 blocks deep .
+{"Dig": {"has_depth_": [3, 5]}}
+
+dig a hole and fill it up with lava .
+{"Dig": {}}
+
+dig a hole around yourself
+{"Dig": {"location": {"location_type": "AgentPos"}}}
+
+dig a hole as deep as possible .
+{"Dig": {"has_depth_": [4, 6]}}
+
+dig a hole at your current position until i say stop .
+{"Dig": {"location": {"location_type": "AgentPos"}}}
+
+dig a hole by the end of the wall
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 8]}}}}
+
+dig a hole down until you see a different material .
+{"Dig": {}}
+
+dig a hole down until you see stone .
+{"Dig": {}}
+
+dig a hole for a ravine .
+{"Dig": {}}
+
+dig a hole for the foundation
+{"Dig": {}}
+
+dig a hole here
+{"Dig": {"location": {"location_type": "SpeakerPos"}}}
+
+dig a hole here .
+{"Dig": {"location": {"location_type": "SpeakerPos"}}}
+
+dig a hole in front of the pyramid .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}}}
+
+dig a hole in the dirt one foot deep .
+{"Dig": {"has_depth_": [6, 7]}}
+
+dig a hole in the green ground .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [5, 6]}}}}
+
+dig a hole in the ground
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig a hole in the ground .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig a hole in the ground so that water can flow through it
+{"Dig": {}}
+
+dig a hole in the shape of a square here .
+{"Dig": {}}
+
+dig a hole in the yard .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig a hole next to that wall
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+dig a hole next to the building
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+dig a hole next to the pyramid
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+dig a hole next to the pyramid .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+dig a hole next to the tree
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+dig a hole next to the tree .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+dig a hole straight down for 27 blocks
+{"Dig": {"has_depth_": [6, 7]}}
+
+dig a hole three by four by six
+{"Dig": {"has_depth_": [7, 7], "has_height_": [5, 5], "has_width_": [3, 3]}}
+
+dig a hole through the wall in front of you
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig a hole to store the extra supplies we ca n't carry
+{"Dig": {}}
+
+dig a hole to the left of steps for a swimming pool .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [7, 7]}}}}
+
+dig a hole to the left of the steps .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}}}
+
+dig a hole to the left of the tree .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}}}
+
+dig a hole to the right of the building .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [8, 8]}}}}
+
+dig a hole to the right of the red stairs .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [8, 9]}}}}
+
+dig a hole two feet deep
+{"Dig": {"has_depth_": [3, 4]}}
+
+dig a hole until you reach stone .
+{"Dig": {}}
+
+dig a hole where i can bury the treasure .
+{"Dig": {}}
+
+dig a large hole
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a large hole .
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a large hole at coordinates 13 63 45
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 8]}}, "has_size_": [2, 2]}}
+
+dig a large hole for a swimming pool .
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a large hole in my backyard .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "has_size_": [2, 2]}}
+
+dig a large hole next to the skeleton
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "has_size_": [2, 2]}}
+
+dig a large hole to create a pond .
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a large hole to the right of the stairs
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [9, 9]}}, "has_size_": [2, 2]}}
+
+dig a large moat around the pyramid .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "has_size_": [2, 2]}}
+
+dig a mine and look for coal .
+{"Dig": {}}
+
+dig a mine to the left of the house
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}}}
+
+dig a mine until you hit gravel
+{"Dig": {}}
+
+dig a root cellar
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig a small hole .
+{"Dig": {"has_size_": [2, 2]}}
+
+dig a trench 10 blocks long .
+{"Dig": {"has_width_": [3, 4]}}
+
+dig a trench under the bricks
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+dig a tunnel
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+dig a two meter hole
+{"Dig": {"has_depth_": [2, 3]}}
+
+dig a water well
+{"Dig": {}}
+
+dig a whole 2 spaces down
+{"Dig": {"has_depth_": [3, 4]}}
+
+dig all the flowers up to decorate the sqaure pyramid .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig behind the purple house .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "BACK", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+dig down 10 blocks
+{"Dig": {"has_depth_": [2, 3]}}
+
+dig down 10 more blocks .
+{"Dig": {"has_depth_": [2, 4]}}
+
+dig down 30 spaces .
+{"Dig": {"has_depth_": [2, 3]}}
+
+dig down for materials .
+{"Dig": {}}
+
+dig down until i tell you to stop .
+{"Dig": {}}
+
+dig every flower you can find .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+dig five holes .
+{"Dig": {}, "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}
+
+dig for diamonds with a pickax .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+dig for gold .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+dig for gold pieces .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+dig grave
+{"Dig": {}}
+
+dig hole next to castle
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}}}
+
+dig in a straight line until you reach the water .
+{"Dig": {}}
+
+dig in front of the stairs .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig in the corner to the left .
+{"Dig": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}
+
+dig me a hole .
+{"Dig": {}}
+
+dig me a pond and fill it with water .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig me several long tunnels .
+{"Dig": {"has_size_": [3, 3]}}
+
+dig out the floor of the building until you hit bedrock .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+dig some coal
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+dig straight down forever
+{"Dig": {}}
+
+dig the ground for built a new house
+{"Dig": {}}
+
+dig the hole under the house
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+dig three holes for me
+{"Dig": {}, "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}
+
+dig three holes to the left of the house
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}}, "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}
+
+dig under the yellow flower .
+{"Dig": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+dig up a flower .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig up all the grass
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+dig up anything you can find .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+dig up one of the yellow flowers .
+{"OtherAction": {"action_reference_object": {"has_colour_": [5, 5], "has_name_": [6, 6]}}}
+
+dig up some dirt
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig up the buried treasure .
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+dig up the closest food
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+dig up the dirt and find the hidden sword .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig up the foundation
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig up the ground to break out of that court yard .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+dig where you 're standing .
+{"Dig": {"location": {"location_type": "AgentPos"}}}
+
+dip a hole .
+{"Dig": {}}
+
+do i have a dragon sword in my inventory ?
+{"Answer": {}}
+
+do you have any weapons
+{"Answer": {}}
+
+do you know the way out of here ?
+{"Answer": {}}
+
+do you see an entrance to that house anywhere ?
+{"Answer": {}}
+
+do you seen anything that i need on my mining list nearby ?
+{"Answer": {}}
+
+does that bridge extend over a body of water ?
+{"Answer": {}}
+
+exit the building
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+fast
+{"Noop": {}}
+
+fill
+{"Fill": {}}
+
+fill a hole in the ground with sand blocks .
+{"Fill": {"action_reference_object": {"has_block_type_": [7, 8]}}}
+
+fill bot.0040414.63 's bag with wood .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [5, 5], "has_name_": [3, 3]}}}
+
+fill hole with milk
+{"Fill": {"action_reference_object": {"has_block_type_": [3, 3]}}}
+
+fill in the gaps of the wall
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+fill in the hole
+{"Fill": {}}
+
+fill in the missing pieces of the tower .
+{"FreeBuild": {"schematic": {"has_name_": [7, 7]}}}
+
+fill in the pit with dirt please
+{"Fill": {"action_reference_object": {"has_block_type_": [5, 5]}}}
+
+fill in the pit with lava .
+{"Fill": {"action_reference_object": {"has_block_type_": [5, 5]}}}
+
+fill the area with a blue box .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+fill the bag with the gold .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+fill the barn with hay for the cattle .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+fill the chest with 124 gold tokens .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+fill the entire room with stone .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [5, 5], "has_name_": [3, 3]}}}
+
+fill the ground with wood planks
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 5]}}}
+
+fill the hole by the house
+{"Fill": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+fill the hole in front of the red tower
+{"Fill": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_colour_": [7, 7]}}}
+
+fill the hole with 3 blocks of wood .
+{"Fill": {"action_reference_object": {"has_block_type_": [7, 7], "repeat": {"repeat_key": "FOR", "repeat_count": [4, 4]}}}}
+
+fill the hole with dirt
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with lava
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with lava .
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with rocks
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with sand .
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with water
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with water .
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the hole with water for a swimming pool
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the lake with more water .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+fill the moat with lava .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+fill the pit with water
+{"Fill": {"action_reference_object": {"has_block_type_": [4, 4]}}}
+
+fill the pyramid .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+fill the remaining portion of wall that you are standing under .
+{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [5, 5]}}}
+
+fill the table with water
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+fill the whole under the bridge .
+{"Fill": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+fill this bucket with lava
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 4], "has_name_": [2, 2]}}}
+
+fill this bucket with some water .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [5, 5], "has_name_": [2, 2]}}}
+
+fill this chest will all the carrots from the garden .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+fill up the ditches with me
+{"Fill": {}}
+
+fill up the hole with dirt .
+{"Fill": {"action_reference_object": {"has_block_type_": [5, 5]}}}
+
+fill up the wheel barrel with the dirt from the recently dug hole .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [7, 7], "has_name_": [3, 4]}}}
+
+find me a new way to make wood
+{"OtherAction": {"action_reference_object": {"has_name_": [7, 7]}}}
+
+find out how deep the stream is and if we can cross it by foot .
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+find the friend that is closest to me
+{"Answer": {}}
+
+find the patch of yellow flowers
+{"OtherAction": {"action_reference_object": {"has_colour_": [4, 4], "has_name_": [5, 5]}}}
+
+finish building bot.004041463 's pyramid .
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+finish building the brick walls surrounding our new flower garden .
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 9]}}, "schematic": {"has_block_type_": [3, 3], "has_name_": [4, 4]}}}
+
+finish building the house
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+finish constructing the stairs
+{"FreeBuild": {"schematic": {"has_name_": [3, 3]}}}
+
+finish the house i am working on .
+{"FreeBuild": {"schematic": {"has_name_": [2, 2]}}}
+
+gather
+{"Noop": {}}
+
+gather any food you can see .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+gather bricks to build a shelter
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+get a hammer and help me build a fence around the tree
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [11, 11]}}, "schematic": {"has_name_": [8, 8]}}}
+
+give me the current weather conditions for new york .
+{"Answer": {}}
+
+give me the type of the tree across the bridge
+{"Answer": {}}
+
+go ahead and find me the best route to town .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}, "action_reference_object": {"has_name_": [7, 7]}}}
+
+go build a library
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+go build that boat over on the lake
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [3, 3]}}}
+
+go chop me some wood
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+go count the amount of steel i have in storage
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [9, 9]}}, "action_reference_object": {"has_name_": [5, 5]}}}
+
+go dig for rare minerals
+{"Dig": {}}
+
+go get some stone and build a castle with it .
+{"Build": {"schematic": {"has_block_type_": [3, 3], "has_name_": [7, 7]}}}
+
+go into the next room
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 4]}}}}
+
+go kill the zombie
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+go make me some tea in the kitchen .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+go over to that tree .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}}}
+
+go tell me what 's over that hill
+{"Answer": {}}
+
+go to the general store and buy some gunpowder
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 4]}}, "action_reference_object": {"has_name_": [8, 8]}}}
+
+go to the roof and jump off of it .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}}}
+
+go to the top of the pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+go to the top of the stairs .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+go up the stairs
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+go up those stairs
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+good
+{"Noop": {}}
+
+good place
+{"Noop": {}}
+
+hand me that axe
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+have you seen the golden bowl ?
+{"Answer": {}}
+
+hello there  resume what you were doing earlier
+{"Resume": {}}
+
+help be construct a fort around this river
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "schematic": {"has_name_": [4, 4]}}}
+
+help me bring this brick over
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+help me build a castle
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a door .
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a garage
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a long wall .
+{"FreeBuild": {"schematic": {"has_name_": [5, 5], "has_size_": [4, 4]}}}
+
+help me build a mansion .
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a mountain
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a new wall between these two rooms .
+{"FreeBuild": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 9]}}, "schematic": {"has_name_": [5, 5]}}}
+
+help me build a wall .
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a wall for protection
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build a wall here .
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [4, 4]}}}
+
+help me build this foundation
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me build this pyramid .
+{"FreeBuild": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [4, 4]}}}
+
+help me build this staircase .
+{"FreeBuild": {"schematic": {"has_name_": [4, 4]}}}
+
+help me construct stairs here
+{"FreeBuild": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [3, 3]}}}
+
+help me craft as many arrows as we can
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+help me finish building this wall .
+{"FreeBuild": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [5, 5]}}}
+
+help me to move this drawer into the other room .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 9]}}, "action_reference_object": {"has_name_": [5, 5]}}}
+
+help me to spawn the objects
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+hey bot can you grab some wood for me ?
+{"OtherAction": {"action_reference_object": {"has_name_": [6, 6]}}}
+
+hey bot can you dig a 10 by 10 hole for me .
+{"Dig": {"has_height_": [8, 8], "has_width_": [6, 6]}}
+
+hey bot can you help me build a replica of the death star .
+{"Build": {"action_reference_object": {"has_name_": [11, 12]}}}
+
+hit the wall with that hammer .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+how about you copy the crops i planted to fill this whole plain ?
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [12, 12]}}, "action_reference_object": {"has_name_": [5, 5]}}}
+
+how big is the field we are in
+{"Answer": {}}
+
+how can i cross the river ?
+{"Answer": {}}
+
+how can i get to the backyard .
+{"Answer": {}}
+
+how deep is the atlantic ocean ?
+{"Answer": {}}
+
+how do i drop my iron ore ?
+{"Answer": {}}
+
+how do i get back to my house from here  mr . bot ?
+{"Answer": {}}
+
+how do i get back to the fort from here ?
+{"Answer": {}}
+
+how do i use a fishing rod ?
+{"Answer": {}}
+
+how do you craft a trident ?
+{"Answer": {}}
+
+how far away are the nearest trees ?
+{"Answer": {}}
+
+how far away are we from the nearest tree ?
+{"Answer": {}}
+
+how far away is that tall building in the distance ?
+{"Answer": {}}
+
+how far away is the barn from the house ?
+{"Answer": {}}
+
+how far away is the next supply store ?
+{"Answer": {}}
+
+how far is the river from the house ?
+{"Answer": {}}
+
+how i do craft a computer ?
+{"Answer": {}}
+
+how in the world can i build a ladder to get into the back upstairs window of the house
+{"Answer": {}}
+
+how many bushes are by the house ?
+{"Answer": {}}
+
+how many cars are in front of the large house on the corner ?
+{"Answer": {}}
+
+how many coal blocks are exposed in that cave ?
+{"Answer": {}}
+
+how many cows are outside in the field ?
+{"Answer": {}}
+
+how many diamonds do i have in all of my chests ?
+{"Answer": {}}
+
+how many exits are there in this room ?
+{"Answer": {}}
+
+how many flowers are around the perimeter of the house ?
+{"Answer": {}}
+
+how many flowers are planted in the garden ?
+{"Answer": {}}
+
+how many houses are there in the village ?
+{"Answer": {}}
+
+how many layers down in the mine are we ?
+{"Answer": {}}
+
+how many rooms are in this building ?
+{"Answer": {}}
+
+how many servants do i have ?
+{"Answer": {}}
+
+how many stair steps are needed ?
+{"Answer": {}}
+
+how many stairs are there ?
+{"Answer": {}}
+
+how many stairs will we climb ?
+{"Answer": {}}
+
+how many stories tall is that tower ahead ?
+{"Answer": {}}
+
+how many structures are there from here to the nearest water ?
+{"Answer": {}}
+
+how many villagers are in this village ?
+{"Answer": {}}
+
+how many windows does that house have ?
+{"Answer": {}}
+
+how much coal do we have ?
+{"Answer": {}}
+
+how much does that sword cost ?
+{"Answer": {}}
+
+how much gold does the enemy have ?
+{"Answer": {}}
+
+how much iron ore do we have ?
+{"Answer": {}}
+
+how much longer until sundown ?
+{"Answer": {}}
+
+how tall is the pyramid you are standing in front of ?
+{"Answer": {}}
+
+i 'm going to need some bricks
+{"Noop": {}}
+
+i 'm lost  how do i get back to my hut ?
+{"Answer": {}}
+
+i 'm ready for you to continue mining .
+{"Resume": {}}
+
+i am going to meet a friend at starbucks on main street
+{"Noop": {}}
+
+i am hiding  or maybe just taking a break!.
+{"Noop": {}}
+
+i need a lot of gravel .
+{"Noop": {}}
+
+i need another trash can for this room .
+{"Noop": {}}
+
+i need more pick axes do you know where i can find them ?
+{"Answer": {}}
+
+i need some purple flowers
+{"Noop": {}}
+
+i need the location of the nearest pond
+{"Answer": {}}
+
+i need to plant a tree  so help me to dig the ground .
+{"Dig": {}}
+
+i need you to destroy that tree over there
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [6, 6]}}}
+
+i need you to fix the walls in here for me
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [6, 6]}}}
+
+i need you to mine for diamonds . come back when you have 20 .
+{"OtherAction": {"action_reference_object": {"has_name_": [6, 6], "repeat": {"repeat_key": "FOR", "repeat_count": [13, 13]}}}}
+
+i want all of the containers to be made of shiny metal .
+{"Noop": {}}
+
+i want some answers for a set of questions .
+{"Noop": {}}
+
+i want some text information  so copy the information for me .
+{"Answer": {}}
+
+i want you to add a window on the north side of this house
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [13, 13]}}, "action_reference_object": {"has_name_": [6, 6]}}}
+
+i wonder what is behind this door ?
+{"Answer": {}}
+
+identify the safest place in the castle
+{"Answer": {}}
+
+if you know me  what is our secret word ?
+{"Answer": {}}
+
+in asking you to build me a roof for protection from the outside .
+{"Build": {"schematic": {"has_name_": [7, 7]}}}
+
+increase
+{"Noop": {}}
+
+is that a bird or a plane ?
+{"Answer": {}}
+
+is that a stone pyramid ?
+{"Answer": {}}
+
+is there a bridge over that water ?
+{"Answer": {}}
+
+is there a different tool that i can use to fly ?
+{"Answer": {}}
+
+is there a way out of this hole ?
+{"Answer": {}}
+
+is there any food ?
+{"Answer": {}}
+
+is there anyone else around ?
+{"Answer": {}}
+
+is there anyone else living nearby ?
+{"Answer": {}}
+
+is there anyone hiding around the corner of that building ?
+{"Answer": {}}
+
+is there anything on top of the pyramid ?
+{"Answer": {}}
+
+jump
+{"OtherAction": {}}
+
+jump the log .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+kill all those men
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+kill the monster beside the brook
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+lay the blue box down against the back wall .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+let 's build a desk .
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+let 's cut down all the flowers .
+{"Destroy": {"action_reference_object": {"has_name_": [6, 6]}}}
+
+let 's go fishing !
+{"Noop": {}}
+
+let 's go to get supplies .
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+let me know when our food storage starts getting low
+{"Answer": {}}
+
+let us build another building here
+{"Build": {"location": {"location_type": "SpeakerPos"}, "schematic": {"has_name_": [4, 4]}}}
+
+lets build a car to travel to the next farming town .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+lite me a fire
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+look at my agenda and tell me my schedule for today
+{"Answer": {}}
+
+look ut the window
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+make a copy of the building .
+{"Build": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+make a farm
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a giant tree made of tres
+{"Build": {"schematic": {"has_block_type_": [6, 6], "has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+make a hol to hide myself
+{"Dig": {}}
+
+make a new mine next to the water tower
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 8]}}, "schematic": {"has_name_": [3, 3]}}}
+
+make a pen for some cows .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make a railway
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+make all the roof houses purple .
+{"OtherAction": {"action_reference_object": {"has_colour_": [5, 5], "has_name_": [3, 4]}}}
+
+make an exact copy of that building .
+{"Build": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_name_": [6, 6]}}}
+
+make another room .
+{"Build": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+make me an ax .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+make one tower green and the other tower turquoise .
+{"OtherAction": {"action_reference_object": {"has_colour_": [3, 8], "has_name_": [2, 2]}}}
+
+make some more windows for the house .
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+make ten red chickens .
+{"OtherAction": {"action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+make the baby a bottle .
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+mine all the iron ore out of the cave .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_block_type_": [3, 3], "has_name_": [4, 4]}}}
+
+mine for quarry rock .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+move
+{"Move": {}}
+
+move 2000 spaces left .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [3, 3]}}}, "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}
+
+move a brick in front of the door .
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move around the pyramid counter clockwise .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move away from the enderman as fast as possible .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "AWAY", "location_reference_object": {"has_name_": [4, 4]}}}}
+
+move back to the door
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}}}
+
+move behind the blacksmith
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "BACK", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move closer to bot.0040414.63
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move dirt block
+{"OtherAction": {"action_reference_object": {"has_block_type_": [1, 1], "has_name_": [2, 2]}}}
+
+move forward
+{"Move": {"location": {"location_type": "AgentPos", "relative_direction": "FRONT"}}}
+
+move forward 10 blocks .
+{"Move": {"location": {"location_type": "AgentPos", "relative_direction": "FRONT"}}}
+
+move forward through the doorway .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}}}
+
+move from the kitchen to the living room .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 7]}}}}
+
+move from the porch into the kitchen
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+move in front of the purple chickens
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_colour_": [5, 5], "has_name_": [6, 6]}}}}
+
+move in front of the tower .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+move in the direction of bot.0040414.63 .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}}}
+
+move into a swamp biome
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+move into the next room .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+move my sword from the wooden building to the stone building .
+{"OtherAction": {"location": {"location_type": "Other"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move outside .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+move over to stand beneath the massive yellow pyramid
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "DOWN", "location_reference_object": {"has_name_": [8, 8]}}}}
+
+move ten steps forward
+{"Move": {"location": {"location_type": "AgentPos", "relative_direction": "FRONT"}}}
+
+move that chest closer to me .
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move that tree closer to the house .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the block outside
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the blocks out of the doorway
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the box in front of the door .
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the brick by the front door
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the brown block to the center of the room .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 9]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+move the car closer to the freeway
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the dirt .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+move the horses to the stable .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the large boulder .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+move the largest buildings close together .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3], "has_size_": [2, 2]}}}
+
+move the logs to the side of the house .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the objects where you are standing
+{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the table to the outer room .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the tools near the construction site
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the tree by the river
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move the tree in front of the building .
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move this tree to the left of the green house
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [7, 9]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+move through the doorway into the yellow room .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 7]}}}}
+
+move to be on top of the box .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [7, 7]}}}}
+
+move to next room to look for food or treasure
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}}}
+
+move to the character with blonde hair .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}
+
+move to the corner where that other guy is standing .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 9]}}}}
+
+move to the dining room please .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+move to the door .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move to the doorway
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move to the east side of the room
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}}}
+
+move to the east until you come to the water
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move to the end of the building .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 6]}}}}
+
+move to the field .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move to the green area
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+move to the kitchen and spawn a zombie
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move to the left .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT"}}}
+
+move to the left of your current location
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [6, 7]}}}}
+
+move to the location of the skeleton .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+move to the nearest source of wood
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 6]}}}}
+
+move to the other side of the hole
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}}}
+
+move to the southern most tower
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 5]}}}}
+
+move to the top of the pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+move to the top of the pyramid structure .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+move to the tree
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move toward the box on the floor .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move toward the exit .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move towards the closed door .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}}}
+
+move towards the house .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 3]}}}}
+
+move towards the tower in the southeast .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+move towards the window in the large house
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+nice job
+{"Noop": {}}
+
+nice work
+{"Noop": {}}
+
+not bad
+{"Noop": {}}
+
+oh  this building looks like a small pyramid .
+{"Noop": {}}
+
+open that door
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+open the door
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+open the door to the dungeon .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+open the door where you are standing
+{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+open the double doors in front of you .
+{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+pick up the box
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+place a dock on the river side .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+plant 10 trees .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+plant a garden of tomatoes cucumbers strawberries and blueberries .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [4, 8], "has_name_": [2, 2]}}}
+
+plant a tomato .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+plant a tree on top of the roof
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+plant two trees in the backyard
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+play music inside the room
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+please  tell me what the true meaning of life is .
+{"Answer": {}}
+
+please bring as many chickens as you can find to our base area .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [11, 12]}}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+please build a 16x16 pyramid using gold blocks .
+{"Build": {"schematic": {"has_block_type_": [6, 7], "has_name_": [4, 4], "has_size_": [3, 3]}}}
+
+please build a campfire on that location .
+{"Build": {"location": {"location_type": "SpeakerLook"}, "schematic": {"has_name_": [3, 3]}}}
+
+please build a wall at the edge of the grass
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 9]}}, "schematic": {"has_name_": [3, 3]}}}
+
+please build me a big boat .
+{"Build": {"schematic": {"has_name_": [5, 5], "has_size_": [4, 4]}}}
+
+please build us a new stable .
+{"Build": {"schematic": {"has_name_": [5, 5]}}}
+
+please change the barn to a shop .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+please come to the blue square .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 5]}}}}
+
+please destroy that brown pyramid for me .
+{"Destroy": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_colour_": [3, 3], "has_name_": [4, 4]}}}
+
+please destroy the box on the right .
+{"Destroy": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [4, 6]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+please destroy the entire game card
+{"Destroy": {"action_reference_object": {"has_name_": [4, 5]}}}
+
+please destroy the pyramid in block 2
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+please dig a hole to make me a bath !
+{"Dig": {}}
+
+please finish filling in the hole in front of the tree over there .
+{"Resume": {}}
+
+please help me build a tower
+{"FreeBuild": {"schematic": {"has_name_": [5, 5]}}}
+
+please locate the nearest building
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+please move up to the top of the pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [8, 8]}}}}
+
+please note that we need more marble to finish the interior of the throne room .
+{"OtherAction": {"action_reference_object": {"has_name_": [6, 6]}}}
+
+please pick up these blocks .
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+please place a window to the left of the green door
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [9, 10]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+please plant trees around the house
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+please spawn an additional energy potion for my character .
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+please spawn some wood so that i can build a house .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+please start a fire
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+please stop digging the hole
+{"Stop": {}}
+
+please stop moving !
+{"Stop": {}}
+
+please stop what you 're doing
+{"Stop": {}}
+
+please tag that furniture !
+{"Tag": {"location": {"location_type": "SpeakerLook"}, "tag": [3, 3]}}
+
+pour a concrete foundation
+{"OtherAction": {"action_reference_object": {"has_block_type_": [2, 2], "has_name_": [3, 3]}}}
+
+proceed
+{"Resume": {}}
+
+punch the wall until you destroy it completely .
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+put one bench around each side of the pyramid .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+put steps in front of this ledge so i can climb on top of it
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+put the box in the hole
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+remember that there is only one ladder .
+{"OtherAction": {"action_reference_object": {"has_name_": [6, 6]}}}
+
+remember that there was a monster behind the green tree
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "BACK", "location_reference_object": {"has_name_": [8, 9]}}, "action_reference_object": {"has_name_": [5, 5]}}}
+
+remove all of the large trees .
+{"Destroy": {"action_reference_object": {"has_name_": [5, 5], "has_size_": [4, 4]}}}
+
+remove the sheep located south of the barn
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+remove the structures at 52 18 30
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+remove this building
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+replace all wooden doors with steel doors .
+{"OtherAction": {"action_reference_object": {"has_block_type_": [2, 5], "has_name_": [3, 3]}}}
+
+replace this tree with a tower .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+resume approach to area just to the right of 27 black zombies .
+{"Resume": {}}
+
+resume building
+{"Resume": {}}
+
+resume building a house
+{"Resume": {}}
+
+resume building that structure to the north of the tree
+{"Resume": {}}
+
+resume building the bridge .
+{"Resume": {}}
+
+resume building the door
+{"Resume": {}}
+
+resume building the house
+{"Resume": {}}
+
+resume building the pyramid .
+{"Resume": {}}
+
+resume chopping down trees
+{"Resume": {}}
+
+resume climbing the stairs .
+{"Resume": {}}
+
+resume crafting a garden .
+{"Resume": {}}
+
+resume digging .
+{"Resume": {}}
+
+resume digging a hole .
+{"Resume": {}}
+
+resume digging holes in the area to the front of the blue skeleton
+{"Resume": {}}
+
+resume digging next to the green building .
+{"Resume": {}}
+
+resume digging the hole below the tree
+{"Resume": {}}
+
+resume digging the hole near the castle .
+{"Resume": {}}
+
+resume filling the tower
+{"Resume": {}}
+
+resume gathering fruit for dinner
+{"Resume": {}}
+
+resume gathering water
+{"Resume": {}}
+
+resume harvesting stone by the cave .
+{"Resume": {}}
+
+resume moving across the bedroom .
+{"Resume": {}}
+
+resume moving towards the grey form next to the tree .
+{"Resume": {}}
+
+resume moving until you get to the wall .
+{"Resume": {}}
+
+resume production of arrows .
+{"Resume": {}}
+
+resume search for silver .
+{"Resume": {}}
+
+resume singing
+{"Resume": {}}
+
+resume the construction of the home
+{"Resume": {}}
+
+resume the dialog with the miner npc
+{"Resume": {}}
+
+resume the digging action at the cavern next to the red dome
+{"Resume": {}}
+
+resume the excavation of the gray rock .
+{"Resume": {}}
+
+resume the excavation of the grey rock
+{"Resume": {}}
+
+resume the last thing that i asked you to do .
+{"Resume": {}}
+
+resume through the door to your right before we spawn in another place .
+{"Resume": {}}
+
+resume walking away
+{"Resume": {}}
+
+resume walking forward passed the structures
+{"Resume": {}}
+
+resume walking forward towards the green forest .
+{"Resume": {}}
+
+resume walking to the top of the pyramid .
+{"Resume": {}}
+
+resume work on highway over river
+{"Resume": {}}
+
+resurrect
+{"OtherAction": {}}
+
+resuscitate
+{"OtherAction": {}}
+
+return to base .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [2, 2]}}}}
+
+revert the construction of that temple .
+{"Undo": {}}
+
+robot build an armory on our side of the map .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 9]}}, "schematic": {"has_name_": [3, 3]}}}
+
+robot complete the building the mining station .
+{"FreeBuild": {"schematic": {"has_name_": [5, 6]}}}
+
+robot please build a moat for my mansion .
+{"Build": {"schematic": {"has_name_": [4, 4]}}}
+
+robot please complete the construction of my mansion .
+{"FreeBuild": {"schematic": {"has_name_": [7, 7]}}}
+
+robot  resume building the barracks .
+{"Resume": {}}
+
+robot spawn more cavalry men .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 4]}}}
+
+robot copy out all my document from icloud .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [7, 7]}}, "action_reference_object": {"has_name_": [5, 5]}}}
+
+robot please build me a fort to keep mu enemies out .
+{"Build": {"schematic": {"has_name_": [5, 5]}}}
+
+robot receive all my calls that comes in .
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+run as fast as you can .
+{"OtherAction": {}}
+
+run away from other players
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "AWAY", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+run circles around the chimney
+{"OtherAction": {"action_reference_object": {"has_name_": [4, 4]}}}
+
+scale the pyramid to the third step .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+see the whole place
+{"OtherAction": {}}
+
+see what time my dinner reservations are .
+{"Answer": {}}
+
+set off a firework outside
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 4]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+shift units so that all frontline regions have at least 75 % strength of neighboring enemy regions .
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+show me a cheesecake recipe .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 4]}}}
+
+show me a list of all craftable items
+{"Answer": {}}
+
+show me where i am
+{"Answer": {}}
+
+sit on the chair
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+spawn 10 pickaxes in front of me .
+{"OtherAction": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 10 soldiers in the field .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 100 spiders in the dungeon
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 11 fish into the lake .
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 20 chickens .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 25 yellow flowers in the garden .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "schematic": {"has_colour_": [2, 2], "has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 37 small red man - eating fish .
+{"Spawn": {"action_reference_object": {"has_colour_": [3, 3], "has_name_": [4, 7], "has_size_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 5 chickens .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 5 flowers .
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 50 wood blocks .
+{"Build": {"schematic": {"has_block_type_": [2, 2], "has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 6 cow to the left of the barn
+{"Spawn": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn 6 knights .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn a block .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+spawn a cow .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a creeper .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a doorway on the wall .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+spawn a goat in the grassy area to your left
+{"Spawn": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a helicopter .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+spawn a horse .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a ladder .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+spawn a large flock of sheep .
+{"Spawn": {"action_reference_object": {"has_name_": [5, 5], "has_size_": [2, 2]}}}
+
+spawn a new door
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+spawn a new pickaxe for mining
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+spawn a pickaxe to dig hole under wall behind you .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a pig .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a princess in the castle .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a red block
+{"Build": {"schematic": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+spawn a sledge hammer in your hand .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+spawn a squid .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn a tree on the tag on the mountain
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "schematic": {"has_name_": [2, 2]}}}
+
+spawn again .
+{"OtherAction": {}}
+
+spawn another robot assistant to help with the work of building
+{"Spawn": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+spawn apples please .
+{"OtherAction": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn block next to new tree
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 5]}}, "schematic": {"has_name_": [1, 1]}}}
+
+spawn enderman .
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn fifteen horses
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn five bots .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn five chickens near the entrance .
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn five new minions
+{"Spawn": {"action_reference_object": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn four shovels
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn in about 30 wood blocks for me
+{"Build": {"schematic": {"has_block_type_": [4, 4], "has_name_": [5, 5], "repeat": {"repeat_key": "FOR", "repeat_count": [3, 3]}}}}
+
+spawn in animals so we can start a farm .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn in the kitchen and build a wood oven for pizza .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}, "schematic": {"has_block_type_": [7, 7], "has_name_": [8, 8]}}}
+
+spawn in the northeast section of the map
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 7]}}}}
+
+spawn in the sky
+{"Spawn": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+spawn in villagers for my city .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn me a pick axe
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 4]}}}
+
+spawn milk
+{"Spawn": {"action_reference_object": {"has_name_": [1, 1]}}}
+
+spawn more trees for my garden .
+{"Build": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "schematic": {"has_name_": [2, 2]}}}
+
+spawn more wagons for carriage .
+{"Build": {"schematic": {"has_name_": [2, 2]}}}
+
+spawn one cow by each tree by the house
+{"Spawn": {"location": {"repeat": {"repeat_key": "ALL"}, "location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 5]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+spawn three new cities
+{"Build": {"schematic": {"has_name_": [3, 3], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn three small blue wombats
+{"Spawn": {"action_reference_object": {"has_colour_": [3, 3], "has_name_": [4, 4], "has_size_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn three villagers right where i am
+{"Spawn": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn twenty horses .
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn two blocks for me .
+{"Build": {"schematic": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn two cows
+{"Spawn": {"action_reference_object": {"has_name_": [2, 2], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spawn two new avatar bodies
+{"Spawn": {"action_reference_object": {"has_name_": [3, 4], "repeat": {"repeat_key": "FOR", "repeat_count": [1, 1]}}}}
+
+spin both the dice and tell me the dice numbers now .
+{"OtherAction": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+stand directly in front of the soldier who is trying to get in the front gate
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "FRONT", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+start a fire
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+start building a pyramid with rock blocks
+{"Build": {"schematic": {"has_block_type_": [5, 6], "has_name_": [3, 3]}}}
+
+start building an enclosure for my animals
+{"Build": {"schematic": {"has_name_": [3, 3]}}}
+
+start digging the hole for the pool again .
+{"Resume": {}}
+
+start digging the outline of the pool we 're going to put in .
+{"Dig": {}}
+
+start mining the coal near you .
+{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+stop
+{"Stop": {}}
+
+stop and wait for a few seconds .
+{"Stop": {}}
+
+stop breaking the stone .
+{"Stop": {}}
+
+stop building after reaching 10 feet high
+{"Stop": {}}
+
+stop building the door if a monster appears .
+{"Stop": {}}
+
+stop building the house
+{"Stop": {}}
+
+stop building the wall
+{"Stop": {}}
+
+stop climbing up the pyramid .
+{"Stop": {}}
+
+stop constructing the blue building
+{"Stop": {}}
+
+stop constructing the fence .
+{"Stop": {}}
+
+stop digging .
+{"Stop": {}}
+
+stop digging there
+{"Stop": {}}
+
+stop digging when you reach gravel .
+{"Stop": {}}
+
+stop filling the hole up with water
+{"Stop": {}}
+
+stop mining any more cobblestone .
+{"Stop": {}}
+
+stop mining diamonds in the cave
+{"Stop": {}}
+
+stop moving around .
+{"Stop": {}}
+
+stop moving those rocks
+{"Stop": {}}
+
+stop picking blueberries
+{"Stop": {}}
+
+stop placing tnt in that cave .
+{"Stop": {}}
+
+stop planting flowers along the river .
+{"Stop": {}}
+
+stop right there
+{"Stop": {}}
+
+stop searching for lumber .
+{"Stop": {}}
+
+stop spawning the man - eating fish .
+{"Stop": {}}
+
+stop the building of the foundations for the fortress .
+{"Stop": {}}
+
+stop the construction
+{"Stop": {}}
+
+stop the current action that you are undertaking .
+{"Stop": {}}
+
+stop the destruction process
+{"Stop": {}}
+
+stop the excavation of the quarry containing silver .
+{"Stop": {}}
+
+stop the water flow .
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 3]}}}
+
+stop walking towards the pyramid
+{"Stop": {}}
+
+stop walking when you get to the water .
+{"Stop": {}}
+
+stop working because you need to sleep .
+{"Stop": {}}
+
+stop working on the driveway until we get another load of cement delivered .
+{"Stop": {}}
+
+tag all the plants as poisonous .
+{"Tag": {"repeat": {"repeat_key": "ALL"}, "action_reference_object": {"has_name_": [3, 3]}, "tag": [5, 5]}}
+
+tag all the sheep as yellow
+{"Tag": {"repeat": {"repeat_key": "ALL"}, "action_reference_object": {"has_name_": [3, 3]}, "tag": [5, 5]}}
+
+tag door as home .
+{"Tag": {"action_reference_object": {"has_block_type_": [1, 1]}, "tag": [3, 3]}}
+
+tag every red flower in the current chunk
+{"Tag": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 7]}}, "action_reference_object": {"has_colour_": [2, 2], "has_name_": [3, 3]}}}
+
+tag every red plant as also being a flower .
+{"Tag": {"action_reference_object": {"has_block_type_": [3, 3], "has_colour_": [2, 2]}, "tag": [8, 8]}}
+
+tag that door as exit
+{"Tag": {"location": {"location_type": "SpeakerLook"}, "action_reference_object": {"has_block_type_": [2, 2]}, "tag": [4, 4]}}
+
+tag the box with the term gifts .
+{"Tag": {"tag": [2, 6]}}
+
+tag the horse armor .
+{"Tag": {"tag": [2, 3]}}
+
+tag the nearest swamp to my location
+{"Tag": {"action_reference_object": {"has_name_": [3, 3], "location": {"location_type": "SpeakerPos"}}}}
+
+tag the small witch standing to the right of the cauldron as tiny
+{"Tag": {"action_reference_object": {"location": {"location_type": "BlockObject", "relative_direction": "RIGHT", "location_reference_object": {"has_name_": [10, 10]}}, "has_size_": [2, 2], "has_name_": [3, 3]}, "tag": [12, 12]}}
+
+take a block away from the pyramid .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+take grass to the top level of the pyramid .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+take some dirt from the pile
+{"Destroy": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+take the box to a new residence for myself .
+{"OtherAction": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [5, 6]}}, "action_reference_object": {"has_name_": [2, 2]}}}
+
+teach me how to climb the wall
+{"Answer": {}}
+
+tear down the pyramid .
+{"Destroy": {"action_reference_object": {"has_name_": [3, 3]}}}
+
+tell me a recipe for chili .
+{"Answer": {}}
+
+tell me how i look in my gear .
+{"Answer": {}}
+
+tell me how many blocks are in the pyramid .
+{"Answer": {}}
+
+tell me how many blocks high the pyramid is
+{"Answer": {}}
+
+tell me how many zombies are around this corner .
+{"Answer": {}}
+
+tell me how to combine different minerals together .
+{"OtherAction": {"action_reference_object": {"has_name_": [6, 6]}}}
+
+tell me how to get to a healer shop
+{"Answer": {}}
+
+tell me how to increase wood production .
+{"Answer": {}}
+
+tell me if there is danger in this area
+{"Answer": {}}
+
+tell me the 5 most valuable items in the chest
+{"Answer": {}}
+
+tell me the color of the evening sky .
+{"Answer": {}}
+
+tell me what is the color of a butterfly .
+{"Answer": {}}
+
+tell me where i can cook the juiciest chicken so the character does n't die
+{"Answer": {}}
+
+tell me where the princess is being held captive .
+{"Answer": {}}
+
+tell me whether or not there is enough grass seed to plant the whole yard .
+{"Answer": {}}
+
+tell me which tower of the castle the princess was last seen inside of
+{"Answer": {}}
+
+that house has 50 stones in it
+{"Noop": {}}
+
+the building on the hill is pink .
+{"Noop": {}}
+
+the door to that building is locked  can you break it open ?
+{"Answer": {}}
+
+the grass is green
+{"Noop": {}}
+
+the shelter is made of bricks
+{"Noop": {}}
+
+the walls are gray .
+{"Noop": {}}
+
+there are five steps here .
+{"Noop": {}}
+
+there are glowing rocks around the corner
+{"Noop": {}}
+
+there is a secret passage in the corner .
+{"Noop": {}}
+
+there needs to be more flowers in that field
+{"Noop": {}}
+
+this pyramid is 5 platforms tall
+{"Noop": {}}
+
+this wall is in my way destroy it .
+{"Destroy": {"location": {"location_type": "SpeakerPos"}, "action_reference_object": {"has_name_": [1, 1]}}}
+
+throw the thing in your hand
+{"OtherAction": {"action_reference_object": {"has_name_": [2, 2]}}}
+
+try to climb that wall to the left of you .
+{"OtherAction": {"location": {"location_type": "AgentPos"}, "action_reference_object": {"has_name_": [4, 4]}}}
+
+undo cave you have just built
+{"Undo": {}}
+
+undo last house you built
+{"Undo": {}}
+
+undo last three actions .
+{"Undo": {}, "repeat": {"repeat_key": "FOR", "repeat_count": [2, 2]}}
+
+undo moving the house
+{"Undo": {}}
+
+undo the door placement .
+{"Undo": {}}
+
+undo the house that was just made .
+{"Undo": {}}
+
+undo the last action that was completed
+{"Undo": {}}
+
+undo the last three blocks you placed .
+{"Undo": {}, "repeat": {"repeat_key": "FOR", "repeat_count": [3, 3]}}
+
+undo the most recent objective .
+{"Undo": {}}
+
+undo the painting of the barn .
+{"Undo": {}}
+
+undo the placement of that stone
+{"Undo": {}}
+
+undo the previous command
+{"Undo": {}}
+
+undo the wall that we just constructed
+{"Undo": {}}
+
+undo tower building by water
+{"Undo": {}}
+
+undo what you just did
+{"Undo": {}}
+
+undo your last action  please .
+{"Undo": {}}
+
+up jump 3 times .
+{"Move": {"location": {"location_type": "AgentPos", "relative_direction": "UP"}, "repeat": {"repeat_key": "FOR", "repeat_count": [2, 2]}}}
+
+use the shovel to dig up the tree nearest to the house in the back yard .
+{"Destroy": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [10, 15]}}, "action_reference_object": {"has_name_": [7, 7]}}}
+
+very good excelent work
+{"Noop": {}}
+
+very nice
+{"Noop": {}}
+
+walk around the pyramid .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+walk down the hallway .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 3]}}}}
+
+walk forward until you reach the forest
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [6, 6]}}}}
+
+walk outside through the double doors please
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [1, 1]}}}}
+
+walk over to the dirt pile
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [4, 5]}}}}
+
+walk over to the square structure
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 5]}}}}
+
+walk through the door to the left into the next room
+{"Move": {"location": {"location_type": "BlockObject", "relative_direction": "LEFT", "location_reference_object": {"has_name_": [9, 10]}}}}
+
+walk to the open door .
+{"Move": {"location": {"location_type": "BlockObject", "location_reference_object": {"has_name_": [3, 4]}}}}
+
+we 'll need to build a fire for the night so fetch me some fire wood .
+{"OtherAction": {"action_reference_object": {"has_name_": [14, 15]}}}
+
+we lost our dog yesterday  kindly help dig a grave so that we can put her to rest .
+{"Dig": {}}
+
+we need more crops at my main outpost .
+{"Noop": {}}
+
+we should turn around and get out of here .
+{"Noop": {}}
+
+what 's that object up ahead ?
+{"Answer": {}}
+
+what animal is next to the tree .
+{"Answer": {}}
+
+what are my coordinates ?
+{"Answer": {}}
+
+what are the rules of the game ?
+{"Answer": {}}
+
+what color are the drapes in the living room ?
+{"Answer": {}}
+
+what color is my character 's shirt ?
+{"Answer": {}}
+
+what color is the bridge that connects the island ?
+{"Answer": {}}
+
+what color is the building in front of you ?
+{"Answer": {}}
+
+what color is the man ?
+{"Answer": {}}
+
+what color is this wall ?
+{"Answer": {}}
+
+what direction are we heading ?
+{"Answer": {}}
+
+what do you see when you climb up the blocks ?
+{"Answer": {}}
+
+what field are the mushrooms in ?
+{"Answer": {}}
+
+what flowers are in this are ?
+{"Answer": {}}
+
+what food do i have to cook with ?
+{"Answer": {}}
+
+what happened to the glowing orbs in the sky ?
+{"Answer": {}}
+
+what is behind and slightly to the left of the pyramid ?
+{"Answer": {}}
+
+what is behind the door ?
+{"Answer": {}}
+
+what is behind this door ?
+{"Answer": {}}
+
+what is beyond that doorway ?
+{"Answer": {}}
+
+what is cooking in the kitchen ?
+{"Answer": {}}
+
+what is in the chest on the left side of the room
+{"Answer": {}}
+
+what is on the other side of the hills
+{"Answer": {}}
+
+what is outside those windows ?
+{"Answer": {}}
+
+what is that creature in the valley ?
+{"Answer": {}}
+
+what is that structure to the right of the river ?
+{"Answer": {}}
+
+what is the address to this house ?
+{"Answer": {}}
+
+what is the best route to the nearest city ?
+{"Answer": {}}
+
+what is the best way to build a roller coaster ?
+{"Answer": {}}
+
+what is the color of each flower in the field ?
+{"Answer": {}}
+
+what is the crafting recipe for a regeneration 2 potion ?
+{"Answer": {}}
+
+what is the geometric shape of every object in the house ?
+{"Answer": {}}
+
+what is the green shiny object over there called ?
+{"Answer": {}}
+
+what is the height of this room ?
+{"Answer": {}}
+
+what is the location of the giant house
+{"Answer": {}}
+
+what is the most common breed of cow around here ?
+{"Answer": {}}
+
+what is the most expensive ore
+{"Answer": {}}
+
+what is the most valuable resource ?
+{"Answer": {}}
+
+what is the name of the monster standing by the tree ?
+{"Answer": {}}
+
+what is the opposite of screaming ?
+{"Answer": {}}
+
+what is the population of the town on hill 12 ?
+{"Answer": {}}
+
+what is the time ?
+{"Answer": {}}
+
+what is the weather forecast for tomorrow ?
+{"Answer": {}}
+
+what is the weather tomorrow
+{"Answer": {}}
+
+what is the weight of a person in space ?
+{"Answer": {}}
+
+what is thime capital of michigan
+{"Answer": {}}
+
+what is under those stairs
+{"Answer": {}}
+
+what items are in the house up ahead ?
+{"Answer": {}}
+
+what kind of business is on the corner of the next street over
+{"Answer": {}}
+
+what kind of dragon is in the cave ?
+{"Answer": {}}
+
+what kind of flowers are those ?
+{"Answer": {}}
+
+what kind of tree should we plant here ?
+{"Answer": {}}
+
+what letters form this five letter word .
+{"Answer": {}}
+
+what material are these stairs made out of ?
+{"Answer": {}}
+
+what material is that in front of me ?
+{"Answer": {}}
+
+what other materials do i need to craft red fabric dye ?
+{"Answer": {}}
+
+what position is the sun ?
+{"Answer": {}}
+
+what shade of colors is the sky right now ?
+{"Answer": {}}
+
+what shape is the container to your left
+{"Answer": {}}
+
+what time does it get dark ?
+{"Answer": {}}
+
+what time does the event start ?
+{"Answer": {}}
+
+what type of trees are nearby ?
+{"Answer": {}}
+
+what was the color of car near the tree ?
+{"Answer": {}}
+
+what weapon can i use to kill zombies ?
+{"Answer": {}}
+
+what were the coordinates of my building ?
+{"Answer": {}}
+
+when was the last earthquake in my city ?
+{"Answer": {}}
+
+when will it be night time ?
+{"Answer": {}}
+
+where am i ?
+{"Answer": {}}
+
+where are my cats ?
+{"Answer": {}}
+
+where are the apple trees at ?
+{"Answer": {}}
+
+where are you mining ?
+{"Answer": {}}
+
+where can i find herbs ?
+{"Answer": {}}
+
+where can i find more gold ?
+{"Answer": {}}
+
+where can i find water to drink ?
+{"Answer": {}}
+
+where can i get supplies for the door .
+{"Answer": {}}
+
+where can i sleep that is safe ?
+{"Answer": {}}
+
+where did i drop my shovel ?
+{"Answer": {}}
+
+where in town is the blacksmith ?
+{"Answer": {}}
+
+where is my shirt ?
+{"Answer": {}}
+
+where is the closest pizza place ?
+{"Answer": {}}
+
+where is the coal ?
+{"Answer": {}}
+
+where is the door ?
+{"Answer": {}}
+
+where is the house located ?
+{"Answer": {}}
+
+where is the main entrance of the temple ?
+{"Answer": {}}
+
+where is the mcdonald 's ?
+{"Answer": {}}
+
+where is the nearest body of water ?
+{"Answer": {}}
+
+where is the nearest cave ?
+{"Answer": {}}
+
+where is the nearest crossroads ?
+{"Answer": {}}
+
+where is the nearest exit ?
+{"Answer": {}}
+
+where is the nearest exit out of this large labyrinth ?
+{"Answer": {}}
+
+where is the nearest hardware store ?
+{"Answer": {}}
+
+where is the nearest lake or river with drinkable water ?
+{"Answer": {}}
+
+where is the nearest overlook
+{"Answer": {}}
+
+where is the nearest river ?
+{"Answer": {}}
+
+where is the nearest tree ?
+{"Answer": {}}
+
+where is the nearest water supply ?
+{"Answer": {}}
+
+where is the next mine .
+{"Answer": {}}
+
+where is the player [ in - game name ] located ?
+{"Answer": {}}
+
+where is the river ?
+{"Answer": {}}
+
+where is the well with the syrup
+{"Answer": {}}
+
+where should i sleep ?
+{"Answer": {}}
+
+where should we go next
+{"Answer": {}}
+
+where should we place our chimney ?
+{"Answer": {}}
+
+which chest holds the key to the front door ?
+{"Answer": {}}
+
+which move do you suggest we try next ?
+{"Answer": {}}
+
+which of my weapons will do the most damage to the boss on this level ?
+{"Answer": {}}
+
+which way to the kingdom
+{"Answer": {}}
+
+which way was my main base ?
+{"Answer": {}}
+
+who are the ninjas working for ?
+{"Answer": {}}
+
+who is hiding behind the red building ?
+{"Answer": {}}
+
+who is the highest ranking player in the game ?
+{"Answer": {}}
+
+who is the smartest person on earth ?
+{"Answer": {}}
+
+why is it so dark ?
+{"Answer": {}}
+
+would you check if my armor is compatible enough with this enchantment so that i can augment my equipment ?
+{"OtherAction": {"action_reference_object": {"has_name_": [5, 5]}}}
+
+would you go to work for me but give me the money for the work you have done ?
+{"Answer": {}}
+
+yell at the person on top of the wall . look up with your flashlight !
+{"OtherAction": {"location": {"location_type": "BlockObject", "relative_direction": "UP", "location_reference_object": {"has_name_": [8, 8]}}, "action_reference_object": {"has_name_": [3, 3]}}}
+
+yo robot  what kind of eggs should we have for breakfast today  red  green or purple ?
+{"Answer": {}}
+
+you need to finish moving those objects
+{"Resume": {}}
+
