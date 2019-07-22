@@ -1,6 +1,6 @@
 The goal of this project is to build an intelligent, collaborative assistant bot in the game of [Minecraft](https://www.minecraft.net/en-us/)<sup>1</sup> that can perform a wide variety of tasks specified by human players. Its primary purpose is to be a tool for artifical intelligence researchers interested in grounded dialogue and interactive learning. This project is in active development.
 
-A detailed outline and documentation is available in [this paper](https://research.fb.com/publications/craftassist-a-framework-for-dialogue-enabled-interactive-agents/)
+A detailed outline and documentation is available in [this paper](https://arxiv.org/abs/1907.08584)
 
 This release is motivated by a long-term research agenda described [here](https://research.fb.com/publications/why-build-an-assistant-in-minecraft/).
 
@@ -105,7 +105,7 @@ Use the `w`, `a`, `s`, and `d` keys to navigate, left and right mouse clicks to 
 
 ## Datasets
 
-Download links to the datasets described in section 6 of [Technical Whitepaper](https://research.fb.com/publications/craftassist-a-framework-for-dialogue-enabled-interactive-agents/) are provided here:
+Download links to the datasets described in section 6 of [Technical Whitepaper](https://arxiv.org/abs/1907.08584) are provided here:
 
 - **The house dataset**: https://craftassist.s3-us-west-2.amazonaws.com/pubr/house_data.tar.gz
 - **The segmentation dataset**: https://craftassist.s3-us-west-2.amazonaws.com/pubr/instance_segmentation_data.tar.gz
@@ -115,7 +115,18 @@ In the root of each tarball is a README that details the file structure containe
 
 ## Citation
 
-If you would like to cite this repository in your research, please cite [the CraftAssist paper](https://research.fb.com/publications/craftassist-a-framework-for-dialogue-enabled-interactive-agents/).
+If you would like to cite this repository in your research, please cite [the CraftAssist paper](https://arxiv.org/abs/1907.08584).
+
+```
+@misc{gray2019craftassist,
+    title={CraftAssist: A Framework for Dialogue-enabled Interactive Agents},
+    author={Jonathan Gray and Kavya Srinet and Yacine Jernite and Haonan Yu and Zhuoyuan Chen and Demi Guo and Siddharth Goyal and C. Lawrence Zitnick and Arthur Szlam},
+    year={2019},
+    eprint={1907.08584},
+    archivePrefix={arXiv},
+    primaryClass={cs.AI}
+}
+```
 
 ## License
 
