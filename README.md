@@ -84,8 +84,8 @@ Minecraft has recently release v1.13, and our Cuberite system supports at most v
 
 ## Running the interactive V0 agent
 
-Assuming you have set up the [Cuberite server](https://github.com/fairinternal/minecraft#run-the-cuberite-instance)
-and the [client](https://github.com/fairinternal/minecraft#visualization), in a separate tab, run:
+Assuming you have set up the [Cuberite server](https://github.com/facebookresearch/craftassist#run-the-cuberite-instance)
+and the [client](https://github.com/facebookresearch/craftassist#connecting-your-minecraft-game-client-so-you-can-see-whats-happening), in a separate tab, run:
 
 ```
 python ./python/craftassist/craftassist_agent.py
