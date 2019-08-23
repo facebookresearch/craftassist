@@ -18,6 +18,7 @@ Make sure the following packages have already been installed before moving on:
 * Glog
 * Boost
 * Eigen
+* gcc version: 7.4.0 on ubuntu 18.04
 * For Mac users:
   * LLVM version < 10 to successfully use clang. [Working with multiple versions of Xcode](https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc).
 
