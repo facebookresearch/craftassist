@@ -21,6 +21,25 @@ Make sure the following packages have already been installed before moving on:
 * gcc version: 7.4.0 on ubuntu 18.04
 * For Mac users:
   * LLVM version < 10 to successfully use clang. [Working with multiple versions of Xcode](https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc).
+  
+### Python Requirements: Using A Conda Environment
+To build a conda environment that supports this release:
+```
+# Create a new env and install pip
+conda create -n minecraft_env
+conda activate minecraft_env
+conda install pip
+
+# The requirements.txt contains some reqs that need to be installed with conda 
+# and others that need to be installed with pip.  This switches between these 
+# two installation methods
+while read requirement;
+    do conda install --yes $requirement || pip install $requirement;
+done < requirements.txt
+pip install ipdb
+conda install pytorch torchvision -c pytorch
+```
+Then activate this environment whenever you want to run the agent.
 
 ### Install git-lfs
 
