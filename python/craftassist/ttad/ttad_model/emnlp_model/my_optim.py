@@ -123,7 +123,7 @@ class TreeLoss(_Loss):
         # aggregate
         res = OrderedDict()
         res["loss"] = span_loss + pres_loss + cat_loss
-        res["accuracy"] = (span_accu + pres_accu + cat_accu) == 3
+        res["accuracy"] = (span_accu.long() + pres_accu.long() + cat_accu.long()) == 3
         res["presence_loss"] = pres_loss
         res["categorical_loss"] = cat_loss
         res["span_loss"] = span_loss
@@ -155,10 +155,10 @@ def run_epoch(data_loader, model, loss, w2i, args, mode="train", data_type="", o
     for i in range(n_batches):
         st_time = time()
         batch_list = data_loader.next_batch(args.batch_size, mode, data_type)
-        print("time for next batch: %r" % (time() - st_time))
+        # print("time for next batch: %r" % (time() - st_time))
         st_time = time()
         batch_list_cp = copy.deepcopy(batch_list)
-        print("time for copy: %r" % (time() - st_time))
+        # print("time for copy: %r" % (time() - st_time))
         st_time = time()
         # make batch on the deepcopy
         s_ids, s_mask, s_len, t_list = make_batch(
@@ -167,30 +167,30 @@ def run_epoch(data_loader, model, loss, w2i, args, mode="train", data_type="", o
             args.cuda,
             sentence_noise=args.sentence_noise if mode == "train" else 0.0,
         )
-        print("time for make batch: %r" % (time() - st_time))
+        # print("time for make batch: %r" % (time() - st_time))
         st_time = time()
         # make labels and active mask
         active_nodes = model.make_labels(t_list, args.cuda)
-        print("time for make labels: %r" % (time() - st_time))
+        # print("time for make labels: %r" % (time() - st_time))
         st_time = time()
         # run model
         active_nodes_scores = model(s_ids, s_mask, s_len, recursion=args.recursion)
-        print("time for fwd pass: %r" % (time() - st_time))
+        # print("time for fwd pass: %r" % (time() - st_time))
         st_time = time()
         # compute loss
         loss_dct = loss(active_nodes)
-        print("time for computing loss: %r" % (time() - st_time))
+        # print("time for computing loss: %r" % (time() - st_time))
         st_time = time()
         loss_val = loss_dct["loss"].sum() / loss_dct["loss"].shape[0]
-        print("time  for computing loss val: %r" % (time() - st_time))
+        # print("time for computing loss val: %r" % (time() - st_time))
         st_time = time()
         if optimizer is not None:
             optimizer.zero_grad()
             loss_val.backward(retain_graph=True)
-            print("time for loss backward: %r" % (time() - st_time))
+            # print("time for loss backward: %r" % (time() - st_time))
             st_time = time()
             optimizer.step()
-            print("time for opt step: %r" % (time() - st_time))
+            # print("time for opt step: %r" % (time() - st_time))
             st_time = time()
             data_loader.update_buffer(
                 [
@@ -199,7 +199,7 @@ def run_epoch(data_loader, model, loss, w2i, args, mode="train", data_type="", o
                     if loss_dct["accuracy"][j].item() == 0
                 ]
             )
-            print("time for update buffer: %r" % (time() - st_time))
+            # print("time for update buffer: %r" % (time() - st_time))
 
         for k, v in loss_dct.items():
             global_dct[k] = global_dct.get(k, 0.0) + v.sum().item()
@@ -381,7 +381,14 @@ def compute_stats(
                 if type(prediction[k]) == dict:
                     # true positive
                     correct_internal += 1
-                total_internal, correct_internal, total_str, correct_str, total_span, correct_span = compute_stats(
+                (
+                    total_internal,
+                    correct_internal,
+                    total_str,
+                    correct_str,
+                    total_span,
+                    correct_span,
+                ) = compute_stats(
                     v,
                     prediction[k],
                     total_internal,
@@ -392,7 +399,14 @@ def compute_stats(
                     correct_span,
                 )
             else:
-                total_internal, correct_internal, total_str, correct_str, total_span, correct_span = compute_stats(
+                (
+                    total_internal,
+                    correct_internal,
+                    total_str,
+                    correct_str,
+                    total_span,
+                    correct_span,
+                ) = compute_stats(
                     v,
                     {},
                     total_internal,
@@ -434,12 +448,22 @@ def compute_precision_recall(model, examples, w2i, args):
     micro_stats_total["span"] = [0.0, 0.0, 0.0]
 
     for sentence, ground_truth, prediction in predicted:  # each example
-        total_intern_recall, tp_intern_recall, total_str_recall, tp_str_recall, total_span_recall, tp_span_recall = compute_stats(
-            ground_truth, prediction, 0, 0, 0, 0, 0, 0
-        )
-        total_intern_prec, tp_intern_prec, total_str_prec, tp_str_prec, total_span_prec, tp_span_prec = compute_stats(
-            prediction, ground_truth, 0, 0, 0, 0, 0, 0
-        )
+        (
+            total_intern_recall,
+            tp_intern_recall,
+            total_str_recall,
+            tp_str_recall,
+            total_span_recall,
+            tp_span_recall,
+        ) = compute_stats(ground_truth, prediction, 0, 0, 0, 0, 0, 0)
+        (
+            total_intern_prec,
+            tp_intern_prec,
+            total_str_prec,
+            tp_str_prec,
+            total_span_prec,
+            tp_span_prec,
+        ) = compute_stats(prediction, ground_truth, 0, 0, 0, 0, 0, 0)
         stats_map = {}
         stats_map["intern"] = [
             tp_intern_prec,

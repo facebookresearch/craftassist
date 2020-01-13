@@ -139,6 +139,9 @@ class ActionTree:
                 child_node = node.add_int_node(k)
                 self._add_subtree_dict(child_node, val)
             else:
+                if k == "location":
+                    print(sub_tree)
+                    raise NotImplementedError
                 node.add_leaf_node(k, val)
 
     def build_from_list(self, tree_list):

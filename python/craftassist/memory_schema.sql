@@ -12,6 +12,17 @@ CREATE TABLE Memories (
 
 
 
+CREATE TABLE BlockTypes (
+    uuid            NCHAR(36)   NOT NULL,
+    type_name       VARCHAR(32) NOT NULL,
+    bid             TINYINT     NOT NULL,
+    meta            TINYINT     NOT NULL,
+
+    FOREIGN KEY(uuid) REFERENCES Memories(uuid) ON DELETE CASCADE
+);
+
+
+
 CREATE TABLE BlockObjects (
     uuid            NCHAR(36)   NOT NULL,
     x               INTEGER     NOT NULL,

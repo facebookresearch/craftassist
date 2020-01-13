@@ -185,6 +185,7 @@ class ActionTreePrediction(nn.Module):
         self._make_modules_recursion(self.root_node)
 
     def _make_modules_recursion(self, node):
+        # print(len(self.node_list), node.name, node.node_type, node.node_id)
         if self.collapse and node.name in self.module_dict:
             node.predictor = self.module_dict[node.name]
         else:

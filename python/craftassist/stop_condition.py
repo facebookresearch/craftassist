@@ -14,6 +14,7 @@ class StopCondition:
 class NeverStopCondition(StopCondition):
     def __init__(self, agent):
         super().__init__(agent)
+        self.name = "never"
 
     def check(self):
         return False
@@ -23,6 +24,7 @@ class AgentAdjacentStopCondition(StopCondition):
     def __init__(self, agent, bid):
         super().__init__(agent)
         self.bid = bid
+        self.name = "adjacent_block"
 
     def check(self):
         B = self.agent.get_local_blocks(1)

@@ -23,6 +23,9 @@ class DigSomeShape(TemplateObject):
         shape_type = DigShapeAny if pick_random(0.8) else DigShapeHole
         self._child = shape_type(node=node, template_attr=template_attr)
 
+    def add_generate_args(self, index=0, templ_index=0):
+        self._child.add_generate_args(index=index, templ_index=templ_index)
+
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         return self._child.generate_description(arg_index=arg_index, index=index)
 
@@ -32,18 +35,26 @@ commands like : make a hole , dig a mine"""
 
 
 class DigShapeHole(TemplateObject):
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
+    def add_generate_args(self, index=0, templ_index=0):
+        self._phrase = None
+        this_phrase = None
+
         template_name = get_template_names(self, templ_index)
         plural = False
         phrase = random.choice(dig_shapes)
-
+        this_phrase = phrase
         if "RepeatCount" in template_name:
             phrase = make_plural(random.choice(dig_shapes))
+            this_phrase = phrase
             plural = True
         if not plural and (template_name[index - 1] not in ["DigDimensions", "DigAbstractSize"]):
+            this_phrase = phrase
             phrase = random.choice([phrase, prepend_a_an(phrase)])
+        self.node.schematic["has_name"] = this_phrase
+        self._phrase = phrase
 
-        return phrase
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self._phrase
 
 
 """This template object covers a variety of dig shape types and is more general
@@ -52,36 +63,45 @@ than DigShapeHole. It can also lead to generations like: 'dig down until you hit
 
 
 class DigShapeAny(TemplateObject):
-    def generate_description(self, arg_index=0, index=0, previous_text=None, templ_index=0):
-        template_name = get_template_names(self, templ_index)
-
+    def add_generate_args(self, index=0, templ_index=0):
+        self._phrase = None
+        template_name = get_template_names(self, templ_index=0)
+        this_phrase = None
         if "RepeatCount" in template_name:
             phrase = make_plural(random.choice(dig_shapes))
+            this_phrase = phrase
         elif "DownTo" in template_name:
-            phrase = random.choice(
-                [random.choice(dig_shapes + ["grass"]), "a " + random.choice(dig_shapes)]
-            )
+            if pick_random():
+                this_phrase = random.choice(dig_shapes + ["grass"])
+                phrase = this_phrase
+            else:
+                this_phrase = random.choice(dig_shapes)
+                phrase = "a " + this_phrase
         elif template_name[index - 1] in ["DigDimensions", "DigAbstractSize"]:
             phrase = random.choice(dig_shapes)
+            this_phrase = phrase
         elif index + 1 < len(template_name) and template_name[index + 1] == "NumBlocks":
-            phrase = random.choice(
-                [
-                    random.choice(dig_shapes + ["under ground", "grass"]),
-                    "a " + random.choice(dig_shapes),
-                ]
-            )
+            if pick_random():
+                this_phrase = random.choice(dig_shapes + ["under ground", "grass"])
+                phrase = this_phrase
+            else:
+                this_phrase = random.choice(dig_shapes)
+                phrase = "a " + this_phrase
         else:
-            phrase = random.choice(
-                [
-                    random.choice(
-                        dig_shapes
-                        + ["ground", "into ground", "under ground", "under grass", "grass", "down"]
-                    ),
-                    "a " + random.choice(dig_shapes),
-                ]
-            )
+            if pick_random():
+                this_phrase = random.choice(
+                    dig_shapes
+                    + ["ground", "into ground", "under ground", "under grass", "grass", "down"]
+                )
+                phrase = this_phrase
+            else:
+                this_phrase = random.choice(dig_shapes)
+                phrase = "a " + this_phrase
+        self.node.schematic["has_name"] = this_phrase
+        self._phrase = phrase
 
-        return phrase
+    def generate_description(self, arg_index=0, index=0, previous_text=None, templ_index=0):
+        return self._phrase
 
 
 """This template object assigns the dimensions: length, width and depth for
@@ -90,22 +110,29 @@ what needs to be dug."""
 
 class DigDimensions(TemplateObject):
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.has_length = random.choice(self.template_attr.get("length", range(2, 15)))
-        self.node.has_width = random.choice(self.template_attr.get("width", range(15, 30)))
-        self.node.has_depth = (
-            random.choice(self.template_attr.get("depth", range(30, 45)))
-            if pick_random()
-            else None
+        self.node.schematic["has_length"] = random.choice(
+            self.template_attr.get("length", range(2, 15))
         )
+        width_val = None
+        if pick_random():
+            width_val = random.choice(self.template_attr.get("width", range(15, 30)))
+        if width_val:
+            self.node.schematic["has_width"] = width_val
+
+        depth_val = None
+        if pick_random():
+            depth_val = random.choice(self.template_attr.get("width", range(30, 45)))
+        if depth_val:
+            self.node.schematic["has_depth"] = depth_val
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_name = get_template_names(self, templ_index)
-        sizes = [self.node.has_length]
+        sizes = [self.node.schematic["has_length"]]
 
-        if self.node.has_width:
-            sizes.append(self.node.has_width)
-        if self.node.has_depth:
-            sizes.append(self.node.has_depth)
+        if "has_width" in self.node.schematic:
+            sizes.append(self.node.schematic["has_width"])
+        if "has_depth" in self.node.schematic:
+            sizes.append(self.node.schematic["has_depth"])
         out_size = random.choice([" x ".join(map(str, sizes)), " by ".join(map(str, sizes))])
 
         if ("RepeatCount" in template_name) or ("OfDimensions" in template_name):
@@ -123,7 +150,7 @@ class DigAbstractSize(TemplateObject):
         self._size_description = random.choice(
             ABSTRACT_SIZE + ["deep", "very deep", "really deep"]
         )
-        self.node.has_size = self._size_description
+        self.node.schematic["has_size"] = self._size_description
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index)

@@ -69,7 +69,7 @@ class MoveHereCoref(TemplateObject):
             ]
         )
         self.node._location_args["location_type"] = None
-        self.node._location_args["coref_resolve"] = self._word.split()[-1]
+        self.node._location_args["coref_resolve"] = "yes"  # self._word.split()[-1]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         return self._word
@@ -243,7 +243,7 @@ class HereTemplateCoref(TemplateObject):
     def add_generate_args(self, index=0, templ_index=0):
         self._word = random.choice(["here", "over here"])
         self.node._location_args["location_type"] = None
-        self.node._location_args["coref_resolve"] = self._word.split()[-1]
+        self.node._location_args["coref_resolve"] = "yes"  # self._word.split()[-1]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         return self._word
@@ -266,7 +266,7 @@ class ThereTemplateCoref(TemplateObject):
     def add_generate_args(self, index=0, templ_index=0):
         self._word = random.choice(["there", "over there"])
         self.node._location_args["location_type"] = None
-        self.node._location_args["coref_resolve"] = self._word.split()[-1]
+        self.node._location_args["coref_resolve"] = "yes"  # self._word.split()[-1]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         return self._word

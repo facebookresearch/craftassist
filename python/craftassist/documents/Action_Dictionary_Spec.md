@@ -1,7 +1,7 @@
 We support the following types of dialogues in the V1 bot:
 - HUMAN_GIVE_COMMAND
-- get_memory
-- put_memory
+- GET_MEMORY
+- PUT_MEMORY
 
 The following actions are supported in the V1 bot:
 
@@ -38,7 +38,7 @@ The Build action can have one of the following as its child:
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/ 'AWAY'
                                   / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -51,9 +51,9 @@ The Build action can have one of the following as its child:
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
@@ -103,7 +103,7 @@ Copy action can have one the following as its child:
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                  'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -116,9 +116,9 @@ Copy action can have one the following as its child:
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
@@ -126,7 +126,7 @@ Copy action can have one the following as its child:
           "has_size" : span,
           "has_colour" : span,
           "has_name" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "repeat" : {
             "repeat_key" : 'FOR'/ 'ALL'
             "repeat_count" : span,
@@ -172,6 +172,28 @@ Spawn action has the following child:
           }
           "has_name" : span,
         },
+      "location" : {
+          "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
+          "steps" : span,
+          "contains_coreference" : "yes",
+          "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
+                                 'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
+          "coordinates" : span,
+          "reference_object" : {
+              "repeat" : {
+                  "repeat_key" : 'FOR'/ 'ALL'
+                  "repeat_count" : span,
+                  "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
+              }
+              "has_name" : span,
+              "has_size" : span,
+              "has_colour" : span,
+              "contains_coreference" : "yes",
+              "location" : {
+                  "contains_coreference" : "yes",
+                  "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
+                  "coordinates" : span
+               } } },
         "repeat" : {
           "repeat_key" : 'FOR'
           "repeat_count" : span,
@@ -190,7 +212,7 @@ This action indicates that the previous action should be resumed.
 { "dialogue_type": "HUMAN_GIVE_COMMAND",
   "action_sequence" : [
     { "action_type" : 'RESUME',
-      "target_action_type": DIG / TAG / BUILD / DESTROY / FILL / MOVE
+      "target_action_type": span
     }
   ]
 }
@@ -209,33 +231,38 @@ Fill action can have one of the following as its child:
   "action_sequence" : [
     { "action_type" : 'FILL',
       "has_block_type" : span,
-      "location" : {
-          "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
-          "steps" : span,
-          "coref_resolve" : span,
-          "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/
-                                 'BACK'/ 'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
-          "coordinates" : span,
-          "reference_object" : {
-              "repeat" : {
-                  "repeat_key" : 'FOR'/ 'ALL'
-                  "repeat_count" : span,
-                  "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
-              }
-              "has_name" : span,
-              "has_size" : span,
-              "has_colour" : span,
-              "coref_resolve" : span,
-              "location" : {
-                  "coref_resolve" : span,
-                  "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
-                  "coordinates" : span
-               } } },
-      "repeat" : {
-        "repeat_key" : 'FOR' / 'ALL'
-        "repeat_count" : span,
-        "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
-      },
+      "reference_object" : {
+          "location" : {
+              "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
+              "steps" : span,
+              "contains_coreference" : "yes",
+              "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
+                                     'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
+              "coordinates" : span,
+              "reference_object" : {
+                  "repeat" : {
+                      "repeat_key" : 'FOR'/ 'ALL'
+                      "repeat_count" : span,
+                      "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
+                  }
+                  "has_name" : span,
+                  "has_size" : span,
+                  "has_colour" : span,
+                  "contains_coreference" : "yes",
+                  "location" : {
+                      "contains_coreference" : "yes",
+                      "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
+                      "coordinates" : span
+                   } } },
+         "has_colour" : span,
+         "contains_coreference" : "yes",
+         "has_name" : span,
+         "has_size" : span,
+         "repeat" : {
+           "repeat_key" : 'FOR' / 'ALL',
+           "repeat_count" : span,
+           "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
+         } },
       "replace": True
       }
     ]
@@ -257,7 +284,7 @@ Destroy action can have on of the following as the child:
           "location" : {
               "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
               "steps" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                      'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
               "coordinates" : span,
@@ -270,14 +297,14 @@ Destroy action can have on of the following as the child:
                   "has_name" : span,
                   "has_size" : span,
                   "has_colour" : span,
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location" : {
-                      "coref_resolve" : span,
+                      "contains_coreference" : "yes",
                       "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                       "coordinates" : span
                    } } },
          "has_colour" : span,
-         "coref_resolve" : span,
+         "contains_coreference" : "yes",
          "has_name" : span,
          "has_size" : span,
          "repeat" : {
@@ -307,7 +334,7 @@ Move action can have one of the following as its child:
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                  'AWAY' / 'INSIDE' / 'NEAR'/ 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -320,15 +347,16 @@ Move action can have one of the following as its child:
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
         "stop_condition" : {
             "condition_type" : 'ADJACENT_TO_BLOCK_TYPE' / 'NEVER',
-            "block_type" : span
+            "block_type" : span,
+            "condition_span" : span,
         },
         "repeat" : {
           "repeat_key" : 'FOR',
@@ -352,7 +380,7 @@ Undo action can have on of the following as its child:
 { "dialogue_type": "HUMAN_GIVE_COMMAND",
   "action_sequence" : [
     { "action_type" : 'UNDO',
-      "target_action_type" : DIG / TAG / BUILD / DESTROY / FILL
+      "target_action_type" : span
     }
   ]
 }
@@ -365,7 +393,7 @@ This action indicates stop.
 { "dialogue_type": "HUMAN_GIVE_COMMAND",
   "action_sequence" : [
     { "action_type" : 'STOP',
-      "target_action_type": DIG / TAG / BUILD / DESTROY / FILL / MOVE
+      "target_action_type": span
     }
   ]
 }
@@ -388,7 +416,7 @@ and / or has_size_, has_length_, has_depth_, has_width_
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                  'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -401,25 +429,27 @@ and / or has_size_, has_length_, has_depth_, has_width_
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
+       "schematic" : {
+          "repeat" : {
+             "repeat_key" : 'FOR'
+             "repeat_count" : span,
+             "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
+           }
+           "has_size" : span,
+           "has_length" : span,
+           "has_depth" : span,
+           "has_width" : span,
+        },
        "stop_condition" : {
            "condition_type" : 'ADJACENT_TO_BLOCK_TYPE' / 'NEVER',
            "block_type" : span
        },
-      "repeat" : {
-        "repeat_key" : 'FOR',
-        "repeat_count" : span,
-        "repeat_dir": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
-      },
-      "has_size" : span,
-      "has_length" : span,
-      "has_depth" : span,
-      "has_width" : span,
       "replace": True  
       }
     ]
@@ -441,7 +471,7 @@ FreeBuild action can have one of the following as its child:
           "location" : {
               "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
               "steps" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/
                                      'BACK'/ 'AWAY' / 'INSIDE' / 'NEAR' /
                                      'OUTSIDE' / 'BETWEEN',
@@ -455,16 +485,16 @@ FreeBuild action can have one of the following as its child:
                   "has_name" : span,
                   "has_size" : span,
                   "has_colour" : span,
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location" : {
-                      "coref_resolve" : span,
+                      "contains_coreference" : "yes",
                       "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                       "coordinates" : span
                    } } },
           "has_size" : span,
           "has_colour" : span,
           "has_name" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "repeat" : {
             "repeat_key" : 'FOR'/'ALL',
             "repeat_count" : span,
@@ -473,7 +503,7 @@ FreeBuild action can have one of the following as its child:
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/
                                  'BACK'/ 'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -486,9 +516,9 @@ FreeBuild action can have one of the following as its child:
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
@@ -515,7 +545,7 @@ Dance action can have one of the following as its child:
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                  'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -528,9 +558,9 @@ Dance action can have one of the following as its child:
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,,
+              "contains_coreference" : "yes",,
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
@@ -539,7 +569,8 @@ Dance action can have one of the following as its child:
       },
       "repeat" : {
         "repeat_key" : 'FOR',
-        "repeat_count" : span
+        "repeat_count" : span,
+        "repeat_dir" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 'AROUND'
       },
       "replace": True
       }
@@ -565,7 +596,7 @@ GetMemory dialogue can have the following as its child:
     "reference_object" : {
         "location" : {
             "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
-            "coref_resolve" : span,
+            "contains_coreference" : "yes",
             "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                    'AWAY' / 'NEAR' / 'INSIDE' / 'OUTSIDE' / 'BETWEEN',
             "coordinates" : span,
@@ -573,9 +604,9 @@ GetMemory dialogue can have the following as its child:
                 "has_name" : span,
                 "has_size" : span,
                 "has_colour" : span,
-                "coref_resolve" : span,
+                "contains_coreference" : "yes",
                 "location" : {
-                    "coref_resolve" : span,
+                    "contains_coreference" : "yes",
                     "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                     "coordinates" : span
                  } } },
@@ -608,7 +639,7 @@ GetMemory dialogue can have the following as its child:
       "location" : {
           "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/
                                  'AWAY' / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           "coordinates" : span,
@@ -621,16 +652,16 @@ GetMemory dialogue can have the following as its child:
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
-              "coref_resolve" : span,
+              "contains_coreference" : "yes",
               "location" : {
-                  "coref_resolve" : span,
+                  "contains_coreference" : "yes",
                   "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
                   "coordinates" : span
                } } },
       "has_size" : span,
       "has_colour" : span,
       "has_name" : span,
-      "coref_resolve" : span,
+      "contains_coreference" : "yes",
       "repeat" : {
         "repeat_key" : 'FOR'/'ALL',
         "repeat_count" : span,

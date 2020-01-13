@@ -393,11 +393,7 @@ class Dig(ActionNode):
 
         dig_obj.ARG_TYPES = []
         dig_obj._no_children = False  # no ARG_TYPE if _no_children is True
-        dig_obj.has_length = None  # length of hole
-        dig_obj.has_width = None  # width of hole
-        dig_obj.has_depth = None  # depth of hole
-        dig_obj.has_size = None  # abstract size of hole
-
+        dig_obj.schematic = {}
         dig_obj._location_args = Arguments(
             {
                 "location_type": "ANY",
@@ -627,6 +623,7 @@ class Fill(ActionNode):
         fill_obj.ARG_TYPES = []
         fill_obj._no_children = False  # no ARG_TYPE if _no_children is True
         fill_obj.has_block_type = None
+        fill_obj.reference_object = {}
         fill_obj._location_args = Arguments(
             {
                 "location_type": "ANY",

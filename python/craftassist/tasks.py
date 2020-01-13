@@ -12,7 +12,7 @@ from block_data import (
     BUILD_IGNORE_BLOCKS,
     BUILD_INTERCHANGEABLE_PAIRS,
 )
-from build_utils import blocks_list_to_npy, npy_to_blocks_list, to_relative_pos
+from build_utils import blocks_list_to_npy, npy_to_blocks_list
 from entities import MOBS_BY_ID
 import search
 from perception import ground_height
@@ -138,8 +138,6 @@ class Move(Task):
 
 
 class Build(Task):
-    PLACE_REACH = 3
-
     def __init__(self, agent, task_data, featurizer=None):
         super(Build, self).__init__(featurizer=featurizer)
         self.task_data = task_data
@@ -159,6 +157,29 @@ class Build(Task):
         self.wait = False
         self.old_blocks_list = None
         self.old_origin = None
+        self.PLACE_REACH = task_data.get("PLACE_REACH", 3)
+
+        # negative schematic related
+        self.is_neg_schm = task_data.get("is_neg_schm", False)
+        self.dig_message = task_data.get("dig_message", False)
+        self.blockobj_memid = None
+        self.DIG_REACH = task_data.get("DIG_REACH", 3)
+
+        if self.is_neg_schm:
+            # is it destroying a whole block object? if so, save its tags
+            self.destroyed_block_object_triples = []
+            xyzs = set(util.strip_idmeta(task_data["blocks_list"]))
+            mem = agent.memory.get_block_object_by_xyz(next(iter(xyzs)))
+            if mem and all(xyz in xyzs for xyz in mem.blocks.keys()):
+                for pred in ["has_tag", "has_name", "has_colour"]:
+                    self.destroyed_block_object_triples.extend(
+                        agent.memory.get_triples(subj=mem.memid, pred=pred)
+                    )
+                logging.info(
+                    "Destroying block object {} tags={}".format(
+                        mem.memid, self.destroyed_block_object_triples
+                    )
+                )
 
         # modify the schematic to avoid placing certain blocks
         for bad, good in BUILD_BLOCK_REPLACE_MAP.items():
@@ -172,6 +193,14 @@ class Build(Task):
             h = ground_height(agent, self.origin, 0)
             self.origin[1] = h[0, 0]
 
+        # get blocks occupying build area and save state for undo()
+        ox, oy, oz = self.origin
+        sy, sz, sx, _ = self.schematic.shape
+        current = agent.get_blocks(ox, ox + sx - 1, oy, oy + sy - 1, oz, oz + sz - 1)
+        self.old_blocks_list = npy_to_blocks_list(current, self.origin)
+        if len(self.old_blocks_list) > 0:
+            self.old_origin = np.min(util.strip_idmeta(self.old_blocks_list), axis=0)
+
     def step(self, agent):
         self.interrupted = False
 
@@ -179,12 +208,6 @@ class Build(Task):
         ox, oy, oz = self.origin
         sy, sz, sx, _ = self.schematic.shape
         current = agent.get_blocks(ox, ox + sx - 1, oy, oy + sy - 1, oz, oz + sz - 1)
-
-        # save state for undo()
-        if self.old_blocks_list is None:
-            self.old_blocks_list = npy_to_blocks_list(current, self.origin)
-            if len(self.old_blocks_list) > 0:
-                self.old_origin = np.min(util.strip_idmeta(self.old_blocks_list), axis=0)
 
         # are we done?
         # TODO: diff ignores block meta right now because placing stairs and
@@ -209,19 +232,40 @@ class Build(Task):
 
         # destroy any blocks in the way first
         rel_yzxs = np.argwhere(remove_mask)
-        xyzs = [
-            (x + self.origin[0], y + self.origin[1], z + self.origin[2]) for (y, z, x) in rel_yzxs
-        ]
-        if xyzs:
+        xyzs = set(
+            [
+                (x + self.origin[0], y + self.origin[1], z + self.origin[2])
+                for (y, z, x) in rel_yzxs
+            ]
+        )
+        if len(xyzs) != 0:
             logging.info("Excavating {} blocks first".format(len(xyzs)))
-            agent.memory.task_stack_push(
-                Destroy(agent, {"schematic": util.fill_idmeta(agent, xyzs)}),
-                parent_memid=self.memid,
-            )
+            target = self.get_next_destroy_target(agent, xyzs)
+            if target is None:
+                logging.info("No path from {} to {}".format(agent.pos, xyzs))
+                agent.send_chat("There's no path, so I'm giving up")
+                self.finished = True
+                return
+
+            if util.manhat_dist(agent.pos, target) <= self.DIG_REACH:
+                success = agent.dig(*target)
+                if self.dig_message and success:
+                    agent.memory.pending_agent_placed_blocks.add(target)
+                    self.add_tags(agent, (target, (0, 0)))
+            else:
+                mv = Move(agent, {"target": target, "approx": self.DIG_REACH}, self.featurizer)
+                agent.memory.task_stack_push(mv, parent_memid=self.memid)
+
+            return
+
+        # for a build task with negative schematic,
+        # it is done when all different blocks are removed
+        elif self.is_neg_schm:
+            self.finish(agent)
             return
 
         # get next block to place
-        yzx = self.get_next_target(agent, current, diff)
+        yzx = self.get_next_place_target(agent, current, diff)
         idm = self.schematic[tuple(yzx)]
         current_idm = current[tuple(yzx)]
 
@@ -248,6 +292,8 @@ class Build(Task):
                     B = agent.get_blocks(x, x, y, y, z, z)
                     if B[0, 0, 0, 0] == idm[0]:
                         agent.memory.pending_agent_placed_blocks.add((x, y, z))
+                        self.new_blocks.append(((x, y, z), idm))
+                        self.add_tags(agent, ((x, y, z), idm))
                     else:
                         logging.error(
                             "failed to place block {} @ {}, but place_block returned True. \
@@ -255,8 +301,6 @@ class Build(Task):
                                 idm, target, B[0, 0, 0, :]
                             )
                         )
-                    self.new_blocks.append(((x, y, z), idm))
-                    self.add_tags(agent, ((x, y, z), idm))
                 else:
                     logging.warn("failed to place block {} from {}".format(target, agent.pos))
             self.attempts[tuple(yzx)] -= 1
@@ -275,8 +319,13 @@ class Build(Task):
         xyz = block[0]
         agent.memory.update(agent)
         # this should not be an empty list- it is assumed the block passed in was just placed
-        memid = agent.memory.get_block_object_ids_by_xyz(xyz)[0]
-        self.blockobj_memid = memid
+        try:
+            memid = agent.memory.get_block_object_ids_by_xyz(xyz)[0]
+            self.blockobj_memid = memid
+        except:
+            logging.debug(
+                "Warning: place air block returned true, but no block in memory after update"
+            )
         if self.schematic_memid:
             agent.memory.tag_block_object_from_schematic(memid, self.schematic_memid)
         if self.schematic_tags:
@@ -284,18 +333,26 @@ class Build(Task):
                 agent.memory.add_triple(memid, pred, obj)
                 if pred == "has_name":
                     agent.memory.tag(self.blockobj_memid, obj)
+
         agent.memory.tag(memid, "_in_progress")
+        if self.dig_message:
+            agent.memory.tag(memid, "hole")
 
     def finish(self, agent):
         if self.blockobj_memid is not None:
             agent.memory.untag(self.blockobj_memid, "_in_progress")
         if self.verbose:
-            agent.send_chat("I finished building this")
+            if self.is_neg_schm:
+                agent.send_chat("I finished destroying this")
+            else:
+                agent.send_chat("I finished building this")
         if self.fill_message:
             agent.send_chat("I finished filling this")
+        if self.dig_message:
+            agent.send_chat("I finished digging this.")
         self.finished = True
 
-    def get_next_target(self, agent, current, diff):
+    def get_next_place_target(self, agent, current, diff):
         """Return the next block that will be targeted for placing
 
         In order:
@@ -319,6 +376,18 @@ class Build(Task):
         )  # 1
         return diff_yzx[0]
 
+    def get_next_destroy_target(self, agent, xyzs):
+        p = agent.pos
+        for i, c in enumerate(sorted(xyzs, key=lambda c: util.manhat_dist(p, c))):
+            path = search.astar(agent, c, approx=2)
+            if path is not None:
+                if i > 0:
+                    logging.debug("Destroy get_next_destroy_target wasted {} astars".format(i))
+                return c
+
+        # No path to any of the blocks
+        return None
+
     def step_any_dir(self, agent):
         px, py, pz = agent.pos
         B = agent.get_blocks(px - 1, px + 1, py - 1, py + 2, pz - 1, pz + 1)
@@ -340,8 +409,15 @@ class Build(Task):
         raise Exception("Can't step in any dir from pos={} B={}".format(agent.pos, B))
 
     def undo(self, agent):
-        agent.send_chat("ok I will remove it.")
-        if len(self.old_blocks_list) > 0:
+        schematic_tags = []
+        if self.is_neg_schm:
+            # if rebuilding an object, get old object tags
+            schematic_tags = [(pred, obj) for _, pred, obj in self.destroyed_block_object_triples]
+            agent.send_chat("ok I will build it back.")
+        else:
+            agent.send_chat("ok I will remove it.")
+
+        if self.old_blocks_list:
             agent.memory.task_stack_push(
                 Build(
                     agent,
@@ -351,6 +427,7 @@ class Build(Task):
                         "force": True,
                         "verbose": False,
                         "embed": self.embed,
+                        "schematic_tags": schematic_tags,
                     },
                 ),
                 parent_memid=self.memid,
@@ -401,107 +478,52 @@ class Fill(Task):
 
 
 class Destroy(Task):
-    DIG_REACH = 3
-
     def __init__(self, agent, task_data, featurizer=None):
         super(Destroy, self).__init__(featurizer=featurizer)
         self.schematic = task_data["schematic"]  # list[(xyz, idm)]
-        self.xyz_remaining = set(util.strip_idmeta(self.schematic))
         self.dig_message = True if "dig_message" in task_data else False
-        self.blockobj_memid = None
-
-        # is it destroying a whole block object? if so, save its tags
-        self.destroyed_block_object_triples = []
-        mem = agent.memory.get_block_object_by_xyz(next(iter(self.xyz_remaining)))
-        if mem and all(xyz in self.xyz_remaining for xyz in mem.blocks.keys()):
-            for pred in ["has_tag", "has_name", "has_colour"]:
-                self.destroyed_block_object_triples.extend(
-                    agent.memory.get_triples(subj=mem.memid, pred=pred)
-                )
-            logging.info(
-                "Destroying block object {} tags={}".format(
-                    mem.memid, self.destroyed_block_object_triples
-                )
-            )
+        self.build_task = None
+        self.DIG_REACH = task_data.get("DIG_REACH", 3)
 
     def step(self, agent):
-        self.interrupted = False
-        if len(self.xyz_remaining) == 0:
-            self.finished = True
-            if self.blockobj_memid is not None:
-                agent.memory.untag(self.blockobj_memid, "_in_progress")
-            if self.dig_message:
-                agent.send_chat("I finished digging this.")
-            return
+        origin = np.min([(x, y, z) for ((x, y, z), (b, m)) in self.schematic], axis=0)
 
-        target = self.get_target(agent)
-        if target is None:
-            logging.info("No path from {} to {}".format(agent.pos, self.xyz_remaining))
-            agent.send_chat("There's no path, so I'm giving up")
-            self.finished = True
-            return
+        def to_negative_schm(block_list):
+            """Convert idm of block list to negative
 
-        if util.manhat_dist(agent.pos, target) <= self.DIG_REACH:
-            agent.dig(*target)
-            if self.dig_message:
-                agent.memory.pending_agent_placed_blocks.add(target)
-                self.add_tags(agent, (target, (0, 0)))
-            self.xyz_remaining.remove(target)
-            return
-        else:
-            mv = Move(agent, {"target": target, "approx": self.DIG_REACH}, self.featurizer)
-            agent.memory.task_stack_push(mv, parent_memid=self.memid)
+            For each block ((x, y, z), (b, m)), convert (b, m) to (-1, 0) indicating
+            it is a negative schematic which should be digged or destroyed.
 
-    def get_target(self, agent):
-        p = agent.pos
-        for i, c in enumerate(sorted(self.xyz_remaining, key=lambda c: util.manhat_dist(p, c))):
-            path = search.astar(agent, c, approx=2)
-            if path is not None:
-                if i > 0:
-                    logging.debug("Destroy get_target wasted {} astars".format(i))
-                return c
+            Args:
+            - block_list: a list of ((x,y,z), (id, meta))
 
-        # No path to any of the blocks
-        return None
+            Returns:
+            - a block list of ((x,y,z), (-1, 0))
+            """
+            neg_schm = [((x, y, z), (-1, 0)) for ((x, y, z), (b, m)) in block_list]
+            return neg_schm
 
-    def add_tags(self, agent, block):
-        xyz = block[0]
-        agent.memory.update(agent)
-        # this should not be an empty list- it is assumed the block passed in was just placed
-        memid = agent.memory.get_block_object_ids_by_xyz(xyz)[0]
-        self.blockobj_memid = memid
-        # put these back when we have negative shapes
-        #        if self.schematic_memid:
-        #            agent.memory.tag_block_object_from_schematic(memid, self.schematic_memid)
-        #        if self.schematic_tags:
-        #            for pred, obj in self.schematic_tags:
-        #                agent.memory.add_triple(memid, pred, obj)
-        #                if pred == "has_name":
-        #                    agent.memory.tag(self.blockobj_memid, obj)
-        agent.memory.tag(memid, "_in_progress")
-        agent.memory.tag(memid, "hole")
+        neg_schm = to_negative_schm(self.schematic)
+
+        self.build_task = Build(
+            agent,
+            {
+                "blocks_list": neg_schm,
+                "origin": origin,
+                "force": True,
+                "verbose": False,
+                "embed": True,
+                "dig_message": self.dig_message,
+                "is_neg_schm": True,
+                "DIG_REACH": self.DIG_REACH,
+            },
+        )
+        agent.memory.task_stack_push(self.build_task, parent_memid=self.memid)
+        self.finished = True
 
     def undo(self, agent):
-        agent.send_chat("ok I will build it back.")
-
-        # if rebuilding an object, get old object tags
-        schematic_tags = [(pred, obj) for _, pred, obj in self.destroyed_block_object_triples]
-
-        # push Build task to stack
-        schematic, origin = to_relative_pos(self.schematic)
-        agent.memory.task_stack_push(
-            Build(
-                agent,
-                {
-                    "blocks_list": schematic,
-                    "origin": origin,
-                    "force": True,
-                    "verbose": False,
-                    "schematic_tags": schematic_tags,
-                },
-            ),
-            parent_memid=self.memid,
-        )
+        if self.build_task is not None:
+            self.build_task.undo(agent)
 
     def featurize(self):
         if self.featurizer is not None:
@@ -525,12 +547,11 @@ class Undo(Task):
 
 
 class Spawn(Task):
-    PLACE_REACH = 3
-
     def __init__(self, agent, task_data):
         super(Spawn, self).__init__()
         self.object_idm = task_data["object_idm"]
         self.pos = task_data["pos"]
+        self.PLACE_REACH = task_data.get("PLACE_REACH", 3)
 
     def step(self, agent):
         if util.manhat_dist(agent.pos, self.pos) > self.PLACE_REACH:
@@ -592,13 +613,14 @@ class Dig(Task):
         if np.isin(blocks[-1, :, :, 0], PASSABLE_BLOCKS).all():
             my -= 1
 
-        poss = [
-            (x, y, z)
+        schematic = [
+            ((x, y, z), (0, 0))
             for x in range(mx, Mx + 1)
             for y in range(my, My + 1)
             for z in range(mz, Mz + 1)
         ]
-        schematic = util.fill_idmeta(agent, poss)
+        #        TODO ADS unwind this
+        #        schematic = util.fill_idmeta(agent, poss)
         self.destroy_task = Destroy(agent, {"schematic": schematic, "dig_message": True})
         agent.memory.task_stack_push(self.destroy_task, parent_memid=self.memid)
 
@@ -614,6 +636,8 @@ class Loop(Task):
     def step(self, agent):
         if self.stop_condition.check():
             self.finished = True
+            agent.interpreter.loop_data = None
+            agent.interpreter.archived_loop_data = None
             return
         else:
             for t in self.new_tasks_fn():

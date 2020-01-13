@@ -16,7 +16,7 @@ import perception
 import rotation
 import shapes
 import size_words
-from memory import MobNode, ReferenceObjectNode
+from memory import MobNode, PlayerNode, ReferenceObjectNode
 from stop_condition import StopCondition, NeverStopCondition, AgentAdjacentStopCondition
 from util import (
     Block,
@@ -38,6 +38,14 @@ from word2number.w2n import word_to_num
 from word_maps import SPECIAL_SHAPE_FNS, SPECIAL_SHAPES_CANONICALIZE
 
 
+def tags_from_dict(d):
+    return [
+        strip_prefix(tag, "the ")
+        for key, tag in d.items()
+        if key.startswith("has_") and isinstance(tag, str)
+    ]
+
+
 def interpret_reference_object(
     interpreter, speaker, d, ignore_mobs=False, limit=1, loose_speakerlook=False
 ) -> List[ReferenceObjectNode]:
@@ -49,11 +57,8 @@ def interpret_reference_object(
             logging.error("bad coref_resolve -> {}".format(mem))
 
     if len(interpreter.progeny_data) == 0:
-        tags = [
-            strip_prefix(tag, "the ")
-            for key, tag in d.items()
-            if key.startswith("has_") and isinstance(tag, str)
-        ]
+        tags = tags_from_dict(d)
+        # TODO Add ignore_player maybe?
         candidates = (
             get_reference_objects(interpreter, *tags)
             if not ignore_mobs
@@ -210,12 +215,7 @@ def interpret_schematic(
         return [interpret_named_schematic(interpreter, speaker, d)] * repeat
 
 
-def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
-    """Location dict -> coordinates
-    Side effect:  adds mems to agent_memory.recent_entities
-    if a reference object is interpreted;
-    and loc to memory
-    """
+def maybe_get_location_memory(interpreter, speaker, d):
     location_type = d.get("location_type", "SPEAKER_LOOK")
     if location_type == "REFERENCE_OBJECT" or d.get("reference_object") is not None:
         if d.get("relative_direction") == "BETWEEN":
@@ -237,13 +237,31 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
         else:
             mems = interpret_reference_object(interpreter, speaker, d["reference_object"])
             if len(mems) == 0:
-                raise ErrorWithResponse("I don't know what you're referring to")
+                tags = set(tags_from_dict(d["reference_object"]))
+                cands = interpreter.memory.get_recent_entities("Mobs")
+                mems = [c for c in cands if any(set.intersection(set(c.get_tags()), tags))]
+                if len(mems) == 0:
+                    cands = interpreter.memory.get_recent_entities("BlockObjects")
+                    mems = [c for c in cands if any(set.intersection(set(c.get_tags()), tags))]
+                    if len(mems) == 0:
+                        raise ErrorWithResponse("I don't know what you're referring to")
             assert len(mems) == 1, mems
             interpreter.memory.update_recent_entities(mems)
             mem = mems[0]
             loc = mem.get_pos()
+            mems = [mem]
+        return loc, mems
+    return None, None
 
-    elif location_type == "SPEAKER_LOOK":
+
+def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
+    """Location dict -> coordinates
+    Side effect:  adds mems to agent_memory.recent_entities
+    if a reference object is interpreted;
+    and loc to memory
+    """
+    location_type = d.get("location_type", "SPEAKER_LOOK")
+    if location_type == "SPEAKER_LOOK":
         player = interpreter.memory.get_player_struct_by_name(speaker)
         loc = capped_line_of_sight(interpreter.agent, player)
 
@@ -258,9 +276,10 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
         if len(loc) != 3:
             logging.error("Bad coordinates: {}".format(d["coordinates"]))
             raise ErrorWithResponse("I don't understand what location you're referring to")
-
     else:
-        raise ValueError("Can't handle Location type: {}".format(location_type))
+        loc, mems = maybe_get_location_memory(interpreter, speaker, d)
+        if loc is None:
+            raise ValueError("Can't handle Location type: {}".format(location_type))
 
     # handle relative direction
     reldir = d.get("relative_direction")
@@ -269,6 +288,7 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
             pass  # loc already handled when getting mems above
         if reldir == "INSIDE":
             if location_type == "REFERENCE_OBJECT":
+                mem = mems[0]
                 locs = perception.find_inside(mem)
                 if len(locs) == 0:
                     raise ErrorWithResponse("I don't know how to go inside there")
@@ -339,6 +359,12 @@ def get_mobs(interpreter, *tags) -> List[Tuple[XYZ, MobNode]]:
     return [(to_block_pos(mob.pos), mob) for mob in mobs]
 
 
+def get_players(interpreter, *tags) -> List[Tuple[XYZ, PlayerNode]]:
+    """Return a list of (xyz, memory) tuples, filtered by tags"""
+    players = interpreter.memory.get_players_tagged(*tags)
+    return [(to_block_pos(pos_to_np(player.pos)), player) for player in players]
+
+
 def get_objects(interpreter, *tags) -> List[Tuple[XYZ, ReferenceObjectNode]]:
     """Return a list of (xyz, memory) tuples, filtered by tags"""
 
@@ -365,7 +391,8 @@ def get_reference_objects(interpreter, *tags) -> List[Tuple[XYZ, ReferenceObject
     """Return a list of (xyz, memory) tuples encompassing all possible reference objects"""
     objs = cast(List[Tuple[XYZ, ReferenceObjectNode]], get_objects(interpreter, *tags))
     mobs = cast(List[Tuple[XYZ, ReferenceObjectNode]], get_mobs(interpreter, *tags))
-    return objs + mobs
+    players = cast(List[Tuple[XYZ, ReferenceObjectNode]], get_players(interpreter, *tags))
+    return objs + mobs + players
 
 
 # TODO filter by INSIDE/AWAY/NEAR

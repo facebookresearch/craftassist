@@ -32,7 +32,12 @@ SCHEMA = os.path.join(os.path.dirname(__file__), "memory_schema.sql")
 
 class AgentMemory:
     def __init__(
-        self, db_file=":memory:", db_log_path=None, task_db={}, load_minecraft_specs=True
+        self,
+        db_file=":memory:",
+        db_log_path=None,
+        task_db={},
+        load_minecraft_specs=True,
+        load_block_types=True,
     ):
         self.db = sqlite3.connect(db_file)
 
@@ -52,6 +57,7 @@ class AgentMemory:
             self._db_script(f.read())
 
         self._load_schematics(load_minecraft_specs)
+        self._load_block_types(load_block_types)
 
         # self.memids = {}  # TODO: key is memid, value is sql table name or memory dict name
         self.all_tables = [
@@ -477,6 +483,35 @@ class AgentMemory:
             if "block" in name:
                 self.add_triple(memid, "has_name", name.strip("block").strip())
 
+    def _load_block_types(
+        self, load_block_types=True, load_color=True, simple_color=False, load_material=True
+    ):
+        if not load_block_types:
+            return
+        bid_to_name = minecraft_specs.get_block_data()["bid_to_name"]
+        color_data = minecraft_specs.get_colour_data()
+        for (b, m), type_name in bid_to_name.items():
+            if b >= 256:
+                continue
+            memid = BlockTypeNode.create(self, type_name, (b, m))
+            self.add_triple(memid, "has_name", type_name)
+            if "block" in type_name:
+                self.add_triple(memid, "has_name", type_name.strip("block").strip())
+
+            if load_color:
+                if simple_color:
+                    name_to_colors = color_data["name_to_simple_colors"]
+                else:
+                    name_to_colors = color_data["name_to_colors"]
+
+                if name_to_colors.get(type_name) is None:
+                    continue
+                for color in name_to_colors[type_name]:
+                    self.add_triple(memid, "has_color", color)
+
+                # TODO: add material info of block types
+                # TODO: add property info of block types
+
     ##############
     ###  Mobs  ###
     ##############
@@ -756,6 +791,11 @@ class AgentMemory:
             return PlayerNode(self, r[0])
         else:
             return None
+
+    def get_players_tagged(self, *tags) -> List["PlayerNode"]:
+        tags += ("_player",)
+        memids = set.intersection(*[set(self.get_memids_by_tag(t)) for t in tags])
+        return [self.get_player_by_id(memid) for memid in memids]
 
     def get_player_by_id(self, memid) -> "PlayerNode":
         return PlayerNode(self, memid)
@@ -1139,6 +1179,7 @@ class PlayerNode(ReferenceObjectNode):
     def create(cls, memory: AgentMemory, player_struct) -> str:
         memid = cls.new(memory)
         memory._db_write("INSERT INTO Players(uuid, name) VALUES (?,?)", memid, player_struct.name)
+        memory.tag(memid, "_player")
         return memid
 
     def get_pos(self) -> XYZ:
@@ -1176,6 +1217,31 @@ class SchematicNode(MemoryNode):
                 b,
                 m,
             )
+        return memid
+
+
+class BlockTypeNode(MemoryNode):
+    TABLE = "BlockTypes"
+
+    def __init__(self, agent_memory: AgentMemory, memid: str):
+        super().__init__(agent_memory, memid)
+        type_name, b, m = self.agent_memory._db_read(
+            "SELECT type_name, bid, meta FROM BlockTypes WHERE uuid=?", self.memid
+        )
+        self.type_name = type_name
+        self.b = b
+        self.m = m
+
+    @classmethod
+    def create(cls, memory: AgentMemory, type_name: str, idm: IDM) -> str:
+        memid = cls.new(memory)
+        memory._db_write(
+            "INSERT INTO BlockTypes(uuid, type_name, bid, meta) VALUES (?, ?, ?, ?)",
+            memid,
+            type_name,
+            idm[0],
+            idm[1],
+        )
         return memid
 
 

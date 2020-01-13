@@ -16,9 +16,6 @@ class ActionBuild(TemplateObject):
     """This template object repesents that the target action is Build."""
 
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.target_action_type = to_snake_case("Build", case="upper")
-
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index=templ_index)
         if "Undo" in template_names:
             phrases = [
@@ -41,16 +38,18 @@ class ActionBuild(TemplateObject):
             ]
         elif "Resume" in template_names:
             phrases = ["building", "copying", "making copies"]
-        return random.choice(phrases)
+        self.words = random.choice(phrases)
+
+        self.node.target_action_type = self.words
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self.words
 
 
 class ActionDestroy(TemplateObject):
     """This template object repesents that the target action is Destroy."""
 
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.target_action_type = to_snake_case("Destroy", case="upper")
-
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index=templ_index)
         if "Undo" in template_names:
             phrases = ["what you destroyed", "the destruction", "the destroy action"]
@@ -60,16 +59,18 @@ class ActionDestroy(TemplateObject):
             phrases = ["destroy anything", "destroy", "do the destroy action"]
         elif "Resume" in template_names:
             phrases = ["destroying", "excavating"]
-        return random.choice(phrases)
+        self.words = random.choice(phrases)
+
+        self.node.target_action_type = self.words
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self.words
 
 
 class ActionFill(TemplateObject):
     """This template object repesents that the target action is Fill."""
 
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.target_action_type = to_snake_case("Fill", case="upper")
-
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index=templ_index)
         if "Undo" in template_names:
             phrases = [
@@ -86,7 +87,11 @@ class ActionFill(TemplateObject):
             phrases = ["fill", "do the fill action"]
         elif "Resume" in template_names:
             phrases = ["filling"]
-        return random.choice(phrases)
+        self.words = random.choice(phrases)
+        self.node.target_action_type = self.words
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self.words
 
 
 # NOTE(kavya): this should become a delete for undo tag. And How about for resume and stop ?
@@ -94,9 +99,6 @@ class ActionTag(TemplateObject):
     """This template object repesents that the target action is Tag."""
 
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.target_action_type = to_snake_case("Tag", case="upper")
-
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index=templ_index)
         if "Stop" in template_names:
             command = random.choice(["tagging", "the tag action", "labeling"])
@@ -120,16 +122,17 @@ class ActionTag(TemplateObject):
             prefix = random.choice(["", random.choice(["can you", "please", "can you please"])])
             command = (" ".join([prefix, phrase])).strip()
 
-        return command
+        self.words = command
+        self.node.target_action_type = self.words
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self.words
 
 
 class ActionDig(TemplateObject):
     """This template object repesents that the target action is Dig."""
 
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.target_action_type = to_snake_case("Dig", case="upper")
-
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index=templ_index)
         if "Undo" in template_names:
             phrases = ["what you dug", "the digging", "the hole", "the dig action", "digging"]
@@ -139,16 +142,17 @@ class ActionDig(TemplateObject):
             phrases = ["dig", "dig anything"]
         elif "Resume" in template_names:
             phrases = ["digging"]
-        return random.choice(phrases)
+        self.words = random.choice(phrases)
+        self.node.target_action_type = self.words
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self.words
 
 
 class ActionMove(TemplateObject):
     """This template object repesents that the target action is Move."""
 
     def add_generate_args(self, index=0, templ_index=0):
-        self.node.target_action_type = to_snake_case("Move", case="upper")
-
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index=templ_index)
         if "Stop" in template_names:
             phrases = ["walking", "moving"]
@@ -156,4 +160,8 @@ class ActionMove(TemplateObject):
             phrases = ["walk", "move"]
         elif "Resume" in template_names:
             phrases = ["moving", "walking"]
-        return random.choice(phrases)
+        self.words = random.choice(phrases)
+        self.node.target_action_type = self.words
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self.words

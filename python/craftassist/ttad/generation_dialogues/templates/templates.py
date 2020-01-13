@@ -32,7 +32,7 @@ from resume_templates import *
 
 template_map = {
     "Move": [MOVE_TEMPLATES, MOVE_WITH_CORRECTION],
-    "Build": [BUILD_TEMPLATES, BUILD_WITH_CORRECTION],
+    "Build": [BUILD_TEMPLATES, BUILD_WITH_CORRECTION, BUILD_INBUILT_COMPOSITE],
     "Destroy": [DESTROY_TEMPLATES, DESTROY_WITH_CORRECTION],
     "Dig": [DIG_TEMPLATES, DIG_WITH_CORRECTION],
     "Copy": [COPY_TEMPLATES, COPY_WITH_CORRECTION],
@@ -53,6 +53,12 @@ def get_template(template_key, node, template=None, template_attr={}):
     template_name = template_map[template_key]  # this will be a list right now
     if template_attr.get("dialogue_len", 0) == 1:
         template_name = template_name[0]
+    elif template_attr.get("no_inbuilt_composites", False) == True and len(template_name) == 3:
+        templates = []
+        template_name = template_name[:2]
+        for template_type in template_name:
+            templates += template_type
+        template_name = templates
     else:
         templates = []
         for template_type in template_name:

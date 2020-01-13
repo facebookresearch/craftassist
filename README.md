@@ -25,19 +25,12 @@ Make sure the following packages have already been installed before moving on:
 ### Python Requirements: Using A Conda Environment
 To build a conda environment that supports this release:
 ```
-# Create a new env and install pip
-conda create -n minecraft_env
+# Create a new env preloaded with the conda install dependencies
+conda create -n minecraft_env python==3.7.4 pip numpy scikit-learn==0.19.1 pytorch torchvision -c conda-forge -c pytorch
 conda activate minecraft_env
-conda install pip
 
-# The requirements.txt contains some reqs that need to be installed with conda 
-# and others that need to be installed with pip.  This switches between these 
-# two installation methods
-while read requirement;
-    do conda install --yes $requirement || pip install $requirement;
-done < requirements.txt
-pip install ipdb
-conda install pytorch torchvision -c pytorch
+# Install all of the rest of the dependencies with pip
+while read requirement; do echo $requirement; pip install $requirement; done < requirements.txt
 ```
 Then activate this environment whenever you want to run the agent.
 
@@ -63,8 +56,12 @@ Use this command, or your submodules will not be pulled, and your clone will tak
 git lfs clone --recursive git@github.com:facebookresearch/craftassist.git
 ```
 
-Now `cd craftassist` before proceeding to the following sections.
+Now `cd minecraft` and copy the large data file and untar it to the correct directories:
 
+```
+curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_data_v0.0.tar.gz -o models_data_v0.0.tar.gz
+tar -xzvf models_data_v0.0.tar.gz -C python/craftassist/models/ --strip-components 1
+```
 
 ### Building client and server
 

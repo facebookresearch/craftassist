@@ -395,14 +395,11 @@ def get_nearby_airtouching_blocks(agent, location, radius=15):
     yzxb = agent.get_blocks(x - radius, x + radius, ymin, y + radius, z - radius, z + radius)
     xyzb = yzxb.transpose([2, 0, 1, 3]).copy()
     components = connected_components(xyzb, unique_idm=True)
-    tags = None  # for flake, defined with shifted_c
+    blocktypes = []
     for c in components:
-        shifted_c = []
+        tags = None
         for loc in c:
             idm = tuple(xyzb[loc[0], loc[1], loc[2], :])
-            if len(shifted_c) > 0:
-                memory.InstSegNode.create(agent.memory, shifted_c, tags=tags)
-                break
             for coord in range(3):
                 for d in [-1, 1]:
                     off = [0, 0, 0]
@@ -410,11 +407,20 @@ def get_nearby_airtouching_blocks(agent, location, radius=15):
                     l = (loc[0] + off[0], loc[1] + off[1], loc[2] + off[2])
                     if l[coord] >= 0 and l[coord] < xyzb.shape[coord]:
                         if xyzb[l[0], l[1], l[2], 0] == 0:
-                            tags = [BLOCK_DATA["bid_to_name"][idm]]
-                            # TODO add more!
-                            shifted_c = [
-                                (l[0] + x - radius, l[1] + ymin, l[2] + z - radius) for l in c
-                            ]
+                            try:
+                                blocktypes.append(idm)
+                                tags = [BLOCK_DATA["bid_to_name"][idm]]
+                            except:
+                                logging.debug(
+                                    "I see a weird block, ignoring: ({}, {})".format(
+                                        idm[0], idm[1]
+                                    )
+                                )
+        if tags:
+            shifted_c = [(l[0] + x - radius, l[1] + ymin, l[2] + z - radius) for l in c]
+            if len(shifted_c) > 0:
+                memory.InstSegNode.create(agent.memory, shifted_c, tags=tags)
+    return blocktypes
 
 
 def get_all_nearby_holes(agent, location, radius=15, store_inst_seg=True):

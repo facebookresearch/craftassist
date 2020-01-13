@@ -16,13 +16,14 @@ from .interpreter_helper import (
     get_holes,
     get_repeat_arrangement,
     get_repeat_num,
+    maybe_get_location_memory,
     interpret_location,
     interpret_reference_object,
     interpret_schematic,
     interpret_size,
     interpret_stop_condition,
 )
-from memory import MobNode
+from memory import MobNode, PlayerNode
 from word_maps import SPAWN_OBJECTS
 import dance
 import tasks
@@ -40,6 +41,8 @@ class Interpreter(DialogueObject):
         self.action_dict = action_dict
         self.provisional: Dict = {}
         self.action_dict_frozen = False
+        self.loop_data = None
+        self.archived_loop_data = None
         self.default_debug_path = "debug_interpreter.txt"
         self.action_handlers = {
             "MOVE": self.handle_move,
@@ -126,8 +129,12 @@ class Interpreter(DialogueObject):
 
     def handle_move(self, speaker, d) -> Tuple[Optional[str], Any]:
         def new_tasks():
-            location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-            pos = interpret_location(self, speaker, location_d)
+            # TODO if we do this better will be able to handle "stay between the x"
+            if self.loop_data and hasattr(self.loop_data, "get_pos"):
+                pos = self.loop_data.get_pos()
+            else:
+                location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
+                pos = interpret_location(self, speaker, location_d)
             if pos is None:
                 raise ErrorWithResponse("I don't understand where you want me to move.")
             task_data = {"target": pos, "action_dict": d}
@@ -136,8 +143,16 @@ class Interpreter(DialogueObject):
 
         if "stop_condition" in d:
             condition = interpret_stop_condition(self, speaker, d["stop_condition"])
-            task_data = {"new_tasks_fn": new_tasks, "stop_condition": condition, "action_dict": d}
-            self.append_new_task(tasks.Loop, task_data)
+            location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
+            loc, mems = maybe_get_location_memory(self, speaker, location_d)
+            if mems is not None:
+                self.loop_data = mems[0]
+            loop_task_data = {
+                "new_tasks_fn": new_tasks,
+                "stop_condition": condition,
+                "action_dict": d,
+            }
+            self.append_new_task(tasks.Loop, loop_task_data)
         else:
             for t in new_tasks():
                 self.append_new_task(t)
@@ -258,6 +273,8 @@ class Interpreter(DialogueObject):
         # don't kill mobs
         if all(isinstance(obj, MobNode) for obj in objs):
             raise ErrorWithResponse("I don't kill animals")
+        if all(isinstance(obj, PlayerNode) for obj in objs):
+            raise ErrorWithResponse("It's illegal to kill someone even in minecraft!")
         objs = [obj for obj in objs if not isinstance(obj, MobNode)]
 
         for obj in objs:
@@ -271,6 +288,10 @@ class Interpreter(DialogueObject):
     # TODO mark in memory it was stopped by command
     def handle_stop(self, speaker, d) -> Tuple[Optional[str], Any]:
         self.finished = True
+        if self.loop_data is not None:
+            # TODO if we want to be able stop and resume old tasks, will need to store
+            self.archived_loop_data = self.loop_data
+            self.loop_data = None
         if self.memory.task_stack_pause():
             return "Stopping.  What should I do next?", None
         else:
@@ -280,6 +301,10 @@ class Interpreter(DialogueObject):
     def handle_resume(self, speaker, d) -> Tuple[Optional[str], Any]:
         self.finished = True
         if self.memory.task_stack_resume():
+            if self.archived_loop_data is not None:
+                # TODO if we want to be able stop and resume old tasks, will need to store
+                self.loop_data = self.archived_loop_data
+                self.archived_loop_data = None
             return "resuming", None
         else:
             return "nothing to resume", None

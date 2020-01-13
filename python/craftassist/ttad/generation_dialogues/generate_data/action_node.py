@@ -79,16 +79,31 @@ class ActionNode:
 
                 action_dict.update({key: arg.to_dict()})
 
+        def substitute_with_spans(action_description_split, d):
+            new_d = {}
+            for k, v in d.items():
+                if k.startswith("has"):
+                    new_d[k] = find_span(action_description_split, v)
+                else:
+                    new_d[k] = v
+            return new_d
+
         # Prune out unnecessary keys from the tree
         for attr, val in self.__dict__.items():
             if (
                 not attr.startswith("_")
-                and val not in (None, "")
+                and val not in (None, "", {})
                 and attr not in ["args", "description", "template", "ARG_TYPES"]
             ):
                 action_dict[attr] = val
+                # for schematic key in Dig and reference_object in Fill
+                if attr in ["schematic", "reference_object"]:
+                    updated_val = substitute_with_spans(action_description_split, val)
+                    action_dict[attr] = updated_val
                 # Spans for keys : 'has_*' and repeat_count
-                if (attr.startswith("has_")) or (attr in ["repeat_count", "dance_type"]):
+                if (attr.startswith("has_")) or (
+                    attr in ["repeat_count", "dance_type", "target_action_type"]
+                ):
                     span = find_span(action_description_split, val)
                     action_dict[attr] = span
 

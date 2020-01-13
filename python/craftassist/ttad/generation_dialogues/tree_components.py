@@ -416,7 +416,8 @@ class ComponentNode:
             ):
                 d[attr] = val
                 if (attr.startswith("has_")) or (
-                    attr in ["coordinates", "steps", "block_type", "repeat_count", "coref_resolve"]
+                    attr
+                    in ["coordinates", "steps", "block_type", "repeat_count", "target_action_type"]
                 ):
                     span = find_span(self._action_description, val)
                     d[attr] = span
@@ -1156,7 +1157,7 @@ class Location(ComponentNode):
         self.steps = None
         self.relative_direction = None
         self.location_type = None
-        self.coref_resolve = None
+        self.contains_coreference = None
 
         relative_to_other = True  # if True -> relative_direction is wrt to something else
         # relative to itself.
@@ -1189,7 +1190,7 @@ class Location(ComponentNode):
                 relative_to_other = False
                 self.location_type = AgentPos
             elif coref_resolve:
-                self.coref_resolve = coref_resolve
+                self.contains_coreference = coref_resolve
             else:
                 # For type "ANY" or None specified, pick a random location
                 self.location_type = random.choice([Coordinates, BlockObject, Mob])
@@ -1260,8 +1261,8 @@ class Location(ComponentNode):
             obj_name = to_snake_case(type(child).__name__)  # key names are snake case
             if child:
                 out_dict[obj_name] = child.generate_description()
-        if self.coref_resolve:
-            out_dict["coref"] = self.coref_resolve
+        if self.contains_coreference:
+            out_dict["coref"] = self.contains_coreference
         return out_dict
 
 
@@ -1483,7 +1484,7 @@ class BlockObject(ComponentNode):
 
         # for "what you built" etc
         if coref_type:
-            self.coref_resolve = coref_type
+            self.contains_coreference = coref_type
         if block_object_type is None and coref_type is not None:
             return
         elif block_object_type:
@@ -1604,7 +1605,7 @@ class Mob(ComponentNode):
         self._location = None
 
         self.has_name = random.choice(self._template_attr.get("mob_names", MOBS))
-        self.coref_resolve = coref_type
+        self.contains_coreference = coref_type
         """Assign location of the mob if any"""
         if mob_location:
             self._location = Location(

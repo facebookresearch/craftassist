@@ -206,7 +206,7 @@ DIG_TEMPLATES = [
     [Human, Dig, DigSomeShape, ALittle, RelativeDirectionTemplate, CoordinatesTemplate],
     [Human, Dig, DigSomeShape, ALittle, RelativeDirectionTemplate, BlockObjectThat],
 
-    # Dig at location X (optional) until condition Y ##
+    ## Dig at location X (optional) until condition Y ##
     [Human, Dig, ConditionTypeAdjacentBlockType],
     [Human, Dig, At, LocationWord, CoordinatesTemplate, ConditionTypeAdjacentBlockType],
     [Human, Dig, RelativeDirectionTemplate, CoordinatesTemplate, ConditionTypeAdjacentBlockType],

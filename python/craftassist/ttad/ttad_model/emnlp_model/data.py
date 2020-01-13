@@ -55,7 +55,7 @@ class DataLoader:
         if args.train_on_everything:
             for spl in ["valid", "test"]:
                 for data_type in self.data[spl]:
-                    self.data["train"]["rephrased"] += self.data[spl][data_type][:]
+                    self.data["train"]["rephrases"] += self.data[spl][data_type][:]
                     self.data["train"]["templated"] += self.data[spl][data_type][:]
         print("loaded data")
         # organize data so we can resample training set
@@ -131,7 +131,7 @@ class DataLoader:
                     batch += [choice(self.hard_buffer)]
                     continue
                 elif random() < self.rephrase_prob:
-                    src_choice = "rephrased"
+                    src_choice = "rephrases"
                 else:
                     src_choice = "templated"
             else:

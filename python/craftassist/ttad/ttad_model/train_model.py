@@ -8,6 +8,9 @@ import logging.handlers
 import os
 import pickle
 
+TTAD_MODEL_DIR = os.path.dirname(os.path.realpath(__file__))
+TTAD_DATA_DIR = os.path.join(TTAD_MODEL_DIR, "../data/ttad_model/")
+
 from time import time
 
 import torch.optim as optim
@@ -23,7 +26,7 @@ def main():
     parser.add_argument(
         "-mn",
         "--model_name",
-        default="data/models/tree_model",
+        default=TTAD_DATA_DIR + "models/tree_model",
         type=str,
         metavar="S",
         help="torch formatted model file to save",
@@ -79,7 +82,7 @@ def main():
     parser.add_argument(
         "-df",
         "--data_file",
-        default="ttad_data/dialogue_data.json",
+        default=TTAD_DATA_DIR + "dialogue_data.json",
         type=str,
         metavar="S",
         help="location of json file with all taining, valid and test data",
@@ -87,7 +90,7 @@ def main():
     parser.add_argument(
         "-atf",
         "--action_tree_file",
-        default="ttad_data/dialogue_grammar.json",
+        default=TTAD_DATA_DIR + "dialogue_grammar.json",
         type=str,
         metavar="S",
         help="action tree that covers all of the data (including OtherAction)",
@@ -95,7 +98,7 @@ def main():
     parser.add_argument(
         "-ftmf",
         "--ft_model_file",
-        default="ttad_data/minecraft_newdct_ft_embeds.pth",
+        default=TTAD_DATA_DIR + "minecraft_newdct_ft_embeds.pth",
         type=str,
         metavar="S",
         help="pre-trained pre-computed subword-aware fasttext embeddings and vocabulary",

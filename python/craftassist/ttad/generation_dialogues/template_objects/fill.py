@@ -18,11 +18,17 @@ from .dig import *
 class FillShape(TemplateObject):
     """This template object repesents the shape/ thing that needs to be filled."""
 
-    def generate_description(self, arg_index=0, index=0, templ_index=0):
+    def add_generate_args(self, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index)
+        phrase = random.choice(dig_shapes)
         if any(x in ["RepeatCount", "RepeatAll"] for x in template_names):
-            return make_plural(random.choice(dig_shapes))
-        return random.choice(dig_shapes)
+            phrase = make_plural(random.choice(dig_shapes))
+
+        self.node.reference_object["has_name"] = phrase
+        self._phrase = phrase
+
+    def generate_description(self, arg_index=0, index=0, templ_index=0):
+        return self._phrase
 
 
 # Note: this is for "fill that mine" , no coref resolution needed
@@ -31,6 +37,7 @@ class FillObjectThis(TemplateObject):
     is looking."""
 
     def add_generate_args(self, index=0, templ_index=0):
+        self.node.reference_object["contains_coreference"] = "yes"
         phrases = ["this", "that"]
         template_names = get_template_names(self, templ_index)
 
@@ -38,7 +45,6 @@ class FillObjectThis(TemplateObject):
             phrases = ["these", "those"]
 
         self._word = random.choice(phrases)
-        self.node._location_args["coref_resolve"] = self._word
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         return self._word

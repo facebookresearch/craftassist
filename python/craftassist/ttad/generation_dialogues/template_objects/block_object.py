@@ -137,7 +137,7 @@ class BlockObjectCoref(TemplateObject):
             self,
             "BlockObject",
             index,
-            reference_type=self._words,
+            reference_type="yes",  # self._words,
             block_obj_name=None,
             templ_index=templ_index,
         )
@@ -152,7 +152,7 @@ class BlockObjectThis(TemplateObject):
 
     def add_generate_args(self, index=0, templ_index=0):
         template_names = get_template_names(self, templ_index)
-        self._coref_val = "this"
+        self._coref_val = "yes"  # "this"
         if any(x in ["RepeatAll", "RepeatCount"] for x in template_names):
             self._coref_val = random.choice(["these", "those"])
 
@@ -169,8 +169,9 @@ class BlockObjectThese(TemplateObject):
     ("these")"""
 
     def add_generate_args(self, index=0, templ_index=0):
+        # "these"
         define_block_object_type(
-            self, "BlockObjectThese", index, reference_type="these", templ_index=templ_index
+            self, "BlockObjectThese", index, reference_type="yes", templ_index=templ_index
         )
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
@@ -190,7 +191,7 @@ class BlockObjectThat(TemplateObject):
         elif index + 1 < len(template_names) and template_names[index + 1] == "RepeatCount":
             self._word = random.choice(["these", "those"])
 
-        self._coref_val = self._word
+        self._coref_val = "yes"  # self._word
 
         define_block_object_type(
             self, "BlockObjectThat", index, reference_type=self._coref_val, templ_index=templ_index
@@ -221,8 +222,9 @@ class BlockObjectIt(TemplateObject):
     ("it")"""
 
     def add_generate_args(self, index=0, templ_index=0):
+        # "it"
         define_block_object_type(
-            self, "BlockObjectIt", index, reference_type="it", templ_index=templ_index
+            self, "BlockObjectIt", index, reference_type="yes", templ_index=templ_index
         )
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
@@ -234,8 +236,9 @@ class BlockObjectThose(TemplateObject):
     ("those")"""
 
     def add_generate_args(self, index=0, templ_index=0):
+        # "those"
         define_block_object_type(
-            self, "BlockObjectThose", index, reference_type="those", templ_index=templ_index
+            self, "BlockObjectThose", index, reference_type="yes", templ_index=templ_index
         )
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):

@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c7da2f1b31b968758ad77d4d8518ea842871a07e8a134ba0d07fe58a175ba4c9
-size 72
+{
+    "on_ground": [
+        {"x": 10, "z": 10, "block_id": 41}
+    ]
+}

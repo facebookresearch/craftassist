@@ -27,6 +27,9 @@ Examples:
 
 from template_objects import *
 
+BUILD_INBUILT_COMPOSITE = [
+[Human, Build, DescribingWord, AndBuild],
+]
 BUILD_WITH_CORRECTION = [
     ## Single word Build command ##
     [[Human, BuildSingle],
@@ -344,7 +347,6 @@ BUILD_TEMPLATES = [
 
     # Build size colour X ##
     [Human, Build, DescribingWord],
-    [Human, Build, DescribingWord, AndBuild],
     [Human, Build, SchematicSize, DescribingWord],
     [Human, Build, SchematicColour, DescribingWord],
     [Human, Build, SchematicSize, SchematicColour, DescribingWord],

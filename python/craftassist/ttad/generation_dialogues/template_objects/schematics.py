@@ -78,11 +78,11 @@ class NumBlocks(TemplateObject):
         if previous_template_name == "Dig":
             dim_template = type(action_node.template[templ_index][index + 2]).__name__
             if dim_template == "Wide":
-                action_node.has_width = self.num
+                action_node.schematic["has_width"] = self.num
             elif dim_template == "Long":
-                action_node.has_length = self.num
+                action_node.schematic["has_length"] = self.num
             elif dim_template == "Deep":
-                action_node.has_depth = self.num
+                action_node.schematic["has_depth"] = self.num
         elif previous_template_name == "Build":
             dim_template = type(action_node.template[templ_index][index + 2]).__name__
             node_attr = self.node._schematics_args["schematic_attributes"]

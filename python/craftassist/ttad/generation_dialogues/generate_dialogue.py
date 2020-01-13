@@ -213,6 +213,7 @@ def generate_actions(n, action_type=None, template_attributes={}, composite=Fals
             else action_type_map[action_type]
         )
         composite_flag = None
+
         # if None, no preference mentioned, pick True at random
         if composite is None:
             composite_flag = True if random.random() < 0.3 else False
@@ -232,6 +233,12 @@ def generate_actions(n, action_type=None, template_attributes={}, composite=Fals
             action_2 = Action.generate(action_type=next_action, template_attr=template_attributes)
 
             action_text, action_dict = create_composite_action(action_1, action_2)
+        elif composite_flag == False:
+            template_attributes["no_inbuilt_composites"] = True
+            action_1 = Action.generate(action_type=action_name, template_attr=template_attributes)
+            action_text = action_1.generate_description()
+            action_dict = action_1.to_dict()
+            action_dict = fix_composite_in_dict(action_text, action_dict)
         else:
             action_1 = Action.generate(action_type=action_name, template_attr=template_attributes)
             action_text = action_1.generate_description()
