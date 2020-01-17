@@ -14,7 +14,7 @@ joblib==0.11
 matplotlib==2.2.2
 mypy-extensions==0.4.1
 mypy==0.701
-numpy==1.14.2
+numpy
 python-Levenshtein==0.12.0
 python-dateutil==2.7.2
 s3transfer==0.1.13
