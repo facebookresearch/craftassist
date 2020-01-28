@@ -22,8 +22,10 @@ from .interpreter_helper import (
     interpret_schematic,
     interpret_size,
     interpret_stop_condition,
+    interpret_facing,
+    interpret_point_target,
 )
-from memory import MobNode, PlayerNode
+from memory_nodes import MobNode, PlayerNode
 from word_maps import SPAWN_OBJECTS
 import dance
 import tasks
@@ -56,6 +58,7 @@ class Interpreter(DialogueObject):
             "SPAWN": self.handle_spawn,
             "FILL": self.handle_fill,
             "DANCE": self.handle_dance,
+            "OTHERACTION": self.handle_otheraction,
         }
 
     def step(self) -> Tuple[Optional[str], Any]:
@@ -66,14 +69,13 @@ class Interpreter(DialogueObject):
                 actions.append(self.action_dict["action"])
             elif "action_sequence" in self.action_dict:
                 actions = self.action_dict["action_sequence"]
-                actions.reverse()
+                # actions.reverse()
 
             if len(actions) == 0:
                 # The action dict is in an unexpected state
                 raise ErrorWithResponse(
                     "I thought you wanted me to do something, but now I don't know what"
                 )
-
             for action_def in actions:
                 action_type = action_def["action_type"]
                 response = self.action_handlers[action_type](self.speaker, action_def)
@@ -119,7 +121,7 @@ class Interpreter(DialogueObject):
         else:
             raise ErrorWithResponse("I don't know how to spawn: %r." % (object_name))
 
-        pos = interpret_location(self, speaker, {"location_type": "SPEAKER_LOOK"})
+        pos, _ = interpret_location(self, speaker, {"location_type": "SPEAKER_LOOK"})
         repeat_times = get_repeat_num(spawn_obj)
         for i in range(repeat_times):
             task_data = {"object_idm": object_idm, "pos": pos, "action_dict": d}
@@ -134,7 +136,7 @@ class Interpreter(DialogueObject):
                 pos = self.loop_data.get_pos()
             else:
                 location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-                pos = interpret_location(self, speaker, location_d)
+                pos, _ = interpret_location(self, speaker, location_d)
             if pos is None:
                 raise ErrorWithResponse("I don't understand where you want me to move.")
             task_data = {"target": pos, "action_dict": d}
@@ -186,7 +188,7 @@ class Interpreter(DialogueObject):
 
         # Get the location to build it
         location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-        origin = interpret_location(self, speaker, location_d)
+        origin, _ = interpret_location(self, speaker, location_d)
 
         repeat_num = len(interprets)
         if self.agent.geoscorer and self.agent.geoscorer.use(location_d, repeat_num):
@@ -242,7 +244,7 @@ class Interpreter(DialogueObject):
     def handle_fill(self, speaker, d) -> Tuple[Optional[str], Any]:
         self.finished = True
         location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-        location = interpret_location(self, speaker, location_d)
+        location, _ = interpret_location(self, speaker, location_d)
         repeat = get_repeat_num(d)
         holes = get_holes(self, speaker, location, limit=repeat)
         if holes is None:
@@ -313,7 +315,7 @@ class Interpreter(DialogueObject):
         def new_tasks():
             location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
             repeat = get_repeat_num(d)
-            origin = interpret_location(self, speaker, location_d)
+            origin, _ = interpret_location(self, speaker, location_d)
             attrs = {}
             # set the attributes of the hole to be dug.
             for dim, default in [("depth", 1), ("length", 1), ("width", 1)]:
@@ -347,45 +349,73 @@ class Interpreter(DialogueObject):
         self.finished = True
         return None, None
 
+    def handle_otheraction(self, speaker, d) -> Tuple[Optional[str], Any]:
+        self.finished = True
+        return "I don't know how to do that yet", None
+
     def handle_dance(self, speaker, d) -> Tuple[Optional[str], Any]:
         def new_tasks():
-            location_d = d.get("location")
             repeat = get_repeat_num(d)
             tasks_to_do = []
+            # only go around the x has "around"; FIXME allow other kinds of dances
+            location_d = d.get("location")
+            if location_d is not None:
+                rd = location_d.get("relative_direction")
+                if rd is not None and (
+                    rd == "AROUND" or rd == "CLOCKWISE" or rd == "ANTICLOCKWISE"
+                ):
+                    location_reference_object = location_d.get("reference_object")
+                    if location_reference_object is None:
+                        ref_obj = "AGENT_POS"
+                    else:
+                        objmems = interpret_reference_object(
+                            self, speaker, location_reference_object
+                        )
+                        if len(objmems) == 0:
+                            raise ErrorWithResponse("I don't understand where you want me to go.")
+                        ref_obj = objmems[0]
+                    for i in range(repeat):
+                        refmove = dance.RefObjMovement(
+                            self.agent,
+                            ref_object=ref_obj,
+                            relative_direction=location_d["relative_direction"],
+                        )
+                        t = tasks.Dance(self.agent, {"movement": refmove})
+                        tasks_to_do.append(t)
+                    return list(reversed(tasks_to_do))
 
-            if location_d is None:
-                dance_fn = random.choice(list(self.memory.dances.values()))
+            dance_type = d.get("dance_type", {"dance_type_name": "dance"})
+            # FIXME holdover from old dict format
+            if type(dance_type) is str:
+                dance_type = dance_type = {"dance_type_name": "dance"}
+            if dance_type.get("point"):
+                target = interpret_point_target(self, speaker, dance_type["point"])
                 for i in range(repeat):
-                    dance_obj = dance.Movement(self.agent, dance_fn)
-                    t = tasks.Dance(self.agent, {"movement": dance_obj})
+                    t = tasks.Point(self.agent, {"target": target})
+                    tasks_to_do.append(t)
+            # MC bot does not control body turn separate from head
+            elif dance_type.get("look_turn") or dance_type.get("body_turn"):
+                try:
+                    lt = dance_type.get("look_turn")
+                except:
+                    lt = dance_type.get("body_turn")
+                f = interpret_facing(self, speaker, lt)
+                for i in range(repeat):
+                    t = tasks.DanceMove(self.agent, f)
                     tasks_to_do.append(t)
             else:
-                if "coref_resolve" in location_d:
-                    dance_fn = random.choice(list(self.memory.dances.values()))
-                    pos = interpret_location(self, speaker, location_d)
-                    for i in range(repeat):
-                        dance_obj = dance.Movement(
-                            agent=self.agent, move_fn=dance_fn, dance_location=pos
-                        )
-                        t = tasks.Dance(self.agent, {"movement": dance_obj})
-                        tasks_to_do.append(t)
-                elif "reference_object" in location_d:
-                    location_reference_object = location_d.get("reference_object")
-                    objmems = interpret_reference_object(self, speaker, location_reference_object)
-                    if len(objmems) == 0:
-                        raise ErrorWithResponse("I don't understand where you want me to go.")
-                    else:
-                        for i in range(repeat):
-                            refmove = dance.RefObjMovement(
-                                self.agent,
-                                ref_object=objmems[0],
-                                relative_direction=location_d["relative_direction"],
-                            )
-                            t = tasks.Dance(self.agent, {"movement": refmove})
-                            tasks_to_do.append(t)
+                if location_d is None:
+                    dance_location = None
                 else:
-                    raise ErrorWithResponse("I don't understand where you want me to go.")
-
+                    dance_location, _ = interpret_location(self, speaker, location_d)
+                # TODO use name!
+                dance_fn = random.choice(list(self.memory.dances.values()))
+                for i in range(repeat):
+                    dance_obj = dance.Movement(
+                        agent=self.agent, move_fn=dance_fn, dance_location=dance_location
+                    )
+                    t = tasks.Dance(self.agent, {"movement": dance_obj})
+                    tasks_to_do.append(t)
             return list(reversed(tasks_to_do))
 
         if "stop_condition" in d:

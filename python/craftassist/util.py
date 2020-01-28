@@ -23,6 +23,35 @@ Block = Tuple[XYZ, IDM]
 Hole = Tuple[List[XYZ], IDM]
 T = TypeVar("T")  # generic type
 
+# converts from seconds to internal tick
+def round_time(t):
+    return int(100 * t)
+
+
+class Time:
+    def __init__(self, mode="clock"):
+        # mode is "clock" or "tick".  If "clock", converts seconds to ticks by rounding
+        # if tick, returns number of ticks since start
+        assert mode == "tick" or mode == "clock"
+        self.mode = mode
+        self.init_time_raw = time.time()
+        self.time = 0
+
+    def get_time(self):
+        return self.round_time(self.time)
+
+    def round_time(self, t):
+        if self.mode == "tick":
+            return t
+        else:
+            return round_time(time.time() - self.init_time_raw)
+
+
+def get_bounds(locs):
+    M = np.max(locs, axis=0)
+    m = np.min(locs, axis=0)
+    return m[0], M[0], m[1], M[1], m[2], M[2]
+
 
 def pos_to_np(pos):
     """Convert pos to numpy array"""
@@ -39,6 +68,18 @@ def to_block_pos(array):
 def to_block_center(array):
     """Return the array centered at [0.5, 0.5, 0.5]"""
     return to_block_pos(array).astype("float") + [0.5, 0.5, 0.5]
+
+
+# this should eventually be replaced with sql query
+def most_common_idm(idms):
+    """ idms is a list of tuples [(id, m) ,.... (id', m')]"""
+    counts = {}
+    for idm in idms:
+        if not counts.get(idm):
+            counts[idm] = 1
+        else:
+            counts[idm] += 1
+    return max(counts, key=counts.get)
 
 
 def adjacent(p):

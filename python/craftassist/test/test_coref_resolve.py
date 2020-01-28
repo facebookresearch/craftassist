@@ -35,9 +35,12 @@ class CorefResolveTestCase(BaseCraftassistTestCase):
         # destroy it
         d = {
             "dialogue_type": "HUMAN_GIVE_COMMAND",
-            "action": {"action_type": "DESTROY", "reference_object": {"coref_resolve": "it"}},
+            "action": {
+                "action_type": "DESTROY",
+                "reference_object": {"contains_coreference": "yes"},
+            },
         }
-        changes = self.handle_action_dict(d)
+        changes = self.handle_action_dict(d, chatstr="destroy it")
 
         # assert cube was destroyed
         self.assertEqual(cube_xyzs, set(changes.keys()))

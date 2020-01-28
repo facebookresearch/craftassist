@@ -6,7 +6,7 @@ from typing import Dict, Tuple, Any, Optional, Sequence
 
 from .dialogue_object import DialogueObject
 from .interpreter_helper import interpret_reference_object, ErrorWithResponse
-from memory import TaskNode, MemoryNode, ReferenceObjectNode
+from memory_nodes import MemoryNode, ReferenceObjectNode
 from string_lists import ACTION_ING_MAPPING
 from tasks import Build
 from ttad.generation_dialogues.generate_utils import prepend_a_an
@@ -102,10 +102,10 @@ class GetMemoryHandler(DialogueObject):
             else:
                 return "It is %r" % (val), None
         elif tag_name == "action_name":
-            assert type(mem) == TaskNode, mem
+            assert hasattr(mem, "task")
             return "I am {}".format(ACTION_ING_MAPPING[mem.action_name.lower()]), None
         elif tag_name == "action_reference_object_name":
-            assert isinstance(mems[0], TaskNode), mems[0]
+            assert hasattr(mems[0], "task"), mems[0]
             assert isinstance(mems[0].task, Build), mems[0].task
             for pred, val in mems[0].task.schematic_tags:
                 if pred == "has_name":

@@ -10,6 +10,7 @@ import os
 import random
 import string
 from shutil import copyfile
+from geoscorer_util import get_xyz_viewer_look_coords_batched
 
 
 def conv3x3x3(in_planes, out_planes, stride=1, bias=True):
@@ -38,6 +39,17 @@ def convbnup(in_planes, out_planes, bias=True):
         nn.BatchNorm3d(out_planes),
         nn.ReLU(inplace=True),
     )
+
+
+# Return an 32 x 32 x 32 x 3 tensor where each len 3 inner tensor is
+# the xyz coordinates of that position
+def create_xyz_tensor(sl):
+    incr_t = torch.tensor(range(sl), dtype=torch.float64)
+    z = incr_t.expand(sl, sl, sl).unsqueeze(3)
+    y = incr_t.unsqueeze(1).expand(sl, sl, sl).unsqueeze(3)
+    x = incr_t.unsqueeze(1).unsqueeze(2).expand(sl, sl, sl).unsqueeze(3)
+    xyz = torch.cat([x, y, z], 3)
+    return xyz
 
 
 class ValueNet(nn.Module):
@@ -94,9 +106,22 @@ class ContextEmbeddingNet(nn.Module):
         super(ContextEmbeddingNet, self).__init__()
 
         self.blockid_embedding_dim = opts.get("blockid_embedding_dim", 8)
-        spatial_embedding_dim = opts.get("output_embedding_dim", 8)
+        output_embedding_dim = opts.get("output_embedding_dim", 8)
         num_layers = opts.get("num_layers", 4)
         hidden_dim = opts.get("hidden_dim", 64)
+        self.use_direction = opts.get("cont_use_direction", False)
+        self.use_xyz_from_viewer_look = opts.get("cont_use_xyz_from_viewer_look", False)
+        self.context_sl = opts.get("context_side_length", 32)
+        self.xyz = None
+
+        input_dim = self.blockid_embedding_dim
+        if self.use_direction:
+            input_dim += 5
+        if self.use_xyz_from_viewer_look:
+            input_dim += 3
+            self.xyz = create_xyz_tensor(self.context_sl).view(1, -1, 3)
+            if opts.get("cuda", 0):
+                self.xyz = self.xyz.cuda()
 
         # A shared embedding for the block id types
         self.blockid_embedding = blockid_embedding
@@ -106,7 +131,7 @@ class ContextEmbeddingNet(nn.Module):
         # B dim block id -> hidden dim, maintain input size
         self.layers.append(
             nn.Sequential(
-                nn.Conv3d(self.blockid_embedding_dim, hidden_dim, kernel_size=5, padding=2),
+                nn.Conv3d(input_dim, hidden_dim, kernel_size=5, padding=2),
                 nn.BatchNorm3d(hidden_dim),
                 nn.ReLU(inplace=True),
             )
@@ -121,18 +146,49 @@ class ContextEmbeddingNet(nn.Module):
                 )
             )
         # hidden dim -> spatial embedding dim, maintain input size
-        self.out = nn.Linear(hidden_dim, spatial_embedding_dim)
+        self.out = nn.Linear(hidden_dim, output_embedding_dim)
 
+    # Input: [context, opt:viewer_pos, opt:viewer_look, opt:direction]
     # Returns N x D x H x W x L
-    def forward(self, x):
-        if x.size()[1] != 32:
-            raise Exception("Size of input should be Nx32x32x32 but it is {}".format(x.size()))
+    def forward(self, inp):
+        if inp[0].size()[1] != 32 or inp[0].size()[2] != 32 or inp[0].size()[3] != 32:
+            raise Exception("Size of input should be Nx32x32x32 but it is {}".format(inp.size()))
+
+        x = inp[0]
         sizes = list(x.size())
         x = x.view(-1)
         # Get the blockid embedding for each space in the context input
         z = self.blockid_embedding.weight.index_select(0, x)
+        z = z.float()
         # Add the embedding dim B
         sizes.append(self.blockid_embedding_dim)
+
+        # z: N*D x B
+        if self.use_xyz_from_viewer_look:
+            viewer_pos = inp[1]
+            viewer_look = inp[2]
+            n = viewer_pos.size()[0]
+            n_xyz = self.xyz.expand(n, -1, -1)
+            # Input: viewer pos, viewer look (N x 3), n_xyz (N x D x 3)
+            n_xyz = (
+                get_xyz_viewer_look_coords_batched(viewer_pos, viewer_look, n_xyz)
+                .view(-1, 3)
+                .float()
+            )
+            z = torch.cat([z, n_xyz], 1)
+            # Add the xyz_look_position to the input size list
+            sizes[-1] += 3
+
+        if self.use_direction:
+            # direction: N x 5
+            direction = inp[3]
+            d = self.context_sl * self.context_sl * self.context_sl
+            direction = direction.unsqueeze(1).expand(-1, d, -1).contiguous().view(-1, 5)
+            direction = direction.float()
+            z = torch.cat([z, direction], 1)
+            # Add the direction emb to the input size list
+            sizes[-1] += 5
+
         z = z.view(torch.Size(sizes))
         # N x H x W x L x B ==> N x B x H x W x L
         z = z.permute(0, 4, 1, 2, 3).contiguous()
@@ -207,7 +263,6 @@ class SegmentDirectionEmbeddingNet(nn.Module):
         output_embedding_dim = opts.get("output_embedding_dim", 8)
         self.use_viewer_pos = opts.get("seg_use_viewer_pos", False)
         self.use_viewer_look = opts.get("seg_use_viewer_look", False)
-        self.use_viewer_vec = opts.get("seg_use_viewer_vec", False)
         self.use_direction = opts.get("seg_use_direction", False)
         hidden_dim = opts.get("hidden_dim", 64)
         num_layers = opts.get("num_seg_dir_layers", 3)
@@ -217,8 +272,6 @@ class SegmentDirectionEmbeddingNet(nn.Module):
         if self.use_viewer_pos:
             input_dim += 3
         if self.use_viewer_look:
-            input_dim += 3
-        if self.use_viewer_vec:
             input_dim += 3
         if self.use_direction:
             input_dim += 5
@@ -230,10 +283,10 @@ class SegmentDirectionEmbeddingNet(nn.Module):
             self.layers.append(nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU()))
         self.out = nn.Linear(hidden_dim, output_embedding_dim)
 
-    # In: [seg_embedding, viewer_pos, viewer_look, viewer_vec, direction]
+    # In: [seg_embedding, viewer_pos, viewer_look, direction]
     # Out: N x D x 1 x 1 x 1
     def forward(self, x):
-        if len(x) != 5:
+        if len(x) != 4:
             raise Exception("There should be 5 elements in the input")
         if x[0].size()[1] != self.seg_input_dim:
             raise Exception("The seg spatial embed is wrong size: {}".format(x[0].size()))
@@ -244,10 +297,8 @@ class SegmentDirectionEmbeddingNet(nn.Module):
             inp.append(x[1].float().div_(normalizing_const))
         if self.use_viewer_look:
             inp.append(x[2].float().div_(normalizing_const))
-        if self.use_viewer_vec:
-            inp.append(x[3].float().div_(normalizing_const))
         if self.use_direction:
-            inp.append(x[4].float())
+            inp.append(x[3].float())
 
         z = torch.cat(inp, 1)
         for i in range(len(self.layers)):
@@ -429,7 +480,9 @@ def load_context_segment_checkpoint(checkpoint_path, opts, backup=True, verbose=
     trainer_modules["seg_net"].load_state_dict(checkpoint["model_state_dicts"]["seg_net"])
     trainer_modules["optimizer"].load_state_dict(checkpoint["optimizer_state_dict"])
     if opts.get("seg_direction_net", False):
-        trainer_modules["seg_direction_net"].load_state_dict(checkpoint["seg_direction_net"])
+        trainer_modules["seg_direction_net"].load_state_dict(
+            checkpoint["model_state_dicts"]["seg_direction_net"]
+        )
     return trainer_modules
 
 
@@ -445,7 +498,11 @@ def check_and_print_opts(curr_opts, old_opts):
     mismatches = []
     print(">> Options:")
     for opt, val in curr_opts.items():
-        print("   - {:>20}: {:<30}".format(opt, val))
+        if opt and val:
+            print("   - {:>20}: {:<30}".format(opt, val))
+        else:
+            print("   - {}: {}".format(opt, val))
+
         if old_opts and opt in old_opts and old_opts[opt] != val:
             mismatches.append((opt, val, old_opts[opt]))
             print("")

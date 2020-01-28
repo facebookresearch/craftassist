@@ -4,7 +4,6 @@ Copyright (c) Facebook, Inc. and its affiliates.
 
 """This file has functions to implement different dances for the agent.
 """
-import time
 import numpy as np
 import tasks
 import shapes
@@ -13,31 +12,63 @@ from util import ErrorWithResponse
 
 
 konami_dance = [
-    (0, 1, 0),
-    (0, 1, 0),
-    (0, -1, 0),
-    (0, -1, 0),
-    (0, 0, -1),
-    (0, 0, 1),
-    (0, 0, -1),
-    (0, 0, 1),
+    {"translate": (0, 1, 0)},
+    {"translate": (0, 1, 0)},
+    {"translate": (0, -1, 0)},
+    {"translate": (0, -1, 0)},
+    {"translate": (0, 0, -1)},
+    {"translate": (0, 0, 1)},
+    {"translate": (0, 0, -1)},
+    {"translate": (0, 0, 1)},
+]
+
+# TODO relative to current
+head_bob = [
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 90)},
+    {"head_yaw_pitch": (0, 0)},
+    {"head_yaw_pitch": (0, 0)},
 ]
 
 
 def add_default_dances(memory):
-    memory.add_dance(generate_sequential_move_fn(konami_dance))
+    memory.add_dance(generate_sequential_move_fn(konami_dance), name="konami_dance")
+    memory.add_dance(generate_sequential_move_fn(head_bob), name="head_bob")
 
 
 def generate_sequential_move_fn(sequence):
-    def move_fn(danceObj, agent, dance_location):
+    def move_fn(danceObj, agent):
         if danceObj.tick >= len(sequence):
             return None
         else:
-            dpos = sequence[danceObj.tick]
-            danceObj.tick += 1
-            target_location = dance_location if dance_location is not None else agent.pos
-            target = target_location + dpos
-            mv = tasks.Move(agent, {"target": target, "approx": 0})
+            if danceObj.dance_location is not None and danceObj.tick == 0:
+                mv = tasks.Move(agent, {"target": danceObj.dance_location, "approx": 0})
+                danceObj.dance_location = None
+            else:
+                mv = tasks.DanceMove(agent, sequence[danceObj.tick])
+                danceObj.tick += 1
         return mv
 
     return move_fn
@@ -49,23 +80,21 @@ class Movement(object):
         self.move_fn = move_fn
         self.dance_location = dance_location
         self.tick = 0
-        self.time = time.time()
 
     def get_move(self):
         # move_fn should output a tuple (dx, dy, dz) corresponding to a
         # change in Movement or None
         # if None then Movement is finished
         # can output
-        return self.move_fn(self, self.agent, self.dance_location)
+        return self.move_fn(self, self.agent)
 
 
-class SequentialMove(Movement):
-    def __init__(self, agent, sequence):
-        move_fn = generate_sequential_move_fn(sequence)
-        super(SequentialMove, self).__init__(agent, move_fn)
+# TODO head bob
+
+# class HeadTurnInstant(Movement):
 
 
-# TODO: class TimedDance(Movement):
+# TODO: class TimedDance(Movement): !!!!
 
 
 # e.g. go around the x
@@ -81,10 +110,13 @@ class RefObjMovement(Movement):
     ):
         self.agent = agent
         self.tick = 0
-        blocks = [(bpos, bid) for bpos, bid in ref_object.blocks.items()]
-        bounds = shapes.get_bounds(blocks)
-        center = np.mean([b[0] for b in blocks], axis=0)
-
+        if ref_object is None or ref_object == "AGENT_POS":
+            x, y, z = agent.pos
+            bounds = (x, x, y, y, z, z)
+            center = (x, y, z)
+        else:
+            bounds = ref_object.get_bounds()
+            center = ref_object.get_pos()
         d = max(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4])
         if relative_direction == "CLOCKWISE":
             offsets = shapes.arrange(
@@ -97,7 +129,7 @@ class RefObjMovement(Movement):
             offsets = offsets[::-1]
         else:
             raise NotImplementedError("TODO other kinds of paths")
-        self.path = [np.round(center + o) for o in offsets]
+        self.path = [np.round(np.add(center, o)) for o in offsets]
         self.path.append(self.path[0])
 
         # check each offset to find a nearby reachable point, see if a path

@@ -30,7 +30,7 @@ conda create -n minecraft_env python==3.7.4 pip numpy scikit-learn==0.19.1 pytor
 conda activate minecraft_env
 
 # Install all of the rest of the dependencies with pip
-while read requirement; do echo $requirement; pip install $requirement; done < requirements.txt
+pip install -r requirements.txt
 ```
 Then activate this environment whenever you want to run the agent.
 
@@ -59,8 +59,10 @@ git lfs clone --recursive git@github.com:facebookresearch/craftassist.git
 Now `cd minecraft` and copy the large data file and untar it to the correct directories:
 
 ```
-curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_data_v0.0.tar.gz -o models_data_v0.0.tar.gz
-tar -xzvf models_data_v0.0.tar.gz -C python/craftassist/models/ --strip-components 1
+curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_folder.tar.gz -o models_folder.tar.gz
+tar -xzvf models_folder.tar.gz -C python/craftassist/models/ --strip-components 1
+curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/ground_truth_data.txt -o python/craftassist/ground_truth_data.txt
+
 ```
 
 ### Building client and server
@@ -97,7 +99,7 @@ Multiplayer > Direct Connect > localhost:25565
 
 Minecraft has recently release v1.13, and our Cuberite system supports at most v1.12
 
-[Please follow these instructions](https://help.mojang.com/customer/portal/articles/1475923-changing-game-versions) to add a 1.12.x profile and use it to connect.
+[Please follow these instructions](https://help.minecraft.net/hc/en-us/articles/360034754852-Changing-game-versions-) to add a 1.12.x profile and use it to connect.
 
 ## Running the interactive V0 agent
 

@@ -1,7 +1,6 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
-
 import unittest
 from unittest.mock import Mock
 
@@ -161,6 +160,26 @@ class TwoCubesInterpreterTest(BaseCraftassistTestCase):
         changes = self.handle_action_dict(d)
         ys = set([y for (x, y, z) in changes.keys()])
         self.assertEqual(len(ys), 1)  # height 1
+
+    def test_action_sequence_order(self):
+        target1 = (3, 63, 2)
+        target2 = (7, 63, 7)
+        d = {
+            "dialogue_type": "HUMAN_GIVE_COMMAND",
+            "action_sequence": [
+                {
+                    "action_type": "MOVE",
+                    "location": {"location_type": "COORDINATES", "coordinates": str(target1)},
+                },
+                {
+                    "action_type": "MOVE",
+                    "location": {"location_type": "COORDINATES", "coordinates": str(target2)},
+                },
+            ],
+        }
+
+        self.handle_action_dict(d)
+        self.assertLessEqual(euclid_dist(self.agent.pos, target2), 1)
 
     def test_stop(self):
         # start moving

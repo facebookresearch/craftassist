@@ -16,25 +16,62 @@ import torch.utils.data
 from geoscorer_util import *
 
 
-def get_glue_cubes_coords_size(c_sl, s_sl, dim=0, direction=1):
-    if direction not in [-1, 1]:
-        raise Exception("Direction must be -1 or 1 for glue cubes")
-    if dim < 0 or dim > 3:
-        raise Exception("Dimension must be 0, 1, or 2 for glue cubes")
-    cube_size = np.random.randint(1, s_sl + 1)  # +1 for inclusive
+def viewer_pos_look_diection_to_glue_cubes_target_center(
+    viewer_pos, viewer_look, direction, cube_size
+):
+    if direction[0] + direction[1] + direction[2] != 1:
+        raise Exception("We need a dimension")
+    if direction[3] + direction[4] != 1:
+        raise Exception("We need a direction")
 
-    # leave space for context cube
-    possible_range = [[0, c_sl - cube_size] for i in range(3)]
-    # leave space for segment cube
-    if direction == -1:
-        possible_range[dim][0] += cube_size
-    elif direction == 1:
-        possible_range[dim][1] -= cube_size
+    vl = [i.item() for i in viewer_look]
+    if direction[2] == 1:
+        if direction[3] == 1:
+            vl[2] += cube_size
+            return torch.tensor(vl, dtype=torch.float)
+        elif direction[4] == 1:
+            vl[2] -= cube_size
+            return torch.tensor(vl, dtype=torch.float)
 
-    blc_cont = [np.random.randint(*possible_range[i]) for i in range(3)]
-    blc_seg = [i for i in blc_cont]
-    blc_seg[dim] = blc_seg[dim] + direction * cube_size
-    return cube_size, blc_cont, blc_seg
+    possible_targets = [
+        [vl[0] + cube_size, vl[1], vl[2]],
+        [vl[0] - cube_size, vl[1], vl[2]],
+        [vl[0], vl[1] + cube_size, vl[2]],
+        [vl[0], vl[1] - cube_size, vl[2]],
+    ]
+    possible_targets = [torch.tensor(l, dtype=torch.float) for l in possible_targets]
+
+    # The vector we're going to rotate
+    vl_to_ts = [get_vector(viewer_look[:2], t[:2]) for t in possible_targets]
+
+    rotation_matrix = get_rotation_matrix(
+        viewer_pos.unsqueeze(0), viewer_look.unsqueeze(0)
+    ).squeeze(0)
+    vl_to_t_rotated = [rotate_x_y(vl_to_t.double(), rotation_matrix) for vl_to_t in vl_to_ts]
+
+    epsilon = 0.0001
+    vals = []
+    dim = 0 if direction[0] == 1 else 1
+
+    vals = [v[dim] for v in vl_to_t_rotated]
+    if direction[3] == 1:
+        max_ind, dist = get_firstmax(vals, epsilon)
+    else:
+        max_ind, dist = get_firstmax(vals, epsilon, minlist=True)
+    return possible_targets[max_ind]
+
+
+def get_glue_cubes_cont_size(c_sl, s_sl, fixed_size=None, center=False):
+    cube_size = fixed_size
+    if not cube_size:
+        cube_size = np.random.randint(1, s_sl + 1)  # +1 for inclusive
+
+    if center:
+        blc_cont = [c_sl // 2 - cube_size // 2 for i in range(3)]
+    else:
+        possible_range = [[cube_size, c_sl - 2 * cube_size] for i in range(3)]
+        blc_cont = [np.random.randint(*possible_range[i]) for i in range(3)]
+    return cube_size, blc_cont
 
 
 def get_sparse_cube_context_seg(cube_size, blc_cont, blc_seg, block_type=None):
@@ -53,27 +90,51 @@ def get_sparse_cube_context_seg(cube_size, blc_cont, blc_seg, block_type=None):
     return context_sparse, seg_sparse
 
 
+# TODO: this is untested
 def glue_cubes(c_sl, s_sl, dim=0, direction=1):
-    cube_size, blc_cont, blc_seg = get_glue_cubes_coords_size(c_sl, s_sl, dim, direction)
+    cube_size, blc_cont = get_glue_cubes_cont_size(c_sl, s_sl)
+    blc_seg = [i for i in blc_cont]
+    blc_seg[dim] = blc_seg[dim] + (1 if direction > 1 else -1) * cube_size
     context_sparse, seg_sparse = get_sparse_cube_context_seg(cube_size, blc_cont, blc_seg)
     return context_sparse, seg_sparse
 
 
-def directional_glue_cubes(c_sl, s_sl):
+def dim_dir_to_direction_vector(dim, dr):
+    output = torch.tensor([0, 0, 0, 0, 0], dtype=torch.float)
+    output[dim] = 1
+    output[3 if dr > 0 else 4] = 1
+    return output
+
+
+def cube_center_to_blc(center, radius):
+    return [i - radius for i in center]
+
+
+def cube_blc_to_center(blc, radius):
+    return [i + radius for i in blc]
+
+
+def directional_glue_cubes(c_sl, s_sl, fixed_cube_size=None, fixed_center=False):
     cube_dim = random.choice([0, 1, 2])
     cube_direction = random.choice([-1, 1])
-    cube_size, blc_cont, blc_seg = get_glue_cubes_coords_size(c_sl, s_sl, cube_dim, cube_direction)
-    context_sparse, seg_sparse = get_sparse_cube_context_seg(cube_size, blc_cont, blc_seg)
+    direction_vec = dim_dir_to_direction_vector(cube_dim, cube_direction)
+
+    cube_size, blc_cont = get_glue_cubes_cont_size(
+        c_sl, s_sl, fixed_size=fixed_cube_size, center=fixed_center
+    )
+    cube_radius = cube_size // 2
+    center_cont = cube_blc_to_center(blc_cont, cube_radius)
 
     viewer_pos = torch.tensor(random_int_triple(0, c_sl - 1), dtype=torch.float)
-    # Have viewer look at the center of the context cube
-    cube_radius = cube_size * 0.5
-    viewer_look = torch.tensor([i + cube_radius for i in blc_cont], dtype=torch.float)
-    viewer_dir = get_dir_vec(viewer_pos, viewer_look)
+    viewer_look = torch.tensor(center_cont, dtype=torch.float)
+    center_seg = viewer_pos_look_diection_to_glue_cubes_target_center(
+        viewer_pos, viewer_look, direction_vec, cube_size
+    )
+    blc_seg = cube_center_to_blc(center_seg.int().tolist(), cube_radius)
     target_coord = torch.tensor(blc_seg, dtype=torch.float)
-    dir_vector = get_sampled_dir(viewer_pos, viewer_look, target_coord)
-    viewer_info = [viewer_pos, viewer_look, viewer_dir, dir_vector]
+    viewer_info = [viewer_pos, viewer_look, direction_vec]
 
+    context_sparse, seg_sparse = get_sparse_cube_context_seg(cube_size, blc_cont, blc_seg)
     return context_sparse, seg_sparse, target_coord, viewer_info
 
 
@@ -88,6 +149,8 @@ class SegmentContextSeparateAutogenData(torch.utils.data.Dataset):
         for_vis=False,
         type_name="random",
         use_direction=False,
+        fixed_cube_size=None,
+        fixed_center=False,
     ):
         self.context_side_length = context_side_length
         self.seg_side_length = seg_side_length
@@ -96,6 +159,8 @@ class SegmentContextSeparateAutogenData(torch.utils.data.Dataset):
         self.examples = []
         self.for_vis = for_vis
         self.use_direction = use_direction
+        self.fixed_cube_size = fixed_cube_size
+        self.fixed_center = fixed_center
 
         data_gens = {"glue_cubes": glue_cubes}
         self.data_gen = data_gens.get(type_name, random.choice(list(data_gens.values())))
@@ -115,7 +180,10 @@ class SegmentContextSeparateAutogenData(torch.utils.data.Dataset):
             )
         else:
             context_sparse, seg_sparse, target_coord, viewer_info = directional_glue_cubes(
-                self.context_side_length, self.seg_side_length
+                self.context_side_length,
+                self.seg_side_length,
+                self.fixed_cube_size,
+                self.fixed_center,
             )
             context, seg, _ = convert_sparse_context_seg_to_example(
                 context_sparse,

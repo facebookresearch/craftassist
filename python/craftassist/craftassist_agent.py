@@ -45,15 +45,18 @@ logging.getLogger().handlers.clear()
 sentry_sdk.init()  # enabled if SENTRY_DSN set in env
 
 DEFAULT_BEHAVIOUR_TIMEOUT = 20
+DEFAULT_PORT = 25565
 
 
 class CraftAssistAgent(Agent):
     def __init__(
         self,
         host="localhost",
-        port=25565,
+        port=DEFAULT_PORT,
         name=None,
-        ttad_model_path=None,
+        ttad_prev_model_path=None,
+        ttad_model_dir=None,
+        ttad_bert_data_dir=None,
         ttad_embeddings_path=None,
         ttad_grammar_path=None,
         semseg_model_path=None,
@@ -68,8 +71,14 @@ class CraftAssistAgent(Agent):
         self.no_default_behavior = no_default_behavior
 
         # files needed to set up ttad model
-        if ttad_model_path is None:
-            ttad_model_path = os.path.join(os.path.dirname(__file__), "models/ttad/ttad.pth")
+        if ttad_prev_model_path is None:
+            ttad_prev_model_path = os.path.join(os.path.dirname(__file__), "models/ttad/ttad.pth")
+        if ttad_model_dir is None:
+            ttad_model_dir = os.path.join(os.path.dirname(__file__), "models/ttad_bert/model/")
+        if ttad_bert_data_dir is None:
+            ttad_bert_data_dir = os.path.join(
+                os.path.dirname(__file__), "models/ttad_bert/annotated_data/"
+            )
         if ttad_embeddings_path is None:
             ttad_embeddings_path = os.path.join(
                 os.path.dirname(__file__), "models/ttad/ttad_ft_embeds.pth"
@@ -100,7 +109,12 @@ class CraftAssistAgent(Agent):
         logging.info("Initialized AgentMemory")
 
         self.dialogue_manager = TtadModelDialogueManager(
-            self, ttad_model_path, ttad_embeddings_path, ttad_grammar_path
+            self,
+            ttad_prev_model_path,
+            ttad_model_dir,
+            ttad_bert_data_dir,
+            ttad_embeddings_path,
+            ttad_grammar_path,
         )
         logging.info("Initialized DialogueManager")
 
@@ -111,6 +125,7 @@ class CraftAssistAgent(Agent):
         logging.getLogger().addHandler(fh)
 
         # Login to server
+        logging.info("Attempting to connect to port {}".format(port))
         super().__init__(host, port, self.name)
         logging.info("Logged in to server")
 
@@ -152,6 +167,9 @@ class CraftAssistAgent(Agent):
     def step(self):
         self.pos = to_block_pos(pos_to_np(self.get_player().pos))
 
+        # remove old point targets
+        self.point_targets = [pt for pt in self.point_targets if time.time() - pt[1] < 6]
+
         # Update memory with current world state
         # Removed get_perception call due to very slow updates on non-flatworlds
         with TimingWarn(2):
@@ -186,6 +204,11 @@ class CraftAssistAgent(Agent):
             self.last_task_memid = task_mem.memid
         task_mem.task.step(self)
         self.memory.task_stack_update_task(task_mem.memid, task_mem.task)
+
+    def get_time(self):
+        # round to 100th of second, return as
+        # n hundreth of seconds since agent init
+        return self.memory.get_time()
 
     def get_perception(self, force=False):
         """
@@ -304,6 +327,7 @@ class CraftAssistAgent(Agent):
             self.memory.add_chat(self.memory.get_player_by_name(speaker).memid, chat)
 
         if len(incoming_chats) > 0:
+            # change this to memory.get_time() format?
             self.last_chat_time = time.time()
             # for now just process the first incoming chat
             self.dialogue_manager.step(incoming_chats[0])
@@ -318,7 +342,8 @@ class CraftAssistAgent(Agent):
         blocks = self.get_changed_blocks()
         safe_blocks = []
         if len(self.point_targets) > 0:
-            for pt in self.point_targets:
+            for point_target in self.point_targets:
+                pt = point_target[0]
                 for b in blocks:
                     x, y, z = b[0]
                     xok = x < pt[0] or x > pt[3]
@@ -328,10 +353,9 @@ class CraftAssistAgent(Agent):
                         safe_blocks.append(b)
         else:
             safe_blocks = blocks
-        self.point_targets = []
         return safe_blocks
 
-    def point_at(self, target):
+    def point_at(self, target, sleep=None):
         """Bot pointing.
 
         Args:
@@ -342,10 +366,17 @@ class CraftAssistAgent(Agent):
         """
         assert len(target) == 6
         self.send_chat("/point {} {} {} {} {} {}".format(*target))
-        self.point_targets.append(target)
+        self.point_targets.append((target, time.time()))
         # sleep before the bot can take any actions
         # otherwise there might be bugs since the object is flashing
-        time.sleep(4)
+        # deal with this in the task...
+        if sleep:
+            time.sleep(sleep)
+
+    def relative_head_pitch(self, angle):
+        # warning: pitch is flipped!
+        new_pitch = self.get_player().look.pitch - angle
+        self.set_look(self.get_player().look.yaw, new_pitch)
 
     def _send_chat(self, chat: str):
         logging.info("Sending chat: {}".format(chat))
@@ -361,7 +392,9 @@ if __name__ == "__main__":
         "--semseg_model_path", type=str, help="path to semantic segmentation  model"
     )
     parser.add_argument("--gpu_id", type=int, default=-1, help="GPU id (-1 for cpu)")
-    parser.add_argument("--ttad_model_path", help="path to listener model")
+    parser.add_argument("--ttad_prev_model_path", help="path to previous TTAD model")
+    parser.add_argument("--ttad_model_dir", help="path to current listener model dir")
+    parser.add_argument("--ttad_bert_data_dir", help="path to annotated data")
     parser.add_argument("--geoscorer_model_path", help="path to geoscorer model")
     parser.add_argument("--draw_vis", action="store_true", help="use visdom to draw agent vision")
     parser.add_argument(
@@ -371,6 +404,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--name", help="Agent login name")
     parser.add_argument("--verbose", "-v", action="store_true", help="Debug logging")
+    parser.add_argument("--port", type=int, default=25565)
     opts = parser.parse_args()
 
     # set up stdout logging
@@ -390,7 +424,10 @@ if __name__ == "__main__":
     set_start_method("spawn", force=True)
 
     sa = CraftAssistAgent(
-        ttad_model_path=opts.ttad_model_path,
+        ttad_prev_model_path=opts.ttad_prev_model_path,
+        port=opts.port,
+        ttad_model_dir=opts.ttad_model_dir,
+        ttad_bert_data_dir=opts.ttad_bert_data_dir,
         semseg_model_path=opts.semseg_model_path,
         voxel_model_gpu_id=opts.gpu_id,
         draw_fn=draw_fn,

@@ -3,7 +3,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 
 import unittest
-
+import time
 import shapes
 from dialogue_objects import AwaitResponse
 from base_craftassist_test_case import BaseCraftassistTestCase
@@ -43,6 +43,8 @@ class UndoTest(BaseCraftassistTestCase):
         self.assertIsInstance(self.dialogue_manager.dialogue_stack.peek(), AwaitResponse)
 
         # confirm undo
+        # TODO change tests to record different speakers to avoid the sleep?
+        time.sleep(0.02)
         self.add_incoming_chat("yes")
         self.flush()
 

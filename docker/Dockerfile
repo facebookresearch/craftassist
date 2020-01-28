@@ -37,10 +37,8 @@ ENV GIT_SSH_COMMAND "ssh -i /mcdeploy.key -o StrictHostKeyChecking=no"
 RUN git lfs clone --recursive git@github.com:fairinternal/minecraft.git
 WORKDIR minecraft
 RUN git checkout ${current_branch}
-RUN curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_data_v0.0.tar.gz -o models_data_v0.0.tar.gz
-RUN curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/ttad_data_v0.0.tar.gz -o ttad_data_v0.0.tar.gz
-RUN tar -xzvf models_data_v0.0.tar.gz -C python/craftassist/models/ --strip-components 1
-RUN tar -xzvf ttad_data_v0.0.tar.gz -C python/craftassist/ttad/data/ --strip-components 1
+RUN curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_folder.tar.gz -o models_folder.tar.gz
+RUN tar -xzvf models_folder.tar.gz -C python/craftassist/models/ --strip-components 1
 RUN make
 
 RUN pip3 install -r requirements.txt

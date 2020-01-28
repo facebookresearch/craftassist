@@ -65,6 +65,8 @@ def add_dataset_flags(parser):
         "--dataset_ratios", type=str, default="shape:1.0", help="comma separated name:prob"
     )
     parser.add_argument("--useid", type=bool, default=False, help="use blockid")
+    parser.add_argument("--fixed_cube_size", type=int, default=None, help="fixed_cube_size")
+    parser.add_argument("--fixed_center", type=bool, default=False, help="fixed_center")
     parser.add_argument(
         "--min_seg_size", type=int, default=6, help="min seg size for seg data type"
     )
@@ -89,12 +91,18 @@ def add_directional_flags(parser):
         "--seg_use_viewer_look", type=bool, default=False, help="use viewer look in seg"
     )
     parser.add_argument(
-        "--seg_use_viewer_vec", type=bool, default=False, help="use viewer vec in seg"
-    )
-    parser.add_argument(
         "--seg_use_direction", type=bool, default=False, help="use direction in seg"
     )
     parser.add_argument("--num_seg_dir_layers", type=int, default=3, help="num segdir net layers")
+    parser.add_argument(
+        "--cont_use_direction", type=bool, default=False, help="use direction in context"
+    )
+    parser.add_argument(
+        "--cont_use_xyz_from_viewer_look",
+        type=bool,
+        default=False,
+        help="use xyz position relative to viewer look in context emb",
+    )
 
 
 def get_dataloader(dataset, opts, collate_fxn):
@@ -204,7 +212,7 @@ def combine_seg_context(seg, context, seg_shift, seg_mult=1):
     return completed_context
 
 
-def get_dir_vec(start, end):
+def get_vector(start, end):
     return end - start
 
 
@@ -261,60 +269,161 @@ def check_inrange(x, minval, maxval):
     return all([v >= minval for v in x]) and all([v <= maxval for v in x])
 
 
-def normalize(vec):
-    vec = vec.double()
-    norm = torch.norm(vec)
-    if norm == 0:
-        return vec
-    return vec / norm
+def normalize(batched_vector):
+    vec = batched_vector.double()
+    norm = torch.norm(vec, dim=1)
+    # Set norm to 1 if it's 0
+    norm = norm + norm.eq(0).double()
+    expanded_norm = norm.unsqueeze(1).expand(-1, vec.size()[1])
+    return torch.div(vec, expanded_norm)
 
 
 def get_rotation_matrix(viewer_pos, viewer_look):
-    nlook_vec = normalize(get_dir_vec(viewer_pos, viewer_look)[:2])
-
-    # If we're already lined up ==> identity matrix
-    nly = nlook_vec[1]
-    if nly == 1:
-        return torch.tensor([[1, 0], [0, 1]])
-
+    # VP, VL: N x 3, VP_to_VL: N x 3
+    vp_to_vl = get_vector(viewer_pos, viewer_look)[:, :2]
+    nlook_vec = normalize(vp_to_vl)
+    nly = nlook_vec[:, 1]
     # Nlx necessary to correct for the range of acrcos
-    nlx = 1 if nlook_vec[0] > 0 else -1
-    sin_theta = nlx * torch.pow(1 - nly * nly, 0.5)
-    return torch.tensor([[nly, -sin_theta], [sin_theta, nly]])
+    nlx = nlook_vec[:, 0]
+    nlx = nlx.gt(0).double() - nlx.lt(0).double() - nlx.eq(0).double()
+
+    # Take care of nans created by raising 0 to a power
+    # and then masking the sin theta to 0 as intended
+    base = 1 - nly * nly
+    nan_mask = torch.isnan(torch.pow(base, 0.5)).double()
+    base = base + nan_mask
+    sin_theta = nlx * nan_mask.eq(0).double() * torch.pow(base, 0.5)
+
+    nly = nly.unsqueeze(1)
+    sin_theta = sin_theta.unsqueeze(1)
+    rm_pt1 = torch.cat([nly, sin_theta], 1).unsqueeze(1)
+    rm_pt2 = torch.cat([-sin_theta, nly], 1).unsqueeze(1)
+    rm = torch.cat([rm_pt1, rm_pt2], 1)
+    return rm
 
 
 def rotate_x_y(coord, rotation_matrix):
     return torch.mm(coord.unsqueeze(0), rotation_matrix).squeeze(0)
 
 
-def get_dir_dist(viewer_pos, viewer_look, target_coord):
-    direction = torch.tensor([0, 0, 0], dtype=torch.float64)
-    dist = torch.tensor([0, 0, 0], dtype=torch.float64)
+def float_equals(a, b, epsilon):
+    return True if abs(a - b) < epsilon else False
 
-    # Shift into coord system where look_vec is (0, 1)
-    look_vec = get_dir_vec(viewer_pos, viewer_look)[:2].double()
-    target_vec = get_dir_vec(viewer_pos, target_coord)[:2].double()
 
-    rotation_matrix = get_rotation_matrix(viewer_pos, viewer_look).double()
-    new_look_vec = rotate_x_y(look_vec, rotation_matrix)
-    new_target_vec = rotate_x_y(target_vec, rotation_matrix)
+def get_argmax_list(vals, epsilon, minlist=False, maxlen=None):
+    mult = -1 if minlist else 1
+    max_ind = []
+    for i, v in enumerate(vals):
+        if not max_ind or float_equals(max_ind[0][1], v, epsilon):
+            if maxlen and len(max_ind) == maxlen:
+                continue
+            max_ind.append((i, v))
+        elif mult * (v - max_ind[0][1]) > 0:
+            max_ind = [(i, v)]
+    return max_ind
 
-    diff = (viewer_look - target_coord).double()
-    new_diff = new_look_vec - new_target_vec
-    dist[0] = abs(new_diff[0].item())
-    dist[1] = abs(new_diff[1].item())
-    dist[2] = abs(diff[2].item())
 
-    direction[0] = b_greater_than_a(new_look_vec[0].item(), new_target_vec[0].item())
-    direction[1] = b_greater_than_a(new_look_vec[1].item(), new_target_vec[1].item())
-    direction[2] = b_greater_than_a(viewer_look[2].item(), target_coord[2].item())
+def get_firstmax(vals, epsilon, minlist=False):
+    return get_argmax_list(vals, epsilon, minlist, 1)[0]
+
+
+# N -> batch size in training
+# D -> num target coord per element
+# Viewer pos, viewer_look are N x 3 tensors
+# Batched target coords is a N x D x 3 tensor
+# Output is a N x D x 3 tensor
+def get_xyz_viewer_look_coords_batched(viewer_pos, viewer_look, batched_target_coords):
+    # First verify the sizing and unsqueeze if necessary
+    btc_sizes = batched_target_coords.size()
+    vp_sizes = viewer_pos.size()
+    vl_sizes = viewer_look.size()
+    if len(btc_sizes) > 3 or len(vp_sizes) > 2 or len(vl_sizes) > 2:
+        raise Exception("One input has too many dimensions")
+    if btc_sizes[-1] != 3 or vp_sizes[-1] != 3 or vl_sizes[-1] != 3:
+        raise Exception("The last dimension of all inputs should be size 3")
+    if len(btc_sizes) < 3:
+        for i in range(3 - len(btc_sizes)):
+            batched_target_coords = batched_target_coords.unsqueeze(0)
+    if len(vp_sizes) == 1:
+        viewer_pos = viewer_pos.unsqueeze(0)
+    if len(vl_sizes) == 1:
+        viewer_look = viewer_look.unsqueeze(0)
+    n = batched_target_coords.size()[0]
+    d = batched_target_coords.size()[1]
+
+    # Handle xy and z separately
+    # XY = N X D x 2
+    xy = batched_target_coords[:, :, 0:2].double()
+    # Z = N x D x 1
+    z = batched_target_coords[:, :, 2].unsqueeze(2).double()
+
+    ##  XY
+    # Shift such that viewer pos is the origin
+
+    # VPXY, VLXY: N x 2
+    vpxy = viewer_pos.double()[:, 0:2]
+    vlxy = viewer_look.double()[:, 0:2]
+    vpxy_to_vlxy = vlxy - vpxy
+    # VPXY to XY: N x D x 2
+    vpxy_to_xy = xy - vpxy.unsqueeze(1).expand(n, d, -1)
+
+    # Rotate them around the viewer position such that a normalized
+    # viewer look vector would be (0, 1)
+    # Rotation_matrix: N x 2 x 2
+    rotation_matrix = get_rotation_matrix(viewer_pos, viewer_look)
+
+    # N x 1 x 2 mm N x 2 x 2 ==> N x 1 x 2 ==> N x 2
+    r_vpxy_to_vlxy = torch.bmm(vpxy_to_vlxy.unsqueeze(1), rotation_matrix).unsqueeze(1)
+
+    # RM: N x 2 x 2 ==> N x D x 2 x 2
+    expanded_rm = rotation_matrix.unsqueeze(1).expand(n, d, 2, 2).contiguous().view(-1, 2, 2)
+    # N x D x 2 ==> N*D x 1 x 2 mm N*D x 2 x 2 ==> N*D x 1 x 2 ==> N x D x 2
+    reshape_vpxy_to_xy = vpxy_to_xy.contiguous().view(-1, 1, 2)
+    r_vpxy_to_xy = torch.bmm(reshape_vpxy_to_xy, expanded_rm).contiguous().view(n, d, 2)
+
+    # N x D x 2
+    # Get the xy position in this rotated coord system with rvl as the origin
+    rvl_to_rxy = r_vpxy_to_xy - r_vpxy_to_vlxy.squeeze(1).expand(n, d, 2)
+
+    ## Z
+    # VLZ = N x 1
+    vlz = viewer_look.double()[:, 2]
+    # Z = N x D x 1
+    diffz = z - vlz.view(-1, 1, 1).expand(n, d, -1)
+
+    ## Combine
+    # rvl_to_rxy: N x D x 2, diffz: N x D x 1
+    new_xyz = torch.cat([rvl_to_rxy, diffz], 2)
+    return new_xyz
+
+
+def get_dir_dist(viewer_pos, viewer_look, batched_target_coords):
+    if len(batched_target_coords.size()) == 1:
+        batched_target_coords = batched_target_coords.unsqueeze(0)
+    xyz = get_xyz_viewer_look_coords_batched(viewer_pos, viewer_look, batched_target_coords)
+    dist = xyz.abs()
+    direction = xyz.gt(0).double() - xyz.lt(0).double()
     return direction, dist
 
 
-def get_sampled_dir(viewer_pos, viewer_look, target_coord):
+def get_sampled_direction_vec(viewer_pos, viewer_look, target_coord):
     directions, dists = get_dir_dist(viewer_pos, viewer_look, target_coord)
+    dists = dists.squeeze()
+    directions = directions.squeeze()
     ndists = dists / sum(dists)
-    dim = np.random.choice(range(3), p=ndists)
+    dim = np.random.choice(3, p=ndists)
+    direction = directions[dim].item()
+    dim_l = [(0 if i == dim else 1) for i in range(3)]
+    dir_l = [0, 1] if direction == -1 else [1, 0]
+    return torch.tensor(dim_l + dir_l, dtype=torch.long)
+
+
+def get_max_direction_vec(viewer_pos, viewer_look, target_coord):
+    directions, dists = get_dir_dist(viewer_pos, viewer_look, target_coord)
+    dists = dists.squeeze()
+    directions = directions.squeeze()
+    ndists = dists / sum(dists)
+    dim = np.argmax(ndists)
     direction = directions[dim].item()
     dim_l = [(0 if i == dim else 1) for i in range(3)]
     dir_l = [0, 1] if direction == -1 else [1, 0]

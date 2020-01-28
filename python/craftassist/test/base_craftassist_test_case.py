@@ -9,7 +9,8 @@ from unittest.mock import Mock
 from build_utils import to_relative_pos
 from dialogue_objects import AwaitResponse
 from fake_agent import FakeAgent
-from memory import AgentMemory, ObjectNode
+from memory import AgentMemory
+from memory_nodes import ObjectNode
 from ttad_model_dialogue_manager import TtadModelDialogueManager
 from typing import List, Sequence, Dict
 from util import XYZ, Block, IDM, pos_to_np
@@ -21,7 +22,7 @@ class BaseCraftassistTestCase(unittest.TestCase):
         self.memory = AgentMemory(load_minecraft_specs=False)  # don't load specs, it's slow
         self.agent = FakeAgent(self.memory)
         self.dialogue_manager = TtadModelDialogueManager(
-            self.agent, None, None, None, no_ground_truth_actions=True
+            self.agent, None, None, None, None, None, no_ground_truth_actions=True
         )
 
         # More helpful error message to encourage test writers to use self.set_looking_at()
@@ -93,7 +94,7 @@ class BaseCraftassistTestCase(unittest.TestCase):
         }
 
     def handle_action_dict(
-        self, d, answer: str = None, stop_on_chat=False, max_steps=10000
+        self, d, chatstr: str = "", answer: str = None, stop_on_chat=False, max_steps=10000
     ) -> Dict[XYZ, IDM]:
         """Handle an action dict and call self.flush()
 
@@ -103,7 +104,8 @@ class BaseCraftassistTestCase(unittest.TestCase):
         If "stop_on_chat" is specified, stop iterating if the agent says anything
         """
         self.add_incoming_chat("TEST {}".format(d))
-        obj = self.dialogue_manager.handle_action_dict(self.speaker, d)
+        # FIXME!  sending empty chat to coref resolve unless passed in!!
+        obj = self.dialogue_manager.handle_action_dict(self.speaker, d, chatstr)
         if obj is not None:
             self.dialogue_manager.dialogue_stack.append(obj)
         changes = self.flush(max_steps, stop_on_chat=stop_on_chat)

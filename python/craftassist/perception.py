@@ -13,11 +13,9 @@ import minecraft_specs
 import util
 
 from block_data import BORING_BLOCKS, PASSABLE_BLOCKS
-from entities import MOBS_BY_ID
 from search import depth_first_search
 
-# FIXME.... neeed to split out memory nodes from main memory file
-import memory
+from memory_nodes import InstSegNode
 
 GROUND_BLOCKS = [1, 2, 3, 7, 8, 9, 12, 79, 80]
 MAX_RADIUS = 20
@@ -325,45 +323,6 @@ def label_top_bottom_blocks(block_list, top_heuristic=15, bottom_heuristic=25):
     return dict_top_bottom
 
 
-def find_nearby_mobs(agent, radius, p=None, names=None):
-    """Find mobs near the agent.
-    NOTE: If names is a list will only return mobs in the list"""
-    if p is None:
-        p = agent.pos
-    L = agent.get_mobs()
-    M = {}
-    for l in L:
-        ep = (l.pos.x, l.pos.y, l.pos.z)
-        if (ep[0] - p[0]) ** 2 + (ep[1] - p[1]) ** 2 + (ep[2] - p[2]) ** 2 < radius ** 2:
-            name = MOBS_BY_ID.get(l.mobType)
-            if names is None or name in names:
-                if M.get(name) is None:
-                    M[name] = [{"pos": ep, "id": l.entityId}]
-                else:
-                    M[name].append({"pos": ep, "id": l.entityId})
-    return M
-
-
-def find_nearby_blocks(agent, radius, p=None):
-    """Find blocks near the agent.
-    NOTE: If names is a list will only return blocks in the list"""
-    if p is None:
-        p = agent.pos
-    L = agent.get_blocks(
-        p[0] - radius, p[0] + radius, p[1] - radius, p[1] + radius, p[2] - radius, p[2] + radius
-    )
-    C = L[:, :, :, 0].transpose([2, 0, 1]).copy()
-    M = L[:, :, :, 1].transpose([2, 0, 1]).copy()
-    ids = np.transpose(np.nonzero(C[:, :, :] > 0))
-    blocks = []
-    for b in ids:
-        bid = C[b[0], b[1], b[2]]
-        meta = M[b[0], b[1], b[2]]
-        o = (p[0] + b[0] - radius, p[1] + b[1] - radius, p[2] + b[2] - radius)
-        blocks.append((o, (bid, meta)))
-    return blocks
-
-
 # heuristic method, can potentially be replaced with ml? can def make more sophisticated
 # looks for the first stack of non-ground material hfilt high, can be fooled
 # by e.g. a floating pile of dirt or a big buried object
@@ -419,7 +378,7 @@ def get_nearby_airtouching_blocks(agent, location, radius=15):
         if tags:
             shifted_c = [(l[0] + x - radius, l[1] + ymin, l[2] + z - radius) for l in c]
             if len(shifted_c) > 0:
-                memory.InstSegNode.create(agent.memory, shifted_c, tags=tags)
+                InstSegNode.create(agent.memory, shifted_c, tags=tags)
     return blocktypes
 
 
@@ -522,6 +481,6 @@ def get_all_nearby_holes(agent, location, radius=15, store_inst_seg=True):
     holes = [h for h in holes if len(h[0]) > 0]
     if store_inst_seg:
         for hole in holes:
-            memory.InstSegNode.create(agent.memory, hole[0], tags=["hole", "pit", "mine"])
+            InstSegNode.create(agent.memory, hole[0], tags=["hole", "pit", "mine"])
 
     return holes

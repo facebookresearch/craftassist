@@ -239,10 +239,9 @@ class SegmentContextDirectionalInstanceData(torch.utils.data.Dataset):
             self.for_vis,
         )
         viewer_pos, viewer_look = get_random_viewer_info(self.context_side_length)
-        viewer_dir = get_dir_vec(viewer_pos, viewer_look)
         target_coord = torch.tensor(index_to_coord(target, self.context_side_length))
-        dir_vec = get_sampled_dir(viewer_pos, viewer_look, target_coord)
-        return [context, seg, target, viewer_pos, viewer_look, viewer_dir, dir_vec]
+        dir_vec = get_sampled_direction_vec(viewer_pos, viewer_look, target_coord)
+        return [context, seg, target, viewer_pos, viewer_look, dir_vec]
 
     def __getitem__(self, index):
         return self._get_example()

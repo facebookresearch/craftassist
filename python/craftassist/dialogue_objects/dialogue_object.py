@@ -6,8 +6,6 @@ import logging
 import numpy as np
 import random
 
-import time
-
 import tasks
 from string_lists import MAP_YES, MAP_NO
 from util import pos_to_np
@@ -54,22 +52,22 @@ class DialogueObject(object):
 """This class represents a sub-type of DialogueObject to await
 a response from the user."""
 
-
+# TODO check who is speaking
 class AwaitResponse(DialogueObject):
-    def __init__(self, wait_time=20, **kwargs):
+    def __init__(self, wait_time=2000, **kwargs):
         super().__init__(**kwargs)
-        self.init_time = time.time()
+        self.init_time = self.memory.get_time()
         self.response = []
         self.wait_time = wait_time
         self.awaiting_response = True
 
     def step(self):
         """Wait for wait_time for an answer. Mark finished when a chat comes in."""
-        chatmem = self.memory.get_most_recent_incoming_chat(after=self.init_time)
+        chatmem = self.memory.get_most_recent_incoming_chat(after=self.init_time + 1)
         if chatmem is not None:
             self.finished = True
             return "", {"response": chatmem}
-        if time.time() - self.init_time > self.wait_time:
+        if self.memory.get_time() - self.init_time > self.wait_time:
             self.finished = True
             # FIXME this shouldn't return data
             return "Okay! I'll stop waiting for you to answer that.", {"response": None}
@@ -278,10 +276,10 @@ class ConfirmReferenceObject(DialogueObject):
     def __init__(self, reference_object, **kwargs):
         super().__init__(**kwargs)
         r = reference_object
-        if hasattr(r, "get_current_position"):
-            loc = r.get_current_position()
-            self.bounds = (loc[0] - 1, loc[1] + 1, loc[2] - 1, loc[0] + 1, loc[1] + 2, loc[2] + 1)
+        if hasattr(r, "get_point_at_target"):
+            self.bounds = r.get_point_at_target()
         else:
+            # this should be an error
             self.bounds = tuple(np.min(r, axis=0)) + tuple(np.max(r, axis=0))
         self.pointed = False
         self.asked = False

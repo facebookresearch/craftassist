@@ -16,7 +16,7 @@ import perception
 import rotation
 import shapes
 import size_words
-from memory import MobNode, PlayerNode, ReferenceObjectNode
+from memory_nodes import MobNode, PlayerNode, ReferenceObjectNode
 from stop_condition import StopCondition, NeverStopCondition, AgentAdjacentStopCondition
 from util import (
     Block,
@@ -24,6 +24,7 @@ from util import (
     IDM,
     T,
     XYZ,
+    most_common_idm,
     capped_line_of_sight,
     euclid_dist,
     object_looked_at,
@@ -49,8 +50,8 @@ def tags_from_dict(d):
 def interpret_reference_object(
     interpreter, speaker, d, ignore_mobs=False, limit=1, loose_speakerlook=False
 ) -> List[ReferenceObjectNode]:
-    if d.get("coref_resolve", "NULL") != "NULL":
-        mem = d["coref_resolve"]
+    if d.get("contains_coreference", "NULL") != "NULL":
+        mem = d["contains_coreference"]
         if isinstance(mem, ReferenceObjectNode):
             return [mem]
         else:
@@ -186,8 +187,10 @@ def interpret_named_schematic(
         stemmed_name
     )
     if shapename:
-        blocks, tags = interpret_shape_schematic(interpreter, speaker, d, shapename=shapename)
-        return blocks, None, tags
+        shape_blocks, tags = interpret_shape_schematic(
+            interpreter, speaker, d, shapename=shapename
+        )
+        return shape_blocks, None, tags
 
     schematic = interpreter.memory.get_schematic_by_name(name)
     if schematic is None:
@@ -195,7 +198,18 @@ def interpret_named_schematic(
         if schematic is None:
             raise ErrorWithResponse("I don't know what you want me to build.")
     tags = [(p, v) for (_, p, v) in interpreter.memory.get_triples(subj=schematic.memid)]
-    return list(schematic.blocks.items()), schematic.memid, tags
+    blocks = schematic.blocks
+    # TODO generalize to more general block properties
+    # Longer term: remove and put a call to the modify model here
+    if d.get("has_colour"):
+        old_idm = most_common_idm(blocks.values())
+        c = block_data.COLOR_BID_MAP.get(d["has_colour"])
+        if c is not None:
+            new_idm = random.choice(c)
+            for l in blocks:
+                if blocks[l] == old_idm:
+                    blocks[l] = new_idm
+    return list(blocks.items()), schematic.memid, tags
 
 
 def interpret_schematic(
@@ -220,20 +234,26 @@ def maybe_get_location_memory(interpreter, speaker, d):
     if location_type == "REFERENCE_OBJECT" or d.get("reference_object") is not None:
         if d.get("relative_direction") == "BETWEEN":
             if d.get("reference_object_1"):
-                mem1 = interpret_reference_object(interpreter, speaker, d["reference_object_1"])[0]
-                mem2 = interpret_reference_object(interpreter, speaker, d["reference_object_2"])[0]
+                mem1 = interpret_reference_object(
+                    interpreter, speaker, d["reference_object_1"], loose_speakerlook=True
+                )[0]
+                mem2 = interpret_reference_object(
+                    interpreter, speaker, d["reference_object_2"], loose_speakerlook=True
+                )[0]
+                mems = [mem1, mem2]
             else:
                 mems = interpret_reference_object(
-                    interpreter, speaker, d["reference_object"], limit=2
+                    interpreter, speaker, d["reference_object"], limit=2, loose_speakerlook=True
                 )
                 if len(mems) < 2:
-                    mem1 = []
+                    mem1 = None
                 else:
                     mem1, mem2 = mems
-            if len(mem1) == 0 or len(mem2) == 0:
+            if not mem1:
                 # TODO specify the ref object in the error message
                 raise ErrorWithResponse("I don't know what you're referring to")
-            loc = (mem1.get_pos() + mem2.get_pos()) / 2
+            loc = (np.add(mem1.get_pos(), mem2.get_pos())) / 2
+            loc = (loc[0], loc[1], loc[2])
         else:
             mems = interpret_reference_object(interpreter, speaker, d["reference_object"])
             if len(mems) == 0:
@@ -254,12 +274,13 @@ def maybe_get_location_memory(interpreter, speaker, d):
     return None, None
 
 
-def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
-    """Location dict -> coordinates
+def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> Tuple[XYZ, Any]:
+    """Location dict -> coordinates, maybe ref obj memory
     Side effect:  adds mems to agent_memory.recent_entities
     if a reference object is interpreted;
     and loc to memory
     """
+    mem = None
     location_type = d.get("location_type", "SPEAKER_LOOK")
     if location_type == "SPEAKER_LOOK":
         player = interpreter.memory.get_player_struct_by_name(speaker)
@@ -278,6 +299,7 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
             raise ErrorWithResponse("I don't understand what location you're referring to")
     else:
         loc, mems = maybe_get_location_memory(interpreter, speaker, d)
+        mem = mems[0]
         if loc is None:
             raise ValueError("Can't handle Location type: {}".format(location_type))
 
@@ -286,7 +308,7 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
     if reldir is not None and not ignore_reldir:
         if reldir == "BETWEEN":
             pass  # loc already handled when getting mems above
-        if reldir == "INSIDE":
+        elif reldir == "INSIDE":
             if location_type == "REFERENCE_OBJECT":
                 mem = mems[0]
                 locs = perception.find_inside(mem)
@@ -294,6 +316,7 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
                     raise ErrorWithResponse("I don't know how to go inside there")
                 else:
                     loc = locs[0]
+                    mem = None
         elif reldir == "AWAY":
             apos = pos_to_np(interpreter.agent.get_player().pos)
             dir_vec = (apos - loc) / np.linalg.norm(apos - loc)
@@ -313,7 +336,53 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> XYZ:
     elif "steps" in d:
         num_steps = word_to_num(d.get("steps", "5"))
         loc = to_block_center(loc) + [0, 0, num_steps]
-    return to_block_pos(loc)
+    return to_block_pos(loc), mem
+
+
+def interpret_point_target(interpreter, speaker, d):
+    if d.get("location") is None:
+        # TODO other facings
+        raise ErrorWithResponse("I am not sure where you want me to point")
+    loc, mem = interpret_location(interpreter, speaker, d["location"])
+    if mem is not None:
+        return mem.get_point_at_target()
+    else:
+        return (loc[0], loc[1] + 1, loc[2], loc[0], loc[1] + 1, loc[2])
+
+
+def interpret_facing(interpreter, speaker, d):
+    current_pitch = interpreter.agent.get_player().look.pitch
+    current_yaw = interpreter.agent.get_player().look.yaw
+    if d.get("yaw_pitch"):
+        span = d["yaw_pitch"]
+        # for now assumed in (yaw, pitch) or yaw, pitch or yaw pitch formats
+        yp = span.replace("(", "").replace(")", "").split()
+        return {"head_yaw_pitch": (int(yp[0]), int(yp[1]))}
+    elif d.get("yaw"):
+        # for now assumed span is yaw as word or number
+        w = d["yaw"].strip(" degrees").strip(" degree")
+        return {"head_yaw_pitch": (word_to_num(w), current_pitch)}
+    elif d.get("pitch"):
+        # for now assumed span is pitch as word or number
+        w = d["pitch"].strip(" degrees").strip(" degree")
+        return {"head_yaw_pitch": (current_yaw, word_to_num(w))}
+    elif d.get("relative_yaw"):
+        # TODO in the task use turn angle
+        if d["relative_yaw"].get("angle"):
+            return {"relative_yaw": int(d["relative_yaw"]["angle"])}
+        else:
+            pass
+    elif d.get("relative_pitch"):
+        if d["relative_pitch"].get("angle"):
+            # TODO in the task make this relative!
+            return {"relative_pitch": int(d["relative_pitch"]["angle"])}
+        else:
+            pass
+    elif d.get("location"):
+        loc, _ = interpret_location(interpreter, speaker, d["location"])
+        return {"head_xyz": loc}
+    else:
+        raise ErrorWithResponse("I am not sure where you want me to turn")
 
 
 def interpret_stop_condition(interpreter, speaker, d) -> Optional[StopCondition]:
@@ -435,12 +504,12 @@ def filter_by_sublocation(
         elif reldir == "NEAR":
             pass  # fall back to no reference direction
         elif reldir == "BETWEEN":
-            ref_loc = interpret_location(interpreter, speaker, location)
+            ref_loc, _ = interpret_location(interpreter, speaker, location)
             candidates.sort(key=lambda c: euclid_dist(c[0], ref_loc))
             return candidates[:limit]
         else:
             # reference object location, i.e. the "X" in "left of X"
-            ref_loc = interpret_location(interpreter, speaker, location, ignore_reldir=True)
+            ref_loc, _ = interpret_location(interpreter, speaker, location, ignore_reldir=True)
             # relative direction, i.e. the "LEFT" in "left of X"
             reldir_vec = rotation.DIRECTIONS[reldir]
 
@@ -461,7 +530,7 @@ def filter_by_sublocation(
             return [c for (_, c) in sorted(proj_cands, key=lambda p: p[0])][:limit]
     else:  # is it even possible to end up in this branch? FIXME?
         # no reference direction: choose the closest
-        ref_loc = interpret_location(interpreter, speaker, location, ignore_reldir=True)
+        ref_loc, _ = interpret_location(interpreter, speaker, location, ignore_reldir=True)
         if limit == "ALL":
             return list(filter(lambda c: euclid_dist(c[0], ref_loc) <= all_proximity, candidates))
         else:
@@ -471,29 +540,33 @@ def filter_by_sublocation(
 
 
 def process_spans(d, original_words, lemmatized_words):
+    if type(d) is not dict:
+        return
     for k, v in d.items():
         if type(v) == dict:
             process_spans(v, original_words, lemmatized_words)
-            continue
-        try:
-            sentence, (L, R) = v
-            if sentence != 0:
-                raise NotImplementedError("Must update process_spans for multi-string inputs")
-            assert 0 <= L <= R <= (len(lemmatized_words) - 1)
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-
-        original_w = " ".join(original_words[L : (R + 1)])
-        # The lemmatizer converts 'it' to -PRON-
-        if original_w == "it":
-            d[k] = original_w
+        elif type(v) == list and type(v[0]) == dict:
+            for a in v:
+                process_spans(a, original_words, lemmatized_words)
         else:
-            d[k] = " ".join(lemmatized_words[L : (R + 1)])
+            try:
+                sentence, (L, R) = v
+                if sentence != 0:
+                    raise NotImplementedError("Must update process_spans for multi-string inputs")
+                assert 0 <= L <= R <= (len(lemmatized_words) - 1)
+            except ValueError:
+                continue
+            except TypeError:
+                continue
+            original_w = " ".join(original_words[L : (R + 1)])
+            # The lemmatizer converts 'it' to -PRON-
+            if original_w == "it":
+                d[k] = original_w
+            else:
+                d[k] = " ".join(lemmatized_words[L : (R + 1)])
 
 
-def coref_resolve(memory, d: Dict):
+def coref_resolve(memory, d, chat):
     """Walk the entire action dict "d" and replace coref_resolve values
 
     Possible substitutions:
@@ -503,29 +576,29 @@ def coref_resolve(memory, d: Dict):
 
     Assumes spans have been substituted.
     """
-    items_to_add: List[Tuple[Dict, Tuple[str, Any]]] = []
 
+    c = chat.split()
+    if not type(d) is dict:
+        return
     for k, v in d.items():
         if k == "location":
             # v is a location dict
-            for k_, v_ in v.items():
-                if k_ == "coref_resolve":
-                    val = "SPEAKER_POS" if v_ == "here" else "SPEAKER_LOOK"
-                    items_to_add.append((v, ("location_type", val)))
+            for k_ in v:
+                if k_ == "contains_coreference":
+                    val = "SPEAKER_POS" if "here" in c else "SPEAKER_LOOK"
+                    v["location_type"] = val
+                    del v["contains_coreference"]
         elif k == "reference_object":
             # v is a reference object dict
-            for k_, v_ in v.items():
-                if k_ == "coref_resolve":
-                    if v_ in ["that", "this"]:
+            for k_ in v:
+                if k_ == "contains_coreference":
+                    if "this" in c or "that" in c:
                         if "location" in v:
-                            # overwrite the location_type without blowing away the rest of the dict
-                            items_to_add.append((v["location"], ("location_type", "SPEAKER_LOOK")))
+                            v["location"]["location_type"] = "SPEAKER_LOOK"
                         else:
                             # no location dict -- create one
-                            items_to_add.append(
-                                (v, ("location", {"location_type": "SPEAKER_LOOK"}))
-                            )
-                        v[k_] = "NULL"
+                            v["location"] = {"location_type": "SPEAKER_LOOK"}
+                        del v["contains_coreference"]
                     else:
                         mems = memory.get_recent_entities("BlockObjects")
                         if len(mems) == 0:
@@ -538,12 +611,11 @@ def coref_resolve(memory, d: Dict):
                                 v[k_] = mems[0]
                         else:
                             v[k_] = mems[0]
-
         if type(v) == dict:
-            coref_resolve(memory, v)
-
-    for d_, (k, v) in items_to_add:
-        d_[k] = v
+            coref_resolve(memory, v, chat)
+        if type(v) == list:
+            for a in v:
+                coref_resolve(memory, a, chat)
 
 
 def get_repeat_arrangement(

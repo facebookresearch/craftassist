@@ -6,7 +6,7 @@ import logging
 from typing import Dict, Tuple, Any, Optional
 
 from .dialogue_object import DialogueObject
-from memory import ObjectNode, RewardNode
+from memory_nodes import ObjectNode, RewardNode
 from .interpreter_helper import interpret_reference_object, ErrorWithResponse
 
 

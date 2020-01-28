@@ -11,17 +11,15 @@ from ttad_model_dialogue_manager import TtadModelDialogueManager
 from base_craftassist_test_case import BaseCraftassistTestCase
 
 
-TTAD_MODELS_DIR = os.path.dirname(__file__) + "/../models/ttad"
+TTAD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert/model/")
+TTAD_BERT_DATA_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert/annotated_data/")
 
 
 class PutMemoryTestCase(BaseCraftassistTestCase):
     def setUp(self):
         super().setUp()
         self.dialogue_manager = TtadModelDialogueManager(
-            self.agent,
-            TTAD_MODELS_DIR + "/ttad.pth",
-            TTAD_MODELS_DIR + "/ttad_ft_embeds.pth",
-            TTAD_MODELS_DIR + "/dialogue_grammar.json",
+            self.agent, None, TTAD_MODEL_DIR, TTAD_BERT_DATA_DIR, None, None
         )
 
         self.cube_right = self.add_object(shapes.cube(bid=(42, 0)), (9, 63, 4))

@@ -82,6 +82,8 @@ class SegmentContextSeparateData(torch.utils.data.Dataset):
             )
         if name == "autogen_glue_cubes_dir":
             type_name = self.extra_params.get("type_name", "random")
+            fixed_cube_size = self.extra_params.get("fixed_cube_size", None)
+            fixed_center = self.extra_params.get("fixed_center", False)
             return SegmentContextSeparateAutogenData(
                 nexamples=self.num_examples,
                 context_side_length=self.c_sl,
@@ -90,6 +92,8 @@ class SegmentContextSeparateData(torch.utils.data.Dataset):
                 for_vis=self.for_vis,
                 type_name=type_name,
                 use_direction=True,
+                fixed_cube_size=fixed_cube_size,
+                fixed_center=fixed_center,
             )
         if name == "autogen_glue_cubes":
             type_name = self.extra_params.get("type_name", "random")

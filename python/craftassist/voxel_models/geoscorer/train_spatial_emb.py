@@ -33,20 +33,29 @@ def get_scores_from_datapoint(tms, data, opts):
     segments = models.prepare_variables(data[1], opts)
     targets = models.prepare_variables(data[2].squeeze(1), opts)
     tms["optimizer"].zero_grad()
-    c_embeds = tms["context_net"](contexts)
+
+    cont_dir = opts.get("cont_use_direction", False) or opts.get(
+        "cont_use_xyz_from_viewer_look", False
+    )
+
+    if cont_dir:
+        viewer_pos = models.prepare_variables(data[3], opts)
+        viewer_look = models.prepare_variables(data[4], opts)
+        dir_vec = models.prepare_variables(data[5], opts)
+        c_embeds = tms["context_net"]([contexts, viewer_pos, viewer_look, dir_vec])
+    else:
+        c_embeds = tms["context_net"]([contexts])
     s_embeds = tms["seg_net"](segments)
+
     if opts.get("seg_direction_net", False):
         viewer_pos = models.prepare_variables(data[3], opts)
         viewer_look = models.prepare_variables(data[4], opts)
-        viewer_dir = models.prepare_variables(data[5], opts)
-        dir_vec = models.prepare_variables(data[6], opts)
+        dir_vec = models.prepare_variables(data[5], opts)
         s_embeds = s_embeds.squeeze()
         # Add back in the batch dim for batch size 1
         if s_embeds.dim() < 2:
             s_embeds = s_embeds.unsqueeze(0)
-        s_embeds = tms["seg_direction_net"](
-            [s_embeds, viewer_pos, viewer_look, viewer_dir, dir_vec]
-        )
+        s_embeds = tms["seg_direction_net"]([s_embeds, viewer_pos, viewer_look, dir_vec])
 
     scores = tms["score_module"]([c_embeds, s_embeds])
     return targets, scores
@@ -127,6 +136,8 @@ def setup_dataset_and_loader(opts):
     extra_params = {
         "min_seg_size": opts.get("min_seg_size", 6),
         "use_saved_data": opts.get("use_saved_data", False),
+        "fixed_cube_size": opts.get("fixed_cube_size", None),
+        "fixed_center": opts.get("fixed_center", False),
     }
     dataset = cd.SegmentContextSeparateData(
         nexamples=opts["epochsize"],

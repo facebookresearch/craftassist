@@ -9,20 +9,35 @@ import os
 import pickle
 import random
 import sqlite3
-import time
 import uuid
-from collections import Counter
 from itertools import zip_longest
 from typing import cast, Optional, List, Tuple, Dict, Sequence, Union
 
 from block_data import BORING_BLOCKS
 from build_utils import npy_to_blocks_list
-from entities import MOBS_BY_ID
 import minecraft_specs
 import util
 import dance
-from util import XYZ, POINT_AT_TARGET, IDM, Block
+from util import XYZ, IDM, Block
 from task import Task
+from memory_nodes import (  # noqa
+    TaskNode,
+    PlayerNode,
+    MemoryNode,
+    InstSegNode,
+    BlockObjectNode,
+    ObjectNode,
+    ChatNode,
+    TimeNode,
+    DanceNode,
+    LocationNode,
+    MobNode,
+    SchematicNode,
+    BlockTypeNode,
+    SetNode,
+    ComponentObjectNode,
+    ReferenceObjectNode,
+)
 
 SCHEMA = os.path.join(os.path.dirname(__file__), "memory_schema.sql")
 
@@ -72,10 +87,14 @@ class AgentMemory:
         self._db_write("INSERT INTO Memories VALUES (?,?,?)", self.self_memid, "Memories", 0)
         self.tag(self.self_memid, "_agent")
         self.tag(self.self_memid, "_self")
+        self.time = util.Time(mode="clock")
 
     def __del__(self):
         if getattr(self, "_db_log_file", None):
             self._db_log_file.close()
+
+    def get_time(self):
+        return self.time.get_time()
 
     # TODO list of all "updatable" mems, do a mem.update() ?
     def update(self, agent):
@@ -96,19 +115,24 @@ class AgentMemory:
     ### Workspace memory ###
     ########################
 
+    def set_memory_updated_time(self, memid):
+        self._db_write(
+            "UPDATE Memories SET workspace_updated_time=? WHERE uuid=?", self.get_time(), memid
+        )
+
     def update_recent_entities(self, mems=[]):
         logging.info("update_recent_entities {}".format(mems))
         for mem in mems:
             mem.update_recently_used()
 
-    def get_recent_entities(self, memtype, time_window=120) -> List["MemoryNode"]:
+    def get_recent_entities(self, memtype, time_window=12000) -> List["MemoryNode"]:
         r = self._db_read(
             """SELECT uuid
             FROM Memories
-            WHERE tabl=? AND workspace_updated_time > ?
+            WHERE tabl=? AND workspace_updated_time >= ?
             ORDER BY workspace_updated_time DESC""",
             memtype,
-            time.time() - time_window,
+            self.get_time() - time_window,
         )
         return [self.get_mem_by_id(memid, memtype) for memid, in r]
 
@@ -189,7 +213,7 @@ class AgentMemory:
     # clean all this up...
     # eventually some conditions for not committing air/negative blocks
     def maybe_add_block_to_memory(self, xyz: XYZ, idm: IDM):
-        interesting, player_placed = self._is_placed_block_interesting(xyz, idm[0])
+        interesting, player_placed, agent_placed = self._is_placed_block_interesting(xyz, idm[0])
         if not interesting:
             return
 
@@ -211,9 +235,11 @@ class AgentMemory:
         elif len(adjacent_memids) == 1:
             # update block object
             memid = adjacent_memids[0]
-            self._upsert_block((xyz, idm), memid, "BlockObjects", player_placed)
+            self._upsert_block((xyz, idm), memid, "BlockObjects", player_placed, agent_placed)
+            self.set_memory_updated_time(memid)
         else:
             chosen_memid = adjacent_memids[0]
+            self.set_memory_updated_time(chosen_memid)
 
             # merge tags
             where = " OR ".join(["subj=?"] * len(adjacent_memids))
@@ -227,7 +253,9 @@ class AgentMemory:
             self._db_write(cmd + where, chosen_memid, *adjacent_memids)
 
             # insert new block
-            self._upsert_block((xyz, idm), chosen_memid, "BlockObjects", player_placed)
+            self._upsert_block(
+                (xyz, idm), chosen_memid, "BlockObjects", player_placed, agent_placed
+            )
 
     def maybe_remove_block_from_memory(self, xyz: XYZ, idm: IDM):
         tables = ["BlockObjects"]
@@ -254,22 +282,37 @@ class AgentMemory:
         self.maybe_remove_block_from_memory(xyz, idm)
         self.maybe_add_block_to_memory(xyz, idm)
 
-    def _upsert_block(self, block: Block, memid: str, table: str, player_placed: bool = False):
+    def _upsert_block(
+        self,
+        block: Block,
+        memid: str,
+        table: str,
+        player_placed: bool = False,
+        agent_placed: bool = False,
+    ):
         ((x, y, z), (b, m)) = block
         if self._db_read_one("SELECT * FROM {} WHERE x=? AND y=? AND z=?".format(table), x, y, z):
-            self._db_write_blockobj(block, memid, table, player_placed, update=True)
+            self._db_write_blockobj(block, memid, table, player_placed, agent_placed, update=True)
         else:
-            self._db_write_blockobj(block, memid, table, player_placed, update=False)
+            self._db_write_blockobj(block, memid, table, player_placed, agent_placed, update=False)
 
     def _db_write_blockobj(
-        self, block: Block, memid: str, table: str, player_placed: bool, update: bool = False
+        self,
+        block: Block,
+        memid: str,
+        table: str,
+        player_placed: bool,
+        agent_placed: bool = False,
+        update: bool = False,
     ):
         (x, y, z), (b, m) = block
         if update:
-            cmd = "UPDATE {} SET uuid=?, bid=?, meta=?, updated=?, player_placed=? WHERE x=? AND y=? AND z=? "
+            cmd = "UPDATE {} SET uuid=?, bid=?, meta=?, updated=?, player_placed=? agent_placed=? WHERE x=? AND y=? AND z=? "
         else:
-            cmd = "INSERT INTO {} (uuid, bid, meta, updated, player_placed, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        self._db_write(cmd.format(table), memid, b, m, time.time(), player_placed, x, y, z)
+            cmd = "INSERT INTO {} (uuid, bid, meta, updated, player_placed, agent_placed, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        self._db_write(
+            cmd.format(table), memid, b, m, self.get_time(), player_placed, agent_placed, x, y, z
+        )
 
     ######################
     ###  BlockObjects  ###
@@ -507,7 +550,7 @@ class AgentMemory:
                 if name_to_colors.get(type_name) is None:
                     continue
                 for color in name_to_colors[type_name]:
-                    self.add_triple(memid, "has_color", color)
+                    self.add_triple(memid, "has_colour", color)
 
                 # TODO: add material info of block types
                 # TODO: add property info of block types
@@ -519,7 +562,9 @@ class AgentMemory:
     def get_mobs(
         self,
         spatial_range: Tuple[int, int, int, int, int, int] = None,
-        spawntime: Tuple[float, float] = None,
+        player_placed: bool = None,
+        agent_placed: bool = None,
+        spawntime: Tuple[int, int] = None,
         mobtype: str = None,
     ) -> List["MobNode"]:
         """Find mobs matching the given filters
@@ -527,29 +572,36 @@ class AgentMemory:
         Args:
           spatial_range = [xmin, xmax, ymin, ymax, zmin, zmax]
           spawntime = [time_min, time_max] .  can be negative to ignore
+              spawntime is in the form of self.get_time()
           mobtype = string
         """
+
+        def maybe_add_AND(query):
+            if query[-6:] != "WHERE ":
+                query += " AND"
+            return query
+
         query = "SELECT uuid FROM Mobs WHERE "
         args: List = []
         if spatial_range is not None:
             args.extend(spatial_range)
             query += " x>? AND x<? AND y>? AND y<? AND z>? AND z<?"
-            if spawntime is not None or mobtype is not None:
-                query += " AND "
+        if player_placed is not None:
+            args.append(player_placed)
+            query = maybe_add_AND(query) + " player_placed = ? "
+        if agent_placed is not None:
+            args.append(agent_placed)
+            query = maybe_add_AND(query) + " agent_placed = ? "
         if spawntime is not None:
             if spawntime[0] > 0:
                 args.append(spawntime[0])
-                query += " spawn>? "
-                if spawntime[1] > 0 or mobtype is not None:
-                    query += " AND "
+                query = maybe_add_AND(query) + " spawn >= ? "
             if spawntime[1] > 0:
                 args.append(spawntime[1])
-                query += " spawn<? "
-                if mobtype is not None:
-                    query += " AND "
+                query = maybe_add_AND(query) + " spawn <= ? "
         if mobtype is not None:
             args.append(mobtype)
-            query += " mobtype=?"
+            query = maybe_add_AND(query) + " mobtype=?"
         memids = [m[0] for m in self._db_read(query, *args)]
         return [self.get_mob_by_id(memid) for memid in memids]
 
@@ -603,7 +655,7 @@ class AgentMemory:
             """
             SELECT uuid
             FROM Chats
-            WHERE speaker != ? AND time > ?
+            WHERE speaker != ? AND time >= ?
             ORDER BY time DESC
             LIMIT 1
             """,
@@ -626,6 +678,16 @@ class AgentMemory:
         return LocationNode(self, memid)
 
     ###############
+    ###  Times  ###
+    ###############
+
+    def add_time(self, t: int) -> str:
+        return TimeNode.create(self, t)
+
+    def get_time_by_id(self, memid: str) -> "TimeNode":
+        return TimeNode(self, memid)
+
+    ###############
     ###  Sets   ###
     ###############
 
@@ -642,12 +704,9 @@ class AgentMemory:
     ###  Dances  ##
     ###############
 
-    def add_dance(self, dance_fn):
+    def add_dance(self, dance_fn, name=None):
         # a dance is movement determined as a sequence of steps, rather than by its destination
-        memid = uuid.uuid4().hex
-        self._db_write("INSERT INTO Dances(uuid) VALUES (?)", memid)
-        self.dances[memid] = dance_fn
-        return memid
+        return DanceNode.create(self, dance_fn, name=name)
 
     ###############
     ###  Tasks  ###
@@ -693,7 +752,7 @@ class AgentMemory:
         mem = self.task_stack_peek()
         if mem is None:
             raise ValueError("Called task_stack_pop with empty stack")
-        self._db_write("UPDATE Tasks SET finished_at=? WHERE uuid=?", time.time(), mem.memid)
+        self._db_write("UPDATE Tasks SET finished_at=? WHERE uuid=?", self.get_time(), mem.memid)
         return mem
 
     def task_stack_pause(self) -> bool:
@@ -735,18 +794,18 @@ class AgentMemory:
         )
         return [TaskNode(self, memid) for memid, in r]
 
-    def get_last_finished_root_task(
-        self, action_name: str = None, recency: int = 300
-    ) -> "TaskNode":
+    def get_last_finished_root_task(self, action_name: str = None, recency: int = None):
         q = """
         SELECT uuid
         FROM Tasks
-        WHERE finished_at > ? {}
+        WHERE finished_at >= ? {}
         ORDER BY created_at DESC
         """.format(
             " AND action_name=?" if action_name else ""
         )
-        args: List = [time.time() - recency]
+        if recency is None:
+            recency = self.time.round_time(300)
+        args: List = [self.get_time() - recency]
         if action_name:
             args.append(action_name)
         memids = [r[0] for r in self._db_read(q, *args)]
@@ -758,7 +817,8 @@ class AgentMemory:
                 continue
 
             return TaskNode(self, memid)
-        raise ValueError("Called get_last_finished_root_task with no finished root tasks")
+
+    #        raise ValueError("Called get_last_finished_root_task with no finished root tasks")
 
     def get_task_by_id(self, memid: str) -> "TaskNode":
         return TaskNode(self, memid)
@@ -894,20 +954,27 @@ class AgentMemory:
             dict_memory = {"task_db": self.task_db}
             pickle.dump(dict_memory, dict_memory_file)
 
-    def _is_placed_block_interesting(self, xyz: XYZ, bid: int) -> Tuple[bool, bool]:
-        """Return two values:
+    def _is_placed_block_interesting(self, xyz: XYZ, bid: int) -> Tuple[bool, bool, bool]:
+        """Return three values:
         - bool: is the placed block interesting?
         - bool: is it interesting because it was placed by a player?
+        - bool: is it interesting because it was placed by the agent?
         """
+        interesting = False
+        player_placed = False
+        agent_placed = False
+        # TODO record *which* player placed it
         if xyz in self.pending_agent_placed_blocks:
             self.pending_agent_placed_blocks.remove(xyz)
-            return True, True
+            interesting = True
+            agent_placed = True
         for player in self.other_players.values():
             if util.euclid_dist(util.pos_to_np(player.pos), xyz) < 5 and player.mainHand.id == bid:
-                return True, True
+                interesting = True
+                player_placed = True
         if bid not in BORING_BLOCKS:
-            return True, False
-        return False, False
+            interesting = True
+        return interesting, player_placed, agent_placed
 
     def safe_pickle(self, obj):
         # little bit scary...
@@ -937,459 +1004,3 @@ class AgentMemory:
                     delattr(obj, "__had_attr_" + attr)
                     setattr(obj, attr, self._safe_pickle_saved_attrs[obj.pickled_attrs_id][attr])
         return obj
-
-
-##################
-###  MEMORIES  ###
-##################
-
-
-class MemoryNode:
-    PROPERTIES_BLACKLIST = ["agent_memory", "forgetme"]
-    TABLE: Optional[str] = None
-
-    @classmethod
-    def new(cls, agent_memory) -> str:
-        memid = uuid.uuid4().hex
-        agent_memory._db_write("INSERT INTO Memories VALUES (?,?,?)", memid, cls.TABLE, 0)
-        return memid
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        self.agent_memory = agent_memory
-        self.memid = memid
-
-    def get_tags(self) -> List[str]:
-        return self.agent_memory.get_tags_by_memid(self.memid)
-
-    def get_all_has_relations(self) -> Dict[str, str]:
-        return self.agent_memory.get_all_has_relations(self.memid)
-
-    def get_properties(self) -> Dict[str, str]:
-        blacklist = self.PROPERTIES_BLACKLIST + self._more_properties_blacklist()
-        return {k: v for k, v in self.__dict__.items() if k not in blacklist}
-
-    def update_recently_used(self) -> None:
-        self.agent_memory._db_write(
-            "UPDATE Memories SET workspace_updated_time=? WHERE uuid=?", time.time(), self.memid
-        )
-
-    def _more_properties_blacklist(self) -> List[str]:
-        """Override in subclasses to add additional keys to the properties blacklist"""
-        return []
-
-
-# the table entry just has the memid and a modification time,
-# actual set elements are handled as triples
-class SetNode(MemoryNode):
-    TABLE = "SetMems"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        time = self.agent_memory._db_read_one("SELECT time FROM SetMems WHERE uuid=?", self.memid)
-        self.time = time
-
-    @classmethod
-    def create(cls, memory: AgentMemory) -> str:
-        memid = cls.new(memory)
-        memory._db_write("INSERT INTO SetMems(uuid, time) VALUES (?, ?)", memid, time.time())
-        return memid
-
-    def get_members(self):
-        return self.agent_memory.get_triples(pred="set_member_", obj=self.memid)
-
-
-class ReferenceObjectNode(MemoryNode):
-    def get_pos(self) -> XYZ:
-        raise NotImplementedError("must be implemented in subclass")
-
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        raise NotImplementedError("must be implemented in subclass")
-
-
-class ObjectNode(ReferenceObjectNode):
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        r = self.agent_memory._db_read(
-            "SELECT x, y, z, bid, meta FROM {} WHERE uuid=?".format(self.TABLE), self.memid
-        )
-        self.blocks = {(x, y, z): (b, m) for (x, y, z, b, m) in r}
-
-    def get_pos(self) -> XYZ:
-        return cast(XYZ, tuple(int(x) for x in np.mean(list(self.blocks.keys()), axis=0)))
-
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        point_min = [int(x) for x in np.min(list(self.blocks.keys()), axis=0)]
-        point_max = [int(x) for x in np.max(list(self.blocks.keys()), axis=0)]
-        return cast(POINT_AT_TARGET, point_min + point_max)
-
-
-class BlockObjectNode(ObjectNode):
-    TABLE = "BlockObjects"
-
-    @classmethod
-    def create(cls, memory, blocks: Sequence[Block]) -> str:
-        # check if block object already exists in memory
-        for xyz, _ in blocks:
-            memids = memory.get_block_object_ids_by_xyz(xyz)
-            if memids:
-                return memids[0]
-
-        memid = cls.new(memory)
-        for block in blocks:
-            memory._upsert_block(block, memid, "BlockObjects")
-        memory.tag(memid, "_block_object")
-        memory.tag(memid, "_physical_object")
-        logging.info(
-            "Added block object {} with {} blocks, {}".format(
-                memid, len(blocks), Counter([idm for _, idm in blocks])
-            )
-        )
-        return memid
-
-    def __repr__(self):
-        return "<BlockObject Node @ {}>".format(list(self.blocks.keys())[0])
-
-
-class ComponentObjectNode(ObjectNode):
-    TABLE = "ComponentObjects"
-
-    @classmethod
-    def create(cls, memory: AgentMemory, blocks: List[Block], labels: List[str]) -> str:
-        memid = cls.new(memory)
-        for block in blocks:
-            memory._upsert_block(block, memid, cls.TABLE)
-        memory.tag(memid, "_component_object")
-        memory.tag(memid, "_physical_object")
-        for l in labels:
-            memory.tag(memid, l)
-        return memid
-
-
-# note: instance segmentation objects should not be tagged except by the creator
-# build an archive if you want to tag permanently
-class InstSegNode(ReferenceObjectNode):
-    TABLE = "InstSeg"
-
-    @classmethod
-    def create(cls, memory, locs, tags=[]) -> str:
-        # TODO option to not overwrite
-        # check if instance segmentation object already exists in memory
-        inst_memids = {}
-        for xyz in locs:
-            m = memory._db_read("SELECT uuid from InstSeg WHERE x=? AND y=? AND z=?", *xyz)
-            if len(m) > 0:
-                for memid in m:
-                    inst_memids[memid[0]] = True
-        for m in inst_memids.keys():
-            olocs = memory._db_read("SELECT x, y, z from InstSeg WHERE uuid=?", m)
-            # TODO maybe make an archive?
-            if len(set(olocs) - set(locs)) == 0:
-                memory._db_write("DELETE FROM Memories WHERE uuid=?", m)
-
-        memid = cls.new(memory)
-        for loc in locs:
-            cmd = "INSERT INTO InstSeg (uuid, x, y, z) VALUES ( ?, ?, ?, ?)"
-            memory._db_write(cmd, memid, loc[0], loc[1], loc[2])
-        memory.tag(memid, "_inst_seg")
-        for tag in tags:
-            memory.tag(memid, tag)
-        return memid
-
-    def __init__(self, memory: AgentMemory, memid: str):
-        super().__init__(memory, memid)
-        r = memory._db_read("SELECT x, y, z FROM InstSeg WHERE uuid=?", self.memid)
-        self.locs = r
-        self.blocks = {l: (0, 0) for l in self.locs}
-        tags = memory.get_triples(subj=self.memid, pred="has_tag")
-        self.tags = []  # noqa: T484
-        for tag in tags:
-            if tag[2][0] != "_":
-                self.tags.append(tag[2])
-
-    def get_pos(self) -> XYZ:
-        return cast(XYZ, tuple(int(x) for x in np.mean(self.locs, axis=0)))
-
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        point_min = [int(x) for x in np.min(list(self.blocks.keys()), axis=0)]
-        point_max = [int(x) for x in np.max(list(self.blocks.keys()), axis=0)]
-        return cast(POINT_AT_TARGET, point_min + point_max)
-
-    def __repr__(self):
-        return "<InstSeg Node @ {} with tags {} >".format(self.locs, self.tags)
-
-
-class MobNode(ReferenceObjectNode):
-    TABLE = "Mobs"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        eid, x, y, z = self.agent_memory._db_read_one(
-            "SELECT eid, x, y, z FROM Mobs WHERE uuid=?", self.memid
-        )
-        self.eid = eid
-        self.pos = (x, y, z)
-
-    @classmethod
-    def create(cls, memory: AgentMemory, mob) -> str:
-        memid = cls.new(memory)
-        mobtype = MOBS_BY_ID[mob.mobType]
-        memory._db_write(
-            "INSERT INTO Mobs(uuid, eid, x, y, z, mobtype, spawn) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            memid,
-            mob.entityId,
-            mob.pos.x,
-            mob.pos.y,
-            mob.pos.z,
-            mobtype,
-            time.time(),
-        )
-        memory.tag(memid, "_mob")
-        memory.tag(memid, mobtype)
-        return memid
-
-    def get_pos(self) -> XYZ:
-        x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Mobs WHERE uuid=?", self.memid
-        )
-        self.pos = (x, y, z)
-        return self.pos
-
-    # TODO: use a smarter way to get point_at_target
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Mobs WHERE uuid=?", self.memid
-        )
-        # use the block above the mob as point_at_target
-        return cast(POINT_AT_TARGET, (x, y + 1, z, x, y + 1, z))
-
-
-class PlayerNode(ReferenceObjectNode):
-    TABLE = "Players"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        # TODO: store in sqlite
-        player_struct = self.agent_memory.other_players[self.memid]
-        self.pos = player_struct.pos
-        self.look = player_struct.look
-        self.eid = player_struct.entityId
-        self.name = player_struct.name
-
-    @classmethod
-    def create(cls, memory: AgentMemory, player_struct) -> str:
-        memid = cls.new(memory)
-        memory._db_write("INSERT INTO Players(uuid, name) VALUES (?,?)", memid, player_struct.name)
-        memory.tag(memid, "_player")
-        return memid
-
-    def get_pos(self) -> XYZ:
-        return self.pos
-
-    # TODO: use a smarter way to get point_at_target
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        x, y, z = self.pos
-        # use the block above the player as point_at_target
-        return cast(POINT_AT_TARGET, (x, y + 1, z, x, y + 1, z))
-
-
-class SchematicNode(MemoryNode):
-    TABLE = "Schematics"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        r = self.agent_memory._db_read(
-            "SELECT x, y, z, bid, meta FROM Schematics WHERE uuid=?", self.memid
-        )
-        self.blocks = {(x, y, z): (b, m) for (x, y, z, b, m) in r}
-
-    @classmethod
-    def create(cls, memory: AgentMemory, blocks: Sequence[Block]) -> str:
-        memid = cls.new(memory)
-        for ((x, y, z), (b, m)) in blocks:
-            memory._db_write(
-                """
-                    INSERT INTO Schematics(uuid, x, y, z, bid, meta)
-                    VALUES (?, ?, ?, ?, ?, ?)""",
-                memid,
-                x,
-                y,
-                z,
-                b,
-                m,
-            )
-        return memid
-
-
-class BlockTypeNode(MemoryNode):
-    TABLE = "BlockTypes"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        type_name, b, m = self.agent_memory._db_read(
-            "SELECT type_name, bid, meta FROM BlockTypes WHERE uuid=?", self.memid
-        )
-        self.type_name = type_name
-        self.b = b
-        self.m = m
-
-    @classmethod
-    def create(cls, memory: AgentMemory, type_name: str, idm: IDM) -> str:
-        memid = cls.new(memory)
-        memory._db_write(
-            "INSERT INTO BlockTypes(uuid, type_name, bid, meta) VALUES (?, ?, ?, ?)",
-            memid,
-            type_name,
-            idm[0],
-            idm[1],
-        )
-        return memid
-
-
-class LocationNode(MemoryNode):
-    TABLE = "Locations"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Locations WHERE uuid=?", self.memid
-        )
-        self.location = (x, y, z)
-
-    @classmethod
-    def create(cls, memory: AgentMemory, xyz: XYZ) -> str:
-        memid = cls.new(memory)
-        memory._db_write(
-            "INSERT INTO Locations(uuid, x, y, z) VALUES (?, ?, ?, ?)",
-            memid,
-            xyz[0],
-            xyz[1],
-            xyz[2],
-        )
-        return memid
-
-
-class ChatNode(MemoryNode):
-    TABLE = "Chats"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        speaker, chat_text, time = self.agent_memory._db_read_one(
-            "SELECT speaker, chat, time FROM Chats WHERE uuid=?", self.memid
-        )
-        self.speaker_id = speaker
-        self.chat_text = chat_text
-        self.time = time
-
-    @classmethod
-    def create(cls, memory: AgentMemory, speaker: str, chat: str) -> str:
-        memid = cls.new(memory)
-        memory._db_write(
-            "INSERT INTO Chats(uuid, speaker, chat, time) VALUES (?, ?, ?, ?)",
-            memid,
-            speaker,
-            chat,
-            time.time(),
-        )
-        return memid
-
-
-class TaskNode(MemoryNode):
-    TABLE = "Tasks"
-
-    def __init__(self, agent_memory: AgentMemory, memid: str):
-        super().__init__(agent_memory, memid)
-        pickled, created_at, finished_at, action_name = self.agent_memory._db_read_one(
-            "SELECT pickled, created_at, finished_at, action_name FROM Tasks WHERE uuid=?", memid
-        )
-        self.task = self.agent_memory.safe_unpickle(pickled)
-        self.created_at = created_at
-        self.finished_at = finished_at
-        self.action_name = action_name
-
-    @classmethod
-    def create(cls, memory: AgentMemory, task: Task) -> str:
-        memid = cls.new(memory)
-        task.memid = memid  # FIXME: this shouldn't be necessary, merge Task and TaskNode?
-        memory._db_write(
-            "INSERT INTO Tasks (uuid, action_name, pickled, created_at) VALUES (?,?,?,?)",
-            memid,
-            task.__class__.__name__,
-            memory.safe_pickle(task),
-            time.time(),
-        )
-        return memid
-
-    def get_chat(self) -> Optional[ChatNode]:
-        """Return the memory of the chat that caused this task's creation, or None"""
-        triples = self.agent_memory.get_triples(pred="chat_effect_", obj=self.memid)
-        if triples:
-            chat_id, _, _ = triples[0]
-            return ChatNode(self.agent_memory, chat_id)
-        else:
-            return None
-
-    def get_parent_task(self) -> Optional["TaskNode"]:
-        """Return the 'TaskNode' of the parent task, or None"""
-        triples = self.agent_memory.get_triples(subj=self.memid, pred="_has_parent_task")
-        if len(triples) == 0:
-            return None
-        elif len(triples) == 1:
-            _, _, parent_memid = triples[0]
-            return TaskNode(self.agent_memory, parent_memid)
-        else:
-            raise AssertionError("Task {} has multiple parents: {}".format(self.memid, triples))
-
-    def get_root_task(self) -> Optional["TaskNode"]:
-        mem = self
-        parent = self.get_parent_task()
-        while parent is not None:
-            mem = parent
-            parent = mem.get_parent_task()
-        return mem
-
-    def get_child_tasks(self) -> List["TaskNode"]:
-        """Return tasks that were spawned beause of this task"""
-        r = self.agent_memory.get_triples(pred="_has_parent_task", obj=self.memid)
-        memids = [m for m, _, _ in r]
-        return [TaskNode(self.agent_memory, m) for m in memids]
-
-    def all_descendent_tasks(self, include_root=False) -> List["TaskNode"]:
-        """Return a list of 'TaskNode' objects whose _has_parent_task root is this task
-
-        If include_root is True, include this node in the list.
-
-        Tasks are returned in the order they were finished.
-        """
-        descendents = []
-        q = [self]
-        while q:
-            task = q.pop()
-            children = task.get_child_tasks()
-            descendents.extend(children)
-            q.extend(children)
-        if include_root:
-            descendents.append(self)
-        return sorted(descendents, key=lambda t: t.finished_at)
-
-    def __repr__(self):
-        return "<TaskNode: {}>".format(self.task)
-
-
-class RewardNode(MemoryNode):
-    TABLE = "Rewards"
-
-    def __init__(self, memory: AgentMemory, memid: str):
-        _, value, timestamp = memory._db_read_one("SELECT * FROM Rewards WHERE uuid=?", memid)
-        self.value = value
-        self.time = timestamp
-
-    @classmethod
-    def create(cls, memory: AgentMemory, reward_value: str) -> str:
-        memid = cls.new(memory)
-        memory._db_write(
-            "INSERT INTO Rewards(uuid, value, time) VALUES (?,?,?)",
-            memid,
-            reward_value,
-            time.time(),
-        )
-        return memid

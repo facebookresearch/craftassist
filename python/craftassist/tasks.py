@@ -18,6 +18,7 @@ import search
 from perception import ground_height
 import util
 from task import Task
+from memory_nodes import MobNode
 
 # tasks should be interruptible; that is, if they
 # store state, stopping the task and doing something
@@ -45,6 +46,63 @@ class Dance(Task):
             return self.featurizer(self)
         else:
             return "dance"
+
+
+class DanceMove(Task):
+    STEP_FNS = {
+        (1, 0, 0): "step_pos_x",
+        (-1, 0, 0): "step_neg_x",
+        (0, 1, 0): "step_pos_y",
+        (0, -1, 0): "step_neg_y",
+        (0, 0, 1): "step_pos_z",
+        (0, 0, -1): "step_neg_z",
+    }
+
+    def __init__(self, agent, task_data):
+        super(DanceMove, self).__init__()
+        self.relative_yaw = task_data.get("relative_yaw")
+        self.relative_pitch = task_data.get("relative_pitch")
+
+        # look_turn is (yaw, pitch).  pitch = 0 is head flat
+        self.head_yaw_pitch = task_data.get("head_yaw_pitch")
+        self.head_xyz = task_data.get("head_xyz")
+
+        self.translate = task_data.get("translate")
+
+    def step(self, agent):
+        if self.relative_yaw:
+            agent.turn_angle(self.relative_yaw)
+        if self.relative_pitch:
+            agent.relative_head_pitch(self.relative_pitch)
+        if self.head_xyz is not None:
+            agent.look_at(self.head_xyz[0], self.head_xyz[1], self.head_xyz[2])
+        elif self.head_yaw_pitch is not None:
+            # warning: pitch is flipped!  client uses -pitch for up,
+            agent.set_look(self.head_yaw_pitch[0], -self.head_yaw_pitch[1])
+
+        if self.translate:
+            step = self.STEP_FNS[self.translate]
+            step_fn = getattr(agent, step)
+            step_fn()
+        else:
+            # FIXME... do this right with ticks/timing
+            time.sleep(0.1)
+
+        self.finished = True
+
+
+class Point(Task):
+    def __init__(self, agent, task_data):
+        super(Point, self).__init__()
+        self.target = task_data.get("target")
+        self.start_time = agent.memory.get_time()
+
+    def step(self, agent):
+        if self.target is not None:
+            agent.point_at(self.target)
+            self.target = None
+        if agent.memory.get_time() > self.start_time + 200:
+            self.finished = True
 
 
 class Move(Task):
@@ -550,8 +608,25 @@ class Spawn(Task):
     def __init__(self, agent, task_data):
         super(Spawn, self).__init__()
         self.object_idm = task_data["object_idm"]
+        self.mobtype = MOBS_BY_ID[self.object_idm[1]]
         self.pos = task_data["pos"]
         self.PLACE_REACH = task_data.get("PLACE_REACH", 3)
+
+    def find_nearby_new_mob(self, agent):
+        mindist = 1000000
+        near_new_mob = None
+        x, y, z = self.pos
+        y = y + 1
+        for mob in agent.get_mobs():
+            if MOBS_BY_ID[mob.mobType] == self.mobtype:
+                dist = util.manhat_dist((mob.pos.x, mob.pos.y, mob.pos.z), (x, y, z))
+                # hope this doesn;t take so long mob gets away...
+                if dist < mindist:
+                    #                    print(MOBS_BY_ID[mob.mobType], dist)
+                    if not agent.memory.get_mob_by_eid(mob.entityId):
+                        mindist = dist
+                        near_new_mob = mob
+        return mindist, near_new_mob
 
     def step(self, agent):
         if util.manhat_dist(agent.pos, self.pos) > self.PLACE_REACH:
@@ -561,18 +636,14 @@ class Spawn(Task):
             agent.set_held_item(self.object_idm)
             if np.equal(self.pos, agent.pos).all():
                 agent.step_neg_z()
-            agent.place_block(self.pos[0], self.pos[1] + 1, self.pos[2])
-            time.sleep(0.1)
-            agent.memory.update(agent)
             x, y, z = self.pos
-            mobtype = MOBS_BY_ID[self.object_idm[1]]
-            mobmem = agent.memory.get_mobs(
-                spatial_range=[x - 5, x + 5, y - 5, y + 5, z - 5, z + 5],
-                spawntime=[time.time() - 2, -1],
-                mobtype=mobtype,
-            )
-            if len(mobmem) > 0:
-                mobmem = mobmem[0]
+            y = y + 1
+            agent.place_block(x, y, z)
+            time.sleep(0.1)
+            mindist, placed_mob = self.find_nearby_new_mob(agent)
+            if mindist < 3:
+                memid = MobNode.create(agent.memory, placed_mob, agent_placed=True)
+                mobmem = agent.memory.get_mob_by_id(memid)
                 agent.memory.update_recent_entities(mems=[mobmem])
                 if self.memid is not None:
                     agent.memory.add_triple(self.memid, "task_effect_", mobmem.memid)
