@@ -34,7 +34,7 @@ class TTADBertModel(object):
         self.encoder_decoder = EncoderDecoderWithLoss(enc_model, dec_with_loss, args)
         map_location = None if torch.cuda.is_available() else "cpu"
         self.encoder_decoder.load_state_dict(
-            torch.load(model_name + ".pth", map_location=map_location)
+            torch.load(model_name + ".pth", map_location=map_location), strict=False
         )
         self.encoder_decoder = (
             self.encoder_decoder.cuda()
