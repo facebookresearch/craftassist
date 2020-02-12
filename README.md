@@ -21,18 +21,6 @@ Make sure the following packages have already been installed before moving on:
 * gcc version: 7.4.0 on ubuntu 18.04
 * For Mac users:
   * LLVM version < 10 to successfully use clang. [Working with multiple versions of Xcode](https://medium.com/@hacknicity/working-with-multiple-versions-of-xcode-e331c01aa6bc).
-  
-### Python Requirements: Using A Conda Environment
-To build a conda environment that supports this release:
-```
-# Create a new env preloaded with the conda install dependencies
-conda create -n minecraft_env python==3.7.4 pip numpy scikit-learn==0.19.1 pytorch torchvision -c conda-forge -c pytorch
-conda activate minecraft_env
-
-# Install all of the rest of the dependencies with pip
-pip install -r requirements.txt
-```
-Then activate this environment whenever you want to run the agent.
 
 ### Install git-lfs
 
@@ -56,7 +44,7 @@ Use this command, or your submodules will not be pulled, and your clone will tak
 git lfs clone --recursive git@github.com:facebookresearch/craftassist.git
 ```
 
-Now `cd minecraft` and copy the large data file and untar it to the correct directories:
+Now `cd craftassist` and copy the large data file and untar it to the correct directories:
 
 ```
 curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_folder.tar.gz -o models_folder.tar.gz
@@ -64,6 +52,18 @@ tar -xzvf models_folder.tar.gz -C python/craftassist/models/ --strip-components 
 curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/ground_truth_data.txt -o python/craftassist/ground_truth_data.txt
 
 ```
+
+### Python Requirements: Using A Conda Environment
+To build a conda environment that supports this release:
+```
+# Create a new env preloaded with the conda install dependencies
+conda create -n minecraft_env python==3.7.4 pip numpy scikit-learn==0.19.1 pytorch torchvision -c conda-forge -c pytorch
+conda activate minecraft_env
+
+# Install all of the rest of the dependencies with pip
+pip install -r requirements.txt
+```
+Then activate this environment whenever you want to run the agent.
 
 ### Building client and server
 
