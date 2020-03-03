@@ -20,7 +20,8 @@ from memory_nodes import InstSegNode
 GROUND_BLOCKS = [1, 2, 3, 7, 8, 9, 12, 79, 80]
 MAX_RADIUS = 20
 BLOCK_DATA = minecraft_specs.get_block_data()
-COLOUR = minecraft_specs.get_colour_data()
+COLOUR_DATA = minecraft_specs.get_colour_data()
+PROP_DATA = minecraft_specs.get_prop_data()
 BID_COLOR_DATA = minecraft_specs.get_bid_to_colours()
 
 
@@ -120,7 +121,7 @@ def find_closest_component(mask, relpos):
 def connected_components(X, unique_idm=False):
     """Find all connected nonzero components in a array X.
     X is either rank 3 (volume) or rank 4 (volume-idm)
-    If unique_idm == True, different block types are different 
+    If unique_idm == True, different block types are different
     components
 
     Returns a list of lists of indices of connected components
@@ -368,7 +369,10 @@ def get_nearby_airtouching_blocks(agent, location, radius=15):
                         if xyzb[l[0], l[1], l[2], 0] == 0:
                             try:
                                 blocktypes.append(idm)
-                                tags = [BLOCK_DATA["bid_to_name"][idm]]
+                                type_name = BLOCK_DATA["bid_to_name"][idm]
+                                tags = [type_name]
+                                tags.extend(COLOUR_DATA["name_to_colors"][type_name])
+                                tags.extend(PROP_DATA["name_to_props"][type_name])
                             except:
                                 logging.debug(
                                     "I see a weird block, ignoring: ({}, {})".format(

@@ -2,24 +2,27 @@
 Copyright (c) Facebook, Inc. and its affiliates.
 """
 
+import json
 import numpy as np
 from scipy.ndimage import imread
 import visdom
 import pickle
 
-vis = visdom.Visdom(server ='http://localhost')
+# vis = visdom.Visdom(server ='http://localhost')
 
-f = open('/private/home/aszlam/minecraft_specs/block_images/css_chunk.txt')
+home_dir = '/private/home/aszlam'
+
+f = open(home_dir + '/minecraft_specs/block_images/css_chunk.txt')
 r = f.readlines()
 l = r[0]
 q = l.split('.items-28-')
 
-g = open('/private/home/aszlam/minecraft_specs/block_images/html_chunk.txt')
+g = open(home_dir + '/minecraft_specs/block_images/html_chunk.txt')
 s = g.readlines()
 name_to_bid = {}
 bid_to_name = {}
 for line in s:
-    c = line.find('"id">')  
+    c = line.find('"id">')
     if c > 0:
         d = line.find('<', c)
         idlist = line[c+5:d].split(':')
@@ -45,7 +48,7 @@ for line in q:
         bid = (int(ids[0]), int(ids[1]))
         bid_to_offsets[bid] = int_offsets
 
-big_image = imread('/private/home/aszlam/minecraft_specs/block_images/all_blocks')
+big_image = imread(home_dir + '/minecraft_specs/block_images/all_blocks')
 
 bid_to_image = {}
 name_to_image = {}
@@ -55,7 +58,7 @@ for name in name_to_bid:
     offsets = bid_to_offsets[bid]
     small_image = big_image[-offsets[1]:-offsets[1]+32,
                             -offsets[0]:-offsets[0]+32, :].copy()
-    
+
     bid_to_image[bid] = small_image
     name_to_image[name] = small_image
 
@@ -68,7 +71,7 @@ out = {'bid_to_image':bid_to_image,
 f.close()
 g.close()
 
-f = open('/private/home/aszlam/minecraft_specs/block_images/block_data','wb')
+f = open(home_dir + '/minecraft_specs/block_images/block_data','wb')
 pickle.dump(out, f)
 f.close()
 
@@ -156,7 +159,7 @@ def get_colors(im):
     if alpha.mean() < .4:
         colors['translucent'] = True
     return colors
-            
+
 
 
 
@@ -188,18 +191,45 @@ for i in name_to_image:
                 simple_colors_to_name[CMAP[j]] = [i]
             else:
                 simple_colors_to_name[CMAP[j]].append(i)
-            
-            
+
+
 out = {'name_to_colors':name_to_colors,
        'name_to_simple_colors':name_to_simple_colors,
        'colors_to_name':colors_to_name,
        'simple_colors_to_name':simple_colors_to_name,
        'cmap':CMAP}
 
-f = open('/private/home/aszlam/minecraft_specs/block_images/color_data','wb')
+f = open(home_dir + '/minecraft_specs/block_images/color_data','wb')
 pickle.dump(out, f)
 f.close()
 
+
+with open(home_dir + '/minecraft_specs/block_images/block_prop_data.json') as f:
+    block_prop_data = json.load(f)
+
+name_to_props = {}
+props_to_name = {}
+
+for name in name_to_image:
+    if name in block_prop_data:
+        props = block_prop_data[name]['props']
+        for prop in props:
+            if name_to_props.get(name) is None:
+                name_to_props[name] = [prop]
+            else:
+                name_to_props[name].append(prop)
+
+            if props_to_name.get(prop) is None:
+                props_to_name[prop] = [name]
+            else:
+                props_to_name[prop].append(name)
+
+out = {'name_to_props': name_to_props,
+       'props_to_name': props_to_name}
+
+f = open(home_dir + '/minecraft_specs/block_images/prop_data','wb')
+pickle.dump(out, f)
+f.close()
 
 
 '''

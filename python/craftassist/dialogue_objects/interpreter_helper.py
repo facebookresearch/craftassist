@@ -213,14 +213,18 @@ def interpret_named_schematic(
 
 
 def interpret_schematic(
-    interpreter, speaker, d
+    interpreter, speaker, d, repeat_dict=None
 ) -> List[Tuple[List[Block], Optional[str], List[Tuple[str, str]]]]:
     """Return a list of 3-tuples, each with values:
     - the schematic blocks, list[(xyz, idm)]
     - a SchematicNode memid, or None
     - a list of (pred, val) tags
     """
-    repeat = cast(int, get_repeat_num(d))
+    # hack, fixme in grammar/standardize.  sometimes the repeat is a sibling of action
+    if repeat_dict is not None:
+        repeat = cast(int, get_repeat_num(repeat_dict))
+    else:
+        repeat = cast(int, get_repeat_num(d))
     assert type(repeat) == int, "bad repeat={}".format(repeat)
     if "has_shape" in d:
         blocks, tags = interpret_shape_schematic(interpreter, speaker, d)

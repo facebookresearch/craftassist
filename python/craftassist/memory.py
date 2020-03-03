@@ -96,6 +96,9 @@ class AgentMemory:
     def get_time(self):
         return self.time.get_time()
 
+    def add_tick(self, ticks=1):
+        self.time.add_tick(ticks)
+
     # TODO list of all "updatable" mems, do a mem.update() ?
     def update(self, agent):
         for mob in agent.get_mobs():
@@ -307,7 +310,7 @@ class AgentMemory:
     ):
         (x, y, z), (b, m) = block
         if update:
-            cmd = "UPDATE {} SET uuid=?, bid=?, meta=?, updated=?, player_placed=? agent_placed=? WHERE x=? AND y=? AND z=? "
+            cmd = "UPDATE {} SET uuid=?, bid=?, meta=?, updated=?, player_placed=?, agent_placed=? WHERE x=? AND y=? AND z=? "
         else:
             cmd = "INSERT INTO {} (uuid, bid, meta, updated, player_placed, agent_placed, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         self._db_write(
@@ -527,12 +530,26 @@ class AgentMemory:
                 self.add_triple(memid, "has_name", name.strip("block").strip())
 
     def _load_block_types(
-        self, load_block_types=True, load_color=True, simple_color=False, load_material=True
+        self,
+        load_block_types=True,
+        load_color=True,
+        load_prop=True,
+        simple_color=False,
+        load_material=True,
     ):
         if not load_block_types:
             return
         bid_to_name = minecraft_specs.get_block_data()["bid_to_name"]
+
         color_data = minecraft_specs.get_colour_data()
+        if simple_color:
+            name_to_colors = color_data["name_to_simple_colors"]
+        else:
+            name_to_colors = color_data["name_to_colors"]
+
+        prop_data = minecraft_specs.get_prop_data()
+        name_to_props = prop_data["name_to_props"]
+
         for (b, m), type_name in bid_to_name.items():
             if b >= 256:
                 continue
@@ -542,18 +559,14 @@ class AgentMemory:
                 self.add_triple(memid, "has_name", type_name.strip("block").strip())
 
             if load_color:
-                if simple_color:
-                    name_to_colors = color_data["name_to_simple_colors"]
-                else:
-                    name_to_colors = color_data["name_to_colors"]
+                if name_to_colors.get(type_name) is not None:
+                    for color in name_to_colors[type_name]:
+                        self.add_triple(memid, "has_colour", color)
 
-                if name_to_colors.get(type_name) is None:
-                    continue
-                for color in name_to_colors[type_name]:
-                    self.add_triple(memid, "has_colour", color)
-
-                # TODO: add material info of block types
-                # TODO: add property info of block types
+            if load_prop:
+                if name_to_props.get(type_name) is not None:
+                    for prop in name_to_props[type_name]:
+                        self.add_triple(memid, "has_name", prop)
 
     ##############
     ###  Mobs  ###

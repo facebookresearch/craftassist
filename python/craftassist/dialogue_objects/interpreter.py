@@ -69,7 +69,7 @@ class Interpreter(DialogueObject):
                 actions.append(self.action_dict["action"])
             elif "action_sequence" in self.action_dict:
                 actions = self.action_dict["action_sequence"]
-                # actions.reverse()
+                actions.reverse()
 
             if len(actions) == 0:
                 # The action dict is in an unexpected state
@@ -184,7 +184,13 @@ class Interpreter(DialogueObject):
                 [list(obj.blocks.items()), obj.memid, tags] for (obj, tags) in zip(objs, tagss)
             ]
         else:  # a schematic
-            interprets = interpret_schematic(self, speaker, d.get("schematic", {}))
+            if d.get("repeat") is not None:
+                repeat_dict = d
+            else:
+                repeat_dict = None
+            interprets = interpret_schematic(
+                self, speaker, d.get("schematic", {}), repeat_dict=repeat_dict
+            )
 
         # Get the location to build it
         location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
@@ -317,13 +323,14 @@ class Interpreter(DialogueObject):
             repeat = get_repeat_num(d)
             origin, _ = interpret_location(self, speaker, location_d)
             attrs = {}
+            schematic_d = d["schematic"]
             # set the attributes of the hole to be dug.
             for dim, default in [("depth", 1), ("length", 1), ("width", 1)]:
                 key = "has_{}".format(dim)
-                if key in d:
+                if key in schematic_d:
                     attrs[dim] = word_to_num(d[key])
-                elif "has_size" in d:
-                    attrs[dim] = interpret_size(self, d["has_size"])
+                elif "has_size" in schematic_d:
+                    attrs[dim] = interpret_size(self, schematic_d["has_size"])
                 else:
                     attrs[dim] = default
 
@@ -433,6 +440,9 @@ class Interpreter(DialogueObject):
 
     def append_new_task(self, cls, data=None):
         # this is badly named, FIXME
+
+        # add a tick to avoid two tasks having same timestamp
+        self.memory.add_tick()
         if data is None:
             self.memory.task_stack_push(cls, chat_effect=True)
         else:

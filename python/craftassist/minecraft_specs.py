@@ -35,6 +35,16 @@ def get_colour_data():
     return _COLOUR_DATA
 
 
+_PROP_DATA = None
+
+
+def get_prop_data():
+    global _PROP_DATA
+    if _PROP_DATA is None:
+        _PROP_DATA = _pickle_load("block_images/prop_data")
+    return _PROP_DATA
+
+
 def get_bid_to_colours():
     bid_to_name = get_block_data()["bid_to_name"]
     name_to_colors = get_colour_data()["name_to_colors"]

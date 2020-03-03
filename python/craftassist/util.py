@@ -23,9 +23,11 @@ Block = Tuple[XYZ, IDM]
 Hole = Tuple[List[XYZ], IDM]
 T = TypeVar("T")  # generic type
 
+TICK_PER_SEC = 100
+
 # converts from seconds to internal tick
 def round_time(t):
-    return int(100 * t)
+    return int(TICK_PER_SEC * t)
 
 
 class Time:
@@ -45,6 +47,12 @@ class Time:
             return t
         else:
             return round_time(time.time() - self.init_time_raw)
+
+    def add_tick(self, ticks=1):
+        if self.mode == "tick":
+            self.time += 1
+        else:
+            time.sleep(ticks / TICK_PER_SEC)
 
 
 def get_bounds(locs):
@@ -106,7 +114,7 @@ def diag_adjacent(p):
 
 
 def build_safe_diag_adjacent(bounds):
-    """ bounds is [mx, Mx, my, My, mz, Mz], 
+    """ bounds is [mx, Mx, my, My, mz, Mz],
     if nothing satisfies, returns empty list """
 
     def a(p):

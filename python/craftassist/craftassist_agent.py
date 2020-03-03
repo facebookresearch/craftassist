@@ -61,7 +61,7 @@ class CraftAssistAgent(Agent):
         ttad_grammar_path=None,
         semseg_model_path=None,
         voxel_model_gpu_id=-1,
-        get_perception_interval=20,
+        perceive_interval=20,
         draw_fn=None,
         no_default_behavior=False,
         geoscorer_model_path=None,
@@ -134,7 +134,7 @@ class CraftAssistAgent(Agent):
         self.send_chat = self._send_chat
         self.last_chat_time = 0
 
-        self.get_perception_interval = get_perception_interval
+        self.perceive_interval = perceive_interval
         self.uncaught_error_count = 0
         self.last_task_memid = None
         self.point_targets = []
@@ -171,7 +171,7 @@ class CraftAssistAgent(Agent):
         self.point_targets = [pt for pt in self.point_targets if time.time() - pt[1] < 6]
 
         # Update memory with current world state
-        # Removed get_perception call due to very slow updates on non-flatworlds
+        # Removed perceive call due to very slow updates on non-flatworlds
         with TimingWarn(2):
             self.memory.update(self)
 
@@ -210,14 +210,13 @@ class CraftAssistAgent(Agent):
         # n hundreth of seconds since agent init
         return self.memory.get_time()
 
-    def get_perception(self, force=False):
+    def perceive(self, force=False):
         """
         Get both block objects and component objects and put them
         in memory
         """
         if not force and (
-            self.count % self.get_perception_interval != 0
-            or self.memory.task_stack_peek() is not None
+            self.count % self.perceive_interval != 0 or self.memory.task_stack_peek() is not None
         ):
             return
 
@@ -308,7 +307,7 @@ class CraftAssistAgent(Agent):
         raw_incoming_chats = self.get_incoming_chats()
         if raw_incoming_chats:
             # force to get objects
-            self.get_perception(force=True)
+            self.perceive(force=True)
             # logging.info("Incoming chats: {}".format(raw_incoming_chats))
 
         incoming_chats = []
