@@ -98,7 +98,7 @@ Multiplayer > Direct Connect > localhost:25565
 
 #### Error: Unsupported Protocol Version
 
-Minecraft has recently release v1.13, and our Cuberite system supports at most v1.12
+Minecraft has recently release v1.15.2, and our Cuberite system supports at most v1.12
 
 [Please follow these instructions](https://help.mojang.com/customer/portal/articles/1475923-changing-game-versions) to add a 1.12.x profile and use it to connect.
 
