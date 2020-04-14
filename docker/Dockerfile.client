@@ -27,7 +27,7 @@ RUN add-apt-repository ppa:git-core/ppa \
 
 # Clone/make repo
 RUN git lfs clone --recursive https://github.com/facebookresearch/craftassist.git
-WORKDIR craftassist
+WORKDIR /craftassist
 
 RUN curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_folder.tar.gz -o models_folder.tar.gz
 RUN tar -xzvf models_folder.tar.gz -C python/craftassist/models/ --strip-components 1
