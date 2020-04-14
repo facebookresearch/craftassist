@@ -6,7 +6,32 @@ This release is motivated by a long-term research agenda described [here](https:
 
 ![GIF of Gameplay With Bot](https://craftassist.s3-us-west-2.amazonaws.com/pubr/bot_46.gif)
 
-## Installation & Getting Started
+# Installation
+
+## Option A: Docker
+
+The fastest way to install CraftAssist is by building a [Docker](https://docker.com) image.
+
+Assuming you have Docker installed, clone the repo and run:
+
+```
+cd craftassist/docker
+docker build -t craftassist -f Dockerfile.client .
+```
+
+To start a container, run:
+
+```
+docker run -p 25565:25565 -it --name craftassist-container craftassist
+```
+
+To open an additional shell in that container (needed later), in a separate tab run:
+
+```
+docker exec -it craftassist-container bash
+```
+
+## Option B: Local Setup
 
 Do this section *before* cloning the repo.
 
@@ -72,9 +97,15 @@ To build Cuberite and the C++ Minecraft client:
 make
 ```
 
-### Run the Cuberite instance
+# Interacting with the Agent
 
-Run the following command
+If you did a local install, run the following commands from the cloned repository directory.
+
+If you installed CraftAssist using Docker, run these commands in terminals inside of your Docker container (Docker has been configured to open shells in the correct directory). Also, Docker users should use the `python3` command instead of `python`.
+
+## Run the Cuberite instance
+
+After installation, run:
 
 ```
 python ./python/cuberite_process.py
