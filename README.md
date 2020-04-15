@@ -12,23 +12,12 @@ This release is motivated by a long-term research agenda described [here](https:
 
 The fastest way to install CraftAssist is by building a [Docker](https://docker.com) image.
 
-Assuming you have Docker installed, clone the repo and run:
+After installing Docker, go to your Docker resource settings and make sure that the memory allocated to Docker is at least 4GB 
+(smaller amounts of memory can result in the build crashing). Then, clone the CraftAssist repo and run:
 
 ```
 cd craftassist/docker
 docker build -t craftassist -f Dockerfile.client .
-```
-
-To start a container, run:
-
-```
-docker run -p 25565:25565 -it --name craftassist-container craftassist
-```
-
-To open an additional shell in that container (needed later), in a separate tab run:
-
-```
-docker exec -it craftassist-container bash
 ```
 
 ## Option B: Local Setup
@@ -99,19 +88,24 @@ make
 
 # Interacting with the Agent
 
-If you did a local install, run the following commands from the cloned repository directory.
-
-If you installed CraftAssist using Docker, run these commands in terminals inside of your Docker container (Docker has been configured to open shells in the correct directory). Also, Docker users should use the `python3` command instead of `python`.
-
 ## Run the Cuberite instance
 
-After installation, run:
+If you did a local install, run the following from the cloned repository directory:
 
 ```
 python ./python/cuberite_process.py
 ```
-to start an instance of cuberite instance listening on `localhost:25565`
 
+to start an instance of Cuberite listening on `localhost:25565`
+
+
+If you installed CraftAssist using Docker, start a shell in a new Docker container with:
+
+```
+docker run -p 25565:25565 -it --name craftassist-container craftassist
+```
+
+and run the above `python` command in the default directory of that shell.
 
 ## Connecting your Minecraft game client (so you can see what's happening)
 
@@ -134,8 +128,16 @@ Minecraft has recently release v1.15.2, and our Cuberite system supports at most
 
 ## Running the interactive V0 agent
 
-Assuming you have set up the [Cuberite server](https://github.com/facebookresearch/craftassist#run-the-cuberite-instance)
-and the [client](https://github.com/facebookresearch/craftassist#connecting-your-minecraft-game-client-so-you-can-see-whats-happening), in a separate tab, run:
+Assuming you have set up the [Cuberite server](https://github.com/facebookresearch/craftassist#run-the-cuberite-instance) 
+and the [client](https://github.com/facebookresearch/craftassist#connecting-your-minecraft-game-client-so-you-can-see-whats-happening):
+
+* Docker users should open a second shell in their container with:
+```
+docker exec -it craftassist-container bash
+```
+* Local users should open a new terminal in the repository directory.
+
+In the new shell, run:
 
 ```
 python ./python/craftassist/craftassist_agent.py
