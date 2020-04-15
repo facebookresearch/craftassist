@@ -35,6 +35,8 @@ RUN make
 
 RUN pip3 install -r requirements.txt
 
+RUN echo "alias python=python3" >> ~/.bashrc
+
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
