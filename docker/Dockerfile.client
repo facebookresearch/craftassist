@@ -1,0 +1,43 @@
+FROM ubuntu:18.04
+
+RUN apt-get -y update
+RUN apt-get install -y \
+        cmake \
+        g++ \
+        git \
+        libboost-all-dev \
+        libeigen3-dev \
+        libgoogle-glog-dev \
+        make \
+        python3-dev \
+        python3-pip \
+        ;
+
+RUN pip3 install torch
+
+
+# Install Git LFS
+COPY gitlfs_install.sh /gitlfs_install.sh
+RUN apt-get install -y software-properties-common  # for add-apt-repository
+RUN add-apt-repository ppa:git-core/ppa \
+        && bash /gitlfs_install.sh \
+        && apt-get install -y git-lfs \
+        && git lfs install
+
+
+# Clone/make repo
+RUN git lfs clone --recursive https://github.com/facebookresearch/craftassist.git
+WORKDIR /craftassist
+
+RUN curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/models_folder.tar.gz -o models_folder.tar.gz
+RUN tar -xzvf models_folder.tar.gz -C python/craftassist/models/ --strip-components 1
+RUN make
+
+RUN pip3 install -r requirements.txt
+
+RUN echo "alias python=python3" >> ~/.bashrc
+
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+CMD ["bash"]
