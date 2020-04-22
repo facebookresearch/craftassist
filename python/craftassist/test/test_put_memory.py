@@ -20,7 +20,7 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
             "dialogue_type": "PUT_MEMORY",
             "upsert": {"memory_data": {"memory_type": "REWARD", "reward_value": "POSITIVE"}},
         }
-        self.handle_action_dict(d)
+        self.handle_logical_form(d)
 
     def test_tag(self):
         d = {
@@ -28,14 +28,14 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
             "filters": {"reference_object": {"location": {"location_type": "SPEAKER_LOOK"}}},
             "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": "fluffy"}},
         }
-        self.handle_action_dict(d)
+        self.handle_logical_form(d)
 
         # destroy it
         d = {
             "dialogue_type": "HUMAN_GIVE_COMMAND",
             "action": {"action_type": "DESTROY", "reference_object": {"has_tag": "fluffy"}},
         }
-        changes = self.handle_action_dict(d, answer="yes")
+        changes = self.handle_logical_form(d, answer="yes")
 
         # ensure it was destroyed
         self.assertEqual(changes, {k: (0, 0) for k in self.cube_right.blocks.keys()})
@@ -47,7 +47,7 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
             "filters": {"reference_object": {"location": {"location_type": "SPEAKER_LOOK"}}},
             "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": tag}},
         }
-        self.handle_action_dict(d)
+        self.handle_logical_form(d)
 
         # build a fluffy
         d = {
@@ -58,7 +58,7 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
                 "location": {"location_type": "AGENT_POS"},
             },
         }
-        changes = self.handle_action_dict(d, answer="yes")
+        changes = self.handle_logical_form(d, answer="yes")
 
         self.assert_schematics_equal(changes.items(), self.cube_right.blocks.items())
 

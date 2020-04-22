@@ -6,15 +6,16 @@ import unittest
 from unittest.mock import Mock
 
 import tasks
-from dialogue_objects import BotStackStatus
+from base_agent.dialogue_objects import BotStackStatus
 from dialogue_stack import DialogueStack
-from memory import AgentMemory
+from mc_memory import MCAgentMemory
 
 
 class BotStackStatusTest(unittest.TestCase):
     def setUp(self):
         self.agent = Mock(["send_chat"])
-        self.memory = AgentMemory()
+        self.memory = MCAgentMemory()
+        self.agent.memory = self.memory
         self.dialogue_stack = DialogueStack(self.agent, self.memory)
         self.dialogue_stack.append(
             BotStackStatus(

@@ -10,18 +10,21 @@ from scipy.optimize import linprog
 
 import logging
 import minecraft_specs
+
+####FIXME!!!
 import util
 
 from block_data import BORING_BLOCKS, PASSABLE_BLOCKS
 from search import depth_first_search
 
-from memory_nodes import InstSegNode
+from mc_memory_nodes import InstSegNode, BlockObjectNode
 
 GROUND_BLOCKS = [1, 2, 3, 7, 8, 9, 12, 79, 80]
 MAX_RADIUS = 20
 BLOCK_DATA = minecraft_specs.get_block_data()
 COLOUR_DATA = minecraft_specs.get_colour_data()
-PROP_DATA = minecraft_specs.get_prop_data()
+BLOCK_PROPERTY_DATA = minecraft_specs.get_block_property_data()
+MOB_PROPERTY_DATA = minecraft_specs.get_mob_property_data()
 BID_COLOR_DATA = minecraft_specs.get_bid_to_colours()
 
 
@@ -371,8 +374,10 @@ def get_nearby_airtouching_blocks(agent, location, radius=15):
                                 blocktypes.append(idm)
                                 type_name = BLOCK_DATA["bid_to_name"][idm]
                                 tags = [type_name]
-                                tags.extend(COLOUR_DATA["name_to_colors"][type_name])
-                                tags.extend(PROP_DATA["name_to_props"][type_name])
+                                tags.extend(COLOUR_DATA["name_to_colors"].get(type_name, []))
+                                tags.extend(
+                                    BLOCK_PROPERTY_DATA["name_to_properties"].get(type_name, [])
+                                )
                             except:
                                 logging.debug(
                                     "I see a weird block, ignoring: ({}, {})".format(
@@ -488,3 +493,20 @@ def get_all_nearby_holes(agent, location, radius=15, store_inst_seg=True):
             InstSegNode.create(agent.memory, hole[0], tags=["hole", "pit", "mine"])
 
     return holes
+
+
+class PerceptionWrapper:
+    def __init__(self, agent, perceive_freq=20):
+        self.perceive_freq = perceive_freq
+        self.agent = agent
+        self.radius = 15
+
+    def perceive(self, force=False):
+        if self.perceive_freq == 0 and not force:
+            return
+        if self.agent.count % self.perceive_freq != 0 and not force:
+            return
+        for obj in all_nearby_objects(self.agent.get_blocks, self.agent.pos):
+            BlockObjectNode.create(self.agent.memory, obj)
+        get_all_nearby_holes(self.agent, self.agent.pos, radius=self.radius)
+        get_nearby_airtouching_blocks(self.agent, self.agent.pos, radius=self.radius)

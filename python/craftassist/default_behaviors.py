@@ -10,7 +10,7 @@ import shape_helpers as sh
 import tasks
 
 from util import pos_to_np
-from dialogue_objects import Say
+from base_agent.dialogue_objects import Say
 from ttad.generation_dialogues.generate_utils import prepend_a_an
 
 

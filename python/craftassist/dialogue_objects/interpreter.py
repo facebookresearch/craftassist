@@ -8,7 +8,7 @@ import random
 from typing import Tuple, Dict, Any, Optional
 from word2number.w2n import word_to_num
 
-from .dialogue_object import DialogueObject, ConfirmTask, Say
+from base_agent.dialogue_objects import DialogueObject, ConfirmTask, Say
 from .interpreter_helper import (
     ErrorWithResponse,
     NextDialogueStep,
@@ -25,8 +25,8 @@ from .interpreter_helper import (
     interpret_facing,
     interpret_point_target,
 )
-from memory_nodes import MobNode, PlayerNode
-from word_maps import SPAWN_OBJECTS
+from base_agent.memory_nodes import PlayerNode
+from mc_memory_nodes import MobNode
 import dance
 import tasks
 
@@ -116,13 +116,13 @@ class Interpreter(DialogueObject):
             raise ErrorWithResponse("I don't understand what you want me to spawn.")
 
         object_name = spawn_obj["has_name"]
-        if object_name in SPAWN_OBJECTS:
-            object_idm = (383, SPAWN_OBJECTS[object_name])
-        else:
+        schematic = self.memory.get_mob_schematic_by_name(object_name)
+        if not schematic:
             raise ErrorWithResponse("I don't know how to spawn: %r." % (object_name))
 
+        object_idm = list(schematic.blocks.values())[0]
         pos, _ = interpret_location(self, speaker, {"location_type": "SPEAKER_LOOK"})
-        repeat_times = get_repeat_num(spawn_obj)
+        repeat_times = get_repeat_num(d)
         for i in range(repeat_times):
             task_data = {"object_idm": object_idm, "pos": pos, "action_dict": d}
             self.append_new_task(tasks.Spawn, task_data)
@@ -280,7 +280,7 @@ class Interpreter(DialogueObject):
 
         # don't kill mobs
         if all(isinstance(obj, MobNode) for obj in objs):
-            raise ErrorWithResponse("I don't kill animals")
+            raise ErrorWithResponse("I don't kill animals, sorry!")
         if all(isinstance(obj, PlayerNode) for obj in objs):
             raise ErrorWithResponse("It's illegal to kill someone even in minecraft!")
         objs = [obj for obj in objs if not isinstance(obj, MobNode)]
@@ -328,7 +328,7 @@ class Interpreter(DialogueObject):
             for dim, default in [("depth", 1), ("length", 1), ("width", 1)]:
                 key = "has_{}".format(dim)
                 if key in schematic_d:
-                    attrs[dim] = word_to_num(d[key])
+                    attrs[dim] = word_to_num(schematic_d[key])
                 elif "has_size" in schematic_d:
                     attrs[dim] = interpret_size(self, schematic_d["has_size"])
                 else:
@@ -416,7 +416,19 @@ class Interpreter(DialogueObject):
                 else:
                     dance_location, _ = interpret_location(self, speaker, location_d)
                 # TODO use name!
-                dance_fn = random.choice(list(self.memory.dances.values()))
+                if dance_type.get("dance_type_span") is not None:
+                    dance_name = dance_type["dance_type_span"]
+                    dance_memids = self.memory._db_read(
+                        "SELECT DISTINCT(Dances.uuid) FROM Dances INNER JOIN Triples on Dances.uuid=Triples.subj WHERE Triples.obj=?",
+                        dance_name,
+                    )
+                else:
+                    dance_memids = self.memory._db_read(
+                        "SELECT DISTINCT(Dances.uuid) FROM Dances INNER JOIN Triples on Dances.uuid=Triples.subj WHERE Triples.obj=?",
+                        "ornamental_dance",
+                    )
+                dance_memid = random.choice(dance_memids)[0]
+                dance_fn = self.memory.dances[dance_memid]
                 for i in range(repeat):
                     dance_obj = dance.Movement(
                         agent=self.agent, move_fn=dance_fn, dance_location=dance_location

@@ -237,6 +237,60 @@ bool Client::placeBlock(BlockPos pos) {
   return true;
 }
 
+// TODO Add more checkings
+bool Client::useEntity(BlockPos pos) {
+  Slot heldItem = getCurrentHotbarItem();
+  CHECK_GE(heldItem.id, 1) << "Can't use item with id on target: " << heldItem.id;
+
+  Pos myPos = getPosition();
+  Pos dist = myPos - pos;
+
+  if (dist.x * dist.x + dist.y * dist.y + dist.z * dist.z > 16) {
+    LOG(WARNING) << "Cannot use entity farther than 4-block radius. Tried to use entity on" << pos << " from "
+                 << myPos;
+    return false;
+  }
+
+  packetWriter_->safeWrite(encoder_->playerUseEntityPacket(pos));
+
+  return true;
+}
+
+// TODO Add more checkings
+bool Client::useItem() {
+  Slot heldItem = getCurrentHotbarItem();
+  CHECK_GE(heldItem.id, 1) << "Can't use item with id: " << heldItem.id;
+
+  packetWriter_->safeWrite(encoder_->playerUseItemPacket());
+
+  return true;
+}
+
+bool Client::useItemOnBlock(BlockPos pos) {
+  Slot heldItem = getCurrentHotbarItem();
+  CHECK_GE(heldItem.id, 1) << "Can't place block with id: " << heldItem.id;
+
+  Pos myPos = getPosition();
+  Pos dist = myPos - pos;
+
+  if (dist.x * dist.x + dist.y * dist.y + dist.z * dist.z > 16) {
+    LOG(WARNING) << "Cannot place farther than 4-block radius. Tried to place on" << pos << " from "
+                 << myPos;
+    return false;
+  }
+
+  gameState_->getBlockMap().lock();
+  optional<Block> block = gameState_->getBlockMap().getBlockUnsafe(pos.x, pos.y, pos.z);
+  CHECK(block) << "Failed to use item on block at unloaded " << pos;
+  gameState_->getBlockMap().unlock();
+
+  // Use item on block is equivalent to holding the item and then placing it on the position of
+  // the target (at least for fertilizing tree sapling with bone meal)
+  packetWriter_->safeWrite(encoder_->playerBlockPlacementPacket(pos));
+
+  return true;
+}
+
 bool Client::placeBlockFeet() {
   float yaw = gameState_->getLook().yaw;
   BlockPos pos = getPosition().toBlockPos() + discreteStepDirection(yaw);

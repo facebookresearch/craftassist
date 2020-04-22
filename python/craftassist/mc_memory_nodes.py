@@ -1,74 +1,13 @@
 import numpy as np
-import uuid
 import logging
 from collections import Counter
-from typing import cast, Optional, List, Dict, Sequence
+from typing import cast, List, Sequence
+
+# FIXME fix util imports
 from util import XYZ, POINT_AT_TARGET, IDM, Block, get_bounds
 from entities import MOBS_BY_ID
-from task import Task
 
-
-class MemoryNode:
-    PROPERTIES_BLACKLIST = ["agent_memory", "forgetme"]
-    TABLE: Optional[str] = None
-
-    @classmethod
-    def new(cls, agent_memory) -> str:
-        memid = uuid.uuid4().hex
-        agent_memory._db_write("INSERT INTO Memories VALUES (?,?,?)", memid, cls.TABLE, 0)
-        return memid
-
-    def __init__(self, agent_memory, memid: str):
-        self.agent_memory = agent_memory
-        self.memid = memid
-
-    def get_tags(self) -> List[str]:
-        return self.agent_memory.get_tags_by_memid(self.memid)
-
-    def get_all_has_relations(self) -> Dict[str, str]:
-        return self.agent_memory.get_all_has_relations(self.memid)
-
-    def get_properties(self) -> Dict[str, str]:
-        blacklist = self.PROPERTIES_BLACKLIST + self._more_properties_blacklist()
-        return {k: v for k, v in self.__dict__.items() if k not in blacklist}
-
-    def update_recently_used(self) -> None:
-        self.agent_memory.set_memory_updated_time(self.memid)
-
-    def _more_properties_blacklist(self) -> List[str]:
-        """Override in subclasses to add additional keys to the properties blacklist"""
-        return []
-
-
-# the table entry just has the memid and a modification time,
-# actual set elements are handled as triples
-class SetNode(MemoryNode):
-    TABLE = "SetMems"
-
-    def __init__(self, agent_memory, memid: str):
-        super().__init__(agent_memory, memid)
-        time = self.agent_memory._db_read_one("SELECT time FROM SetMems WHERE uuid=?", self.memid)
-        self.time = time
-
-    @classmethod
-    def create(cls, memory) -> str:
-        memid = cls.new(memory)
-        memory._db_write("INSERT INTO SetMems(uuid, time) VALUES (?, ?)", memid, memory.get_time())
-        return memid
-
-    def get_members(self):
-        return self.agent_memory.get_triples(pred="set_member_", obj=self.memid)
-
-
-class ReferenceObjectNode(MemoryNode):
-    def get_pos(self) -> XYZ:
-        raise NotImplementedError("must be implemented in subclass")
-
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        raise NotImplementedError("must be implemented in subclass")
-
-    def get_bounds(self):
-        raise NotImplementedError("must be implemented in subclass")
+from base_agent.memory_nodes import link_archive_to_mem, ReferenceObjectNode, MemoryNode, NODELIST
 
 
 class ObjectNode(ReferenceObjectNode):
@@ -90,18 +29,29 @@ class ObjectNode(ReferenceObjectNode):
     def get_bounds(self):
         return get_bounds(list(self.blocks.keys()))
 
+    def snapshot(self, agent_memory):
+        if self.TABLE == "BlockObjects":
+            table = "ArchivedBlockObjects"
+        else:
+            table = self.TABLE
+        archive_memid = self.new(agent_memory, snapshot=True)
+        for bid, meta in self.blocks.items():
+            agent_memory._upsert_block((bid, meta), archive_memid, table)
+        link_archive_to_mem(agent_memory, self.memid, archive_memid)
+        return archive_memid
+
 
 class BlockObjectNode(ObjectNode):
+    TABLE_ROWS = ["uuid", "x", "y", "z", "bid", "meta", "agent_placed", "player_placed", "updated"]
     TABLE = "BlockObjects"
 
     @classmethod
     def create(cls, memory, blocks: Sequence[Block]) -> str:
         # check if block object already exists in memory
         for xyz, _ in blocks:
-            memids = memory.get_block_object_ids_by_xyz(xyz)
-            if memids:
-                return memids[0]
-
+            old_memids = memory.get_block_object_ids_by_xyz(xyz)
+            if old_memids:
+                return old_memids[0]
         memid = cls.new(memory)
         for block in blocks:
             memory._upsert_block(block, memid, "BlockObjects")
@@ -112,6 +62,7 @@ class BlockObjectNode(ObjectNode):
                 memid, len(blocks), Counter([idm for _, idm in blocks])
             )
         )
+
         return memid
 
     def __repr__(self):
@@ -119,6 +70,7 @@ class BlockObjectNode(ObjectNode):
 
 
 class ComponentObjectNode(ObjectNode):
+    TABLE_ROWS = ["uuid", "x", "y", "z", "bid", "meta", "agent_placed", "player_placed", "updated"]
     TABLE = "ComponentObjects"
 
     @classmethod
@@ -136,6 +88,7 @@ class ComponentObjectNode(ObjectNode):
 # note: instance segmentation objects should not be tagged except by the creator
 # build an archive if you want to tag permanently
 class InstSegNode(ReferenceObjectNode):
+    TABLE_ROWS = ["uuid", "x", "y", "z"]
     TABLE = "InstSeg"
 
     @classmethod
@@ -187,11 +140,30 @@ class InstSegNode(ReferenceObjectNode):
         m = np.min(self.locs, axis=0)
         return m[0], M[0], m[1], M[1], m[2], M[2]
 
+    def snapshot(self, agent_memory):
+        archive_memid = self.new(agent_memory, snapshot=True)
+        for loc in self.locs:
+            cmd = "INSERT INTO InstSeg (uuid, x, y, z) VALUES ( ?, ?, ?, ?)"
+            agent_memory._db_write(cmd, archive_memid, loc[0], loc[1], loc[2])
+        link_archive_to_mem(agent_memory, self.memid, archive_memid)
+        return archive_memid
+
     def __repr__(self):
         return "<InstSeg Node @ {} with tags {} >".format(self.locs, self.tags)
 
 
 class MobNode(ReferenceObjectNode):
+    TABLE_ROWS = [
+        "uuid",
+        "eid",
+        "x",
+        "y",
+        "z",
+        "mobtype",
+        "player_placed",
+        "agent_placed",
+        "spawn",
+    ]
     TABLE = "Mobs"
 
     def __init__(self, agent_memory, memid: str):
@@ -243,40 +215,8 @@ class MobNode(ReferenceObjectNode):
         return x, x, y, y, z, z
 
 
-class PlayerNode(ReferenceObjectNode):
-    TABLE = "Players"
-
-    def __init__(self, agent_memory, memid: str):
-        super().__init__(agent_memory, memid)
-        # TODO: store in sqlite
-        player_struct = self.agent_memory.other_players[self.memid]
-        self.pos = player_struct.pos
-        self.look = player_struct.look
-        self.eid = player_struct.entityId
-        self.name = player_struct.name
-
-    @classmethod
-    def create(cls, memory, player_struct) -> str:
-        memid = cls.new(memory)
-        memory._db_write("INSERT INTO Players(uuid, name) VALUES (?,?)", memid, player_struct.name)
-        memory.tag(memid, "_player")
-        return memid
-
-    def get_pos(self) -> XYZ:
-        return self.pos
-
-    # TODO: use a smarter way to get point_at_target
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        x, y, z = self.pos
-        # use the block above the player as point_at_target
-        return cast(POINT_AT_TARGET, (x, y + 1, z, x, y + 1, z))
-
-    def get_bounds(self):
-        x, y, z = self.pos
-        return x, x, y, y, z, z
-
-
 class SchematicNode(MemoryNode):
+    TABLE_ROWS = ["uuid", "x", "y", "z", "bid", "meta"]
     TABLE = "Schematics"
 
     def __init__(self, agent_memory, memid: str):
@@ -305,6 +245,7 @@ class SchematicNode(MemoryNode):
 
 
 class BlockTypeNode(MemoryNode):
+    TABLE_ROWS = ["uuid", "type_name", "bid", "meta"]
     TABLE = "BlockTypes"
 
     def __init__(self, agent_memory, memid: str):
@@ -329,46 +270,34 @@ class BlockTypeNode(MemoryNode):
         return memid
 
 
-# shouldn't this be a reference object?  TODO!!
-class LocationNode(MemoryNode):
-    TABLE = "Locations"
+class MobTypeNode(MemoryNode):
+    TABLE_ROWS = ["uuid", "type_name", "bid", "meta"]
+    TABLE = "MobTypes"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
-        x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Locations WHERE uuid=?", self.memid
+        type_name, b, m = self.agent_memory._db_read(
+            "SELECT type_name, bid, meta FROM MobTypes WHERE uuid=?", self.memid
         )
-        self.location = (x, y, z)
+        self.type_name = type_name
+        self.b = b
+        self.m = m
 
     @classmethod
-    def create(cls, memory, xyz: XYZ) -> str:
+    def create(cls, memory, type_name: str, idm: IDM) -> str:
         memid = cls.new(memory)
         memory._db_write(
-            "INSERT INTO Locations(uuid, x, y, z) VALUES (?, ?, ?, ?)",
+            "INSERT INTO MobTypes(uuid, type_name, bid, meta) VALUES (?, ?, ?, ?)",
             memid,
-            xyz[0],
-            xyz[1],
-            xyz[2],
+            type_name,
+            idm[0],
+            idm[1],
         )
-        return memid
-
-
-class TimeNode(MemoryNode):
-    TABLE = "Times"
-
-    def __init__(self, agent_memory, memid: str):
-        super().__init__(agent_memory, memid)
-        t = self.agent_memory._db_read_one("SELECT time FROM Times WHERE uuid=?", self.memid)
-        self.time = t
-
-    @classmethod
-    def create(cls, memory, time: int) -> str:
-        memid = cls.new(memory)
-        memory._db_write("INSERT INTO Times(uuid, time) VALUES (?, ?)", memid, time)
         return memid
 
 
 class DanceNode(MemoryNode):
+    TABLE_ROWS = ["uuid"]
     TABLE = "Dances"
 
     def __init__(self, agent_memory, memid: str):
@@ -377,124 +306,21 @@ class DanceNode(MemoryNode):
         self.dance_fn = self.agent_memory[memid]
 
     @classmethod
-    def create(cls, memory, dance_fn, name=None) -> str:
+    def create(cls, memory, dance_fn, name=None, tags=[]) -> str:
         memid = cls.new(memory)
         memory._db_write("INSERT INTO Dances(uuid) VALUES (?)", memid)
         # TODO put in db via pickle like tasks?
         memory.dances[memid] = dance_fn
         if name is not None:
             memory.add_triple(memid, "has_name", name)
+        if len(tags) > 0:
+            for tag in tags:
+                memory.add_triple(memid, "has_tag", tag)
         return memid
-
-
-class ChatNode(MemoryNode):
-    TABLE = "Chats"
-
-    def __init__(self, agent_memory, memid: str):
-        super().__init__(agent_memory, memid)
-        speaker, chat_text, time = self.agent_memory._db_read_one(
-            "SELECT speaker, chat, time FROM Chats WHERE uuid=?", self.memid
-        )
-        self.speaker_id = speaker
-        self.chat_text = chat_text
-        self.time = time
-
-    @classmethod
-    def create(cls, memory, speaker: str, chat: str) -> str:
-        memid = cls.new(memory)
-        memory._db_write(
-            "INSERT INTO Chats(uuid, speaker, chat, time) VALUES (?, ?, ?, ?)",
-            memid,
-            speaker,
-            chat,
-            memory.get_time(),
-        )
-        return memid
-
-
-class TaskNode(MemoryNode):
-    TABLE = "Tasks"
-
-    def __init__(self, agent_memory, memid: str):
-        super().__init__(agent_memory, memid)
-        pickled, created_at, finished_at, action_name = self.agent_memory._db_read_one(
-            "SELECT pickled, created_at, finished_at, action_name FROM Tasks WHERE uuid=?", memid
-        )
-        self.task = self.agent_memory.safe_unpickle(pickled)
-        self.created_at = created_at
-        self.finished_at = finished_at
-        self.action_name = action_name
-
-    @classmethod
-    def create(cls, memory, task: Task) -> str:
-        memid = cls.new(memory)
-        task.memid = memid  # FIXME: this shouldn't be necessary, merge Task and TaskNode?
-        memory._db_write(
-            "INSERT INTO Tasks (uuid, action_name, pickled, created_at) VALUES (?,?,?,?)",
-            memid,
-            task.__class__.__name__,
-            memory.safe_pickle(task),
-            memory.get_time(),
-        )
-        return memid
-
-    def get_chat(self) -> Optional[ChatNode]:
-        """Return the memory of the chat that caused this task's creation, or None"""
-        triples = self.agent_memory.get_triples(pred="chat_effect_", obj=self.memid)
-        if triples:
-            chat_id, _, _ = triples[0]
-            return ChatNode(self.agent_memory, chat_id)
-        else:
-            return None
-
-    def get_parent_task(self) -> Optional["TaskNode"]:
-        """Return the 'TaskNode' of the parent task, or None"""
-        triples = self.agent_memory.get_triples(subj=self.memid, pred="_has_parent_task")
-        if len(triples) == 0:
-            return None
-        elif len(triples) == 1:
-            _, _, parent_memid = triples[0]
-            return TaskNode(self.agent_memory, parent_memid)
-        else:
-            raise AssertionError("Task {} has multiple parents: {}".format(self.memid, triples))
-
-    def get_root_task(self) -> Optional["TaskNode"]:
-        mem = self
-        parent = self.get_parent_task()
-        while parent is not None:
-            mem = parent
-            parent = mem.get_parent_task()
-        return mem
-
-    def get_child_tasks(self) -> List["TaskNode"]:
-        """Return tasks that were spawned beause of this task"""
-        r = self.agent_memory.get_triples(pred="_has_parent_task", obj=self.memid)
-        memids = [m for m, _, _ in r]
-        return [TaskNode(self.agent_memory, m) for m in memids]
-
-    def all_descendent_tasks(self, include_root=False) -> List["TaskNode"]:
-        """Return a list of 'TaskNode' objects whose _has_parent_task root is this task
-
-        If include_root is True, include this node in the list.
-
-        Tasks are returned in the order they were finished.
-        """
-        descendents = []
-        q = [self]
-        while q:
-            task = q.pop()
-            children = task.get_child_tasks()
-            descendents.extend(children)
-            q.extend(children)
-        if include_root:
-            descendents.append(self)
-        return sorted(descendents, key=lambda t: t.finished_at)
-
-    def __repr__(self):
-        return "<TaskNode: {}>".format(self.task)
 
 
 class RewardNode(MemoryNode):
+    TABLE_ROWS = ["uuid", "value", "time"]
     TABLE = "Rewards"
 
     def __init__(self, agent_memory, memid: str):
@@ -514,3 +340,26 @@ class RewardNode(MemoryNode):
             agent_memory.get_time(),
         )
         return memid
+
+
+NODELIST = NODELIST + [
+    RewardNode,
+    DanceNode,
+    BlockTypeNode,
+    SchematicNode,
+    MobNode,
+    InstSegNode,
+    ComponentObjectNode,
+    BlockObjectNode,
+]  # noqa
+
+"""
+NODELIST["rewards"] = RewardNode
+NODELIST["Dances"] = DanceNode
+NODELIST["BlockTypes"] = BlockTypeNode
+NODELIST["Schematics"] = SchematicNode
+NODELIST["Mobs"] = MobNode
+NODELIST["InstSeg"] = InstSegNode
+NODELIST["ComponentObjects"] = ComponentObjectNode
+NODELIST["BlockObjects"] = BlockObjectNode
+"""

@@ -1,37 +1,40 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
+# TODO correct path for safety.txt
+# TODO correct model paths
 
 import os
 import sys
+import logging
+import faulthandler
+import signal
+import random
+import re
+import sentry_sdk
+import numpy as np
+
+# FIXME
+import time
+from multiprocessing import set_start_method
+
+import mc_memory
+from dialogue_objects import GetMemoryHandler, PutMemoryHandler, Interpreter
+from base_agent.loco_mc_agent import LocoMCAgent
+from base_agent.util import hash_user
 
 # python/ dir, for agent.so
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-import faulthandler
-import itertools
-import logging
-import numpy as np
-import random
-import re
-import sentry_sdk
-import signal
-import time
-from multiprocessing import set_start_method
+from agent import Agent as MCAgent
 
-from agent import Agent
-from agent_connection import default_agent_name
-from voxel_models.subcomponent_classifier import SubComponentClassifier
+from low_level_perception import LowLevelMCPerception
+import heuristic_perception
+
+from voxel_models.subcomponent_classifier import SubcomponentClassifierWrapper
 from voxel_models.geoscorer import Geoscorer
-
-import memory
-import perception
-import shapes
-from util import to_block_pos, pos_to_np, TimingWarn, hash_user
-
+from base_agent.nsp_dialogue_manager import NSPDialogueManager
 import default_behaviors
-from ttad_model_dialogue_manager import TtadModelDialogueManager
-
 
 faulthandler.register(signal.SIGUSR1)
 
@@ -45,228 +48,79 @@ logging.getLogger().handlers.clear()
 sentry_sdk.init()  # enabled if SENTRY_DSN set in env
 
 DEFAULT_BEHAVIOUR_TIMEOUT = 20
-DEFAULT_PORT = 25565
 
 
-class CraftAssistAgent(Agent):
-    def __init__(
-        self,
-        host="localhost",
-        port=DEFAULT_PORT,
-        name=None,
-        ttad_prev_model_path=None,
-        ttad_model_dir=None,
-        ttad_bert_data_dir=None,
-        ttad_embeddings_path=None,
-        ttad_grammar_path=None,
-        semseg_model_path=None,
-        voxel_model_gpu_id=-1,
-        perceive_interval=20,
-        draw_fn=None,
-        no_default_behavior=False,
-        geoscorer_model_path=None,
-    ):
-        logging.info("CraftAssistAgent.__init__ started")
-        self.name = name or default_agent_name()
-        self.no_default_behavior = no_default_behavior
+class CraftAssistAgent(LocoMCAgent):
+    def __init__(self, opts):
+        super(CraftAssistAgent, self).__init__(opts)
+        self.no_default_behavior = opts.no_default_behavior
+        self.point_targets = []
+        self.last_chat_time = 0
 
-        # files needed to set up ttad model
-        if ttad_prev_model_path is None:
-            ttad_prev_model_path = os.path.join(os.path.dirname(__file__), "models/ttad/ttad.pth")
-        if ttad_model_dir is None:
-            ttad_model_dir = os.path.join(os.path.dirname(__file__), "models/ttad_bert/model/")
-        if ttad_bert_data_dir is None:
-            ttad_bert_data_dir = os.path.join(
-                os.path.dirname(__file__), "models/ttad_bert/annotated_data/"
-            )
-        if ttad_embeddings_path is None:
-            ttad_embeddings_path = os.path.join(
-                os.path.dirname(__file__), "models/ttad/ttad_ft_embeds.pth"
-            )
-        if ttad_grammar_path is None:
-            ttad_grammar_path = os.path.join(
-                os.path.dirname(__file__), "models/ttad/dialogue_grammar.json"
-            )
-
-        # set up the SubComponentClassifier model
-        if semseg_model_path is not None:
-            self.subcomponent_classifier = SubComponentClassifier(
-                voxel_model_path=semseg_model_path
-            )
-        else:
-            self.subcomponent_classifier = None
-
-        # set up the Geoscorer model
-        if geoscorer_model_path is not None:
-            self.geoscorer = Geoscorer(merger_model_path=geoscorer_model_path)
-        else:
-            self.geoscorer = None
-
-        self.memory = memory.AgentMemory(
+    def init_memory(self):
+        self.memory = mc_memory.MCAgentMemory(
             db_file=os.environ.get("DB_FILE", ":memory:"),
             db_log_path="agent_memory.{}.log".format(self.name),
         )
-        logging.info("Initialized AgentMemory")
+        logging.info("Initialized agent memory")
 
-        self.dialogue_manager = TtadModelDialogueManager(
-            self,
-            ttad_prev_model_path,
-            ttad_model_dir,
-            ttad_bert_data_dir,
-            ttad_embeddings_path,
-            ttad_grammar_path,
+    def init_perception(self):
+        self.perception_modules = {}
+        self.perception_modules["low_level"] = LowLevelMCPerception(self)
+        self.perception_modules["heuristic"] = heuristic_perception.PerceptionWrapper(self)
+        # set up the SubComponentClassifier model
+        if self.opts.semseg_model_path:
+            self.perception_modules["semseg"] = SubcomponentClassifierWrapper(
+                self, self.opts.semseg_model_path
+            )
+
+        # set up the Geoscorer model
+        self.geoscorer = (
+            Geoscorer(merger_model_path=self.opts.geoscorer_model_path)
+            if self.opts.geoscorer_model_path
+            else None
         )
-        logging.info("Initialized DialogueManager")
 
-        # Log to file
-        fh = logging.FileHandler("agent.{}.log".format(self.name))
-        fh.setFormatter(log_formatter)
-        fh.setLevel(logging.DEBUG)
-        logging.getLogger().addHandler(fh)
+    def init_controller(self):
+        dialogue_object_classes = {}
+        dialogue_object_classes["interpreter"] = Interpreter
+        dialogue_object_classes["get_memory"] = GetMemoryHandler
+        dialogue_object_classes["put_memory"] = PutMemoryHandler
+        self.dialogue_manager = NSPDialogueManager(self, dialogue_object_classes, self.opts)
 
-        # Login to server
-        logging.info("Attempting to connect to port {}".format(port))
-        super().__init__(host, port, self.name)
-        logging.info("Logged in to server")
+    def controller_step(self):
+        """Process incoming chats and modify task stack"""
+        raw_incoming_chats = self.get_incoming_chats()
+        if raw_incoming_chats:
+            # force to get objects
+            self.perceive(force=True)
+            # logging.info("Incoming chats: {}".format(raw_incoming_chats))
 
-        # Wrap C++ agent methods
-        self._cpp_send_chat = self.send_chat
-        self.send_chat = self._send_chat
-        self.last_chat_time = 0
+        incoming_chats = []
+        for raw_chat in raw_incoming_chats:
+            match = re.search("^<([^>]+)> (.*)", raw_chat)
+            if match is None:
+                logging.info("Ignoring chat: {}".format(raw_chat))
+                continue
 
-        self.perceive_interval = perceive_interval
-        self.uncaught_error_count = 0
-        self.last_task_memid = None
-        self.point_targets = []
+            speaker, chat = match.group(1), match.group(2)
+            speaker_hash = hash_user(speaker)
+            logging.info("Incoming chat: ['{}' -> {}]".format(speaker_hash, chat))
+            if chat.startswith("/"):
+                continue
+            incoming_chats.append((speaker, chat))
+            self.memory.add_chat(self.memory.get_player_by_name(speaker).memid, chat)
 
-    def start(self):
-        logging.info("CraftAssistAgent.start() called")
-        # start the subcomponent classification model
-        if self.subcomponent_classifier:
-            self.subcomponent_classifier.start()
-        for self.count in itertools.count():  # count forever
-            try:
-                if self.count == 0:
-                    logging.info("First top-level step()")
-                self.step()
-
-            except Exception as e:
-                logging.exception(
-                    "Default handler caught exception, db_log_idx={}".format(
-                        self.memory.get_db_log_idx()
-                    )
-                )
-                self.send_chat("Oops! I got confused and wasn't able to complete my last task :(")
-                sentry_sdk.capture_exception(e)
-                self.memory.task_stack_clear()
-                self.dialogue_manager.dialogue_stack.clear()
-                self.uncaught_error_count += 1
-                if self.uncaught_error_count >= 100:
-                    sys.exit(1)
-
-    def step(self):
-        self.pos = to_block_pos(pos_to_np(self.get_player().pos))
-
-        # remove old point targets
-        self.point_targets = [pt for pt in self.point_targets if time.time() - pt[1] < 6]
-
-        # Update memory with current world state
-        # Removed perceive call due to very slow updates on non-flatworlds
-        with TimingWarn(2):
-            self.memory.update(self)
-
-        # Process incoming chats
-        self.dialogue_step()
-
-        # Step topmost task on stack
-        self.task_step()
-
-    def task_step(self, sleep_time=0.25):
-        # Clean finished tasks
-        while (
-            self.memory.task_stack_peek() and self.memory.task_stack_peek().task.check_finished()
-        ):
-            self.memory.task_stack_pop()
-
-        # Maybe add default task
-        if not self.no_default_behavior:
-            self.maybe_run_slow_defaults()
-
-        # If nothing to do, wait a moment
-        if self.memory.task_stack_peek() is None:
-            time.sleep(sleep_time)
-            return
-
-        # If something to do, step the topmost task
-        task_mem = self.memory.task_stack_peek()
-        if task_mem.memid != self.last_task_memid:
-            logging.info("Starting task {}".format(task_mem.task))
-            self.last_task_memid = task_mem.memid
-        task_mem.task.step(self)
-        self.memory.task_stack_update_task(task_mem.memid, task_mem.task)
-
-    def get_time(self):
-        # round to 100th of second, return as
-        # n hundreth of seconds since agent init
-        return self.memory.get_time()
-
-    def perceive(self, force=False):
-        """
-        Get both block objects and component objects and put them
-        in memory
-        """
-        if not force and (
-            self.count % self.perceive_interval != 0 or self.memory.task_stack_peek() is not None
-        ):
-            return
-
-        block_objs_for_vision = []
-        for obj in perception.all_nearby_objects(self.get_blocks, self.pos):
-            memory.BlockObjectNode.create(self.memory, obj)
-            # If any xyz of obj is has not been labeled
-            if any([(not self.memory.get_component_object_ids_by_xyz(xyz)) for xyz, _ in obj]):
-                block_objs_for_vision.append(obj)
-
-        # TODO formalize this, make a list of all perception calls to make, etc.
-        # note this directly adds the memories
-        perception.get_all_nearby_holes(self, self.pos, radius=15)
-        perception.get_nearby_airtouching_blocks(self, self.pos, radius=15)
-
-        if self.subcomponent_classifier is None:
-            return
-
-        for obj in block_objs_for_vision:
-            self.subcomponent_classifier.block_objs_q.put(obj)
-
-        # everytime we try to retrieve as many recognition results as possible
-        while not self.subcomponent_classifier.loc2labels_q.empty():
-            loc2labels, obj = self.subcomponent_classifier.loc2labels_q.get()
-            loc2ids = dict(obj)
-            label2blocks = {}
-
-            def contaminated(blocks):
-                """
-                Check if blocks are still consistent with the current world
-                """
-                mx, Mx, my, My, mz, Mz = shapes.get_bounds(blocks)
-                yzxb = self.get_blocks(mx, Mx, my, My, mz, Mz)
-                for b, _ in blocks:
-                    x, y, z = b
-                    if loc2ids[b][0] != yzxb[y - my, z - mz, x - mx, 0]:
-                        return True
-                return False
-
-            for loc, labels in loc2labels.items():
-                b = (loc, loc2ids[loc])
-                for l in labels:
-                    if l in label2blocks:
-                        label2blocks[l].append(b)
-                    else:
-                        label2blocks[l] = [b]
-            for l, blocks in label2blocks.items():
-                ## if the blocks are contaminated we just ignore
-                if not contaminated(blocks):
-                    memory.ComponentObjectNode.create(self.memory, blocks, [l])
+        if len(incoming_chats) > 0:
+            # change this to memory.get_time() format?
+            self.last_chat_time = time.time()
+            # for now just process the first incoming chat
+            self.dialogue_manager.step(incoming_chats[0])
+        else:
+            # Maybe add default task
+            if not self.no_default_behavior:
+                self.maybe_run_slow_defaults()
+            self.dialogue_manager.step((None, ""))
 
     def maybe_run_slow_defaults(self):
         """Pick a default task task to run
@@ -302,43 +156,13 @@ class CraftAssistAgent(Agent):
             logging.info("Default behavior: {}".format(fn))
         fn(self)
 
-    def dialogue_step(self):
-        """Process incoming chats and modify task stack"""
-        raw_incoming_chats = self.get_incoming_chats()
-        if raw_incoming_chats:
-            # force to get objects
-            self.perceive(force=True)
-            # logging.info("Incoming chats: {}".format(raw_incoming_chats))
+    def get_time(self):
+        # round to 100th of second, return as
+        # n hundreth of seconds since agent init
+        return self.memory.get_time()
 
-        incoming_chats = []
-        for raw_chat in raw_incoming_chats:
-            match = re.search("^<([^>]+)> (.*)", raw_chat)
-            if match is None:
-                logging.info("Ignoring chat: {}".format(raw_chat))
-                continue
-
-            speaker, chat = match.group(1), match.group(2)
-            speaker_hash = hash_user(speaker)
-            logging.info("Incoming chat: ['{}' -> {}]".format(speaker_hash, chat))
-            if chat.startswith("/"):
-                continue
-            incoming_chats.append((speaker, chat))
-            self.memory.add_chat(self.memory.get_player_by_name(speaker).memid, chat)
-
-        if len(incoming_chats) > 0:
-            # change this to memory.get_time() format?
-            self.last_chat_time = time.time()
-            # for now just process the first incoming chat
-            self.dialogue_manager.step(incoming_chats[0])
-        else:
-            self.dialogue_manager.step((None, ""))
-
-    # TODO reset all blocks in point area to what they
-    # were before the point action no matter what
-    # so e.g. player construction in pointing area during point
-    # is reverted
     def safe_get_changed_blocks(self):
-        blocks = self.get_changed_blocks()
+        blocks = self.cagent.get_changed_blocks()
         safe_blocks = []
         if len(self.point_targets) > 0:
             for point_target in self.point_targets:
@@ -377,34 +201,116 @@ class CraftAssistAgent(Agent):
         new_pitch = self.get_player().look.pitch - angle
         self.set_look(self.get_player().look.yaw, new_pitch)
 
-    def _send_chat(self, chat: str):
+    def send_chat(self, chat):
         logging.info("Sending chat: {}".format(chat))
         self.memory.add_chat(self.memory.self_memid, chat)
-        return self._cpp_send_chat(chat)
+        return self.cagent.send_chat(chat)
+
+    # TODO update client so we can just loop through these
+    # TODO rename things a bit- some perceptual things are here,
+    #      but under current abstraction should be in init_perception
+    def init_physical_interfaces(self):
+        # For testing agent without cuberite server
+        if self.opts.port == -1:
+            return
+        logging.info("Attempting to connect to port {}".format(self.opts.port))
+        self.cagent = MCAgent("localhost", self.opts.port, self.name)
+        logging.info("Logged in to server")
+        self.dig = self.cagent.dig
+        # defined above...
+        # self.send_chat = self.cagent.send_chat
+        self.set_held_item = self.cagent.set_held_item
+        self.step_pos_x = self.cagent.step_pos_x
+        self.step_neg_x = self.cagent.step_neg_x
+        self.step_pos_z = self.cagent.step_pos_z
+        self.step_neg_z = self.cagent.step_neg_z
+        self.step_pos_y = self.cagent.step_pos_y
+        self.step_neg_y = self.cagent.step_neg_y
+        self.step_forward = self.cagent.step_forward
+        self.look_at = self.cagent.look_at
+        self.set_look = self.cagent.set_look
+        self.turn_angle = self.cagent.turn_angle
+        self.turn_left = self.cagent.turn_left
+        self.turn_right = self.cagent.turn_right
+        self.place_block = self.cagent.place_block
+        self.use_entity = self.cagent.use_entity
+        self.use_item = self.cagent.use_item
+        self.use_item_on_block = self.cagent.use_item_on_block
+        self.craft = self.cagent.craft
+        self.get_blocks = self.cagent.get_blocks
+        self.get_local_blocks = self.cagent.get_local_blocks
+        self.get_incoming_chats = self.cagent.get_incoming_chats
+        self.get_player = self.cagent.get_player
+        self.get_mobs = self.cagent.get_mobs
+        self.get_other_players = self.cagent.get_other_players
+        self.get_other_player_by_name = self.cagent.get_other_player_by_name
+        self.get_vision = self.cagent.get_vision
+        self.get_line_of_sight = self.cagent.get_line_of_sight
+        self.get_player_line_of_sight = self.cagent.get_player_line_of_sight
+        self.get_changed_blocks = self.cagent.get_changed_blocks
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+    # TODO arrange all model paths so only one dir needs to be given
     parser.add_argument(
-        "--semseg_model_path", type=str, help="path to semantic segmentation  model"
+        "--model_base_path",
+        default="#relative",
+        help="if empty model paths are relative to this file",
     )
-    parser.add_argument("--gpu_id", type=int, default=-1, help="GPU id (-1 for cpu)")
-    parser.add_argument("--ttad_prev_model_path", help="path to previous TTAD model")
-    parser.add_argument("--ttad_model_dir", help="path to current listener model dir")
-    parser.add_argument("--ttad_bert_data_dir", help="path to annotated data")
-    parser.add_argument("--geoscorer_model_path", help="path to geoscorer model")
-    parser.add_argument("--draw_vis", action="store_true", help="use visdom to draw agent vision")
+    parser.add_argument(
+        "--QA_nsp_model_path",
+        default="models/ttad/ttad.pth",
+        help="path to previous TTAD model for QA",
+    )
+    parser.add_argument(
+        "--nsp_model_dir",
+        default="models/ttad_bert/model/",
+        help="path to current listener model dir",
+    )
+    parser.add_argument(
+        "--nsp_embeddings_path",
+        default="models/ttad/ttad_ft_embeds.pth",
+        help="path to current model embeddings",
+    )
+    parser.add_argument(
+        "--nsp_grammar_path", default="models/ttad/dialogue_grammar.json", help="path to grammar"
+    )
+    parser.add_argument(
+        "--nsp_data_dir", default="models/ttad_bert/annotated_data/", help="path to annotated data"
+    )
+    parser.add_argument(
+        "--ground_truth_file_path",
+        default="ground_truth.txt",
+        help="path to cheat sheet of common commands",
+    )
+    parser.add_argument(
+        "--semseg_model_path", default="", help="path to semantic segmentation  model"
+    )
+    parser.add_argument("--geoscorer_model_path", default="", help="path to geoscorer model")
+    parser.add_argument("--port", type=int, default=25565)
+    parser.add_argument("--verbose", "-v", action="store_true", help="Debug logging")
     parser.add_argument(
         "--no_default_behavior",
         action="store_true",
         help="do not perform default behaviors when idle",
     )
-    parser.add_argument("--name", help="Agent login name")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Debug logging")
-    parser.add_argument("--port", type=int, default=25565)
     opts = parser.parse_args()
+
+    def fix_path(opts):
+        if opts.model_base_path == "#relative":
+            base_path = os.path.dirname(__file__)
+        else:
+            base_path = opts.model_base_path
+        od = opts.__dict__
+        for optname, optval in od.items():
+            if "path" in optname or "dir" in optname:
+                if optval:
+                    od[optname] = os.path.join(base_path, optval)
+
+    fix_path(opts)
 
     # set up stdout logging
     sh = logging.StreamHandler()
@@ -414,24 +320,7 @@ if __name__ == "__main__":
     logging.info("Info logging")
     logging.debug("Debug logging")
 
-    draw_fn = None
-    if opts.draw_vis:
-        import train_cnn
-
-        draw_fn = train_cnn.draw_img
-
     set_start_method("spawn", force=True)
 
-    sa = CraftAssistAgent(
-        ttad_prev_model_path=opts.ttad_prev_model_path,
-        port=opts.port,
-        ttad_model_dir=opts.ttad_model_dir,
-        ttad_bert_data_dir=opts.ttad_bert_data_dir,
-        semseg_model_path=opts.semseg_model_path,
-        voxel_model_gpu_id=opts.gpu_id,
-        draw_fn=draw_fn,
-        no_default_behavior=opts.no_default_behavior,
-        name=opts.name,
-        geoscorer_model_path=opts.geoscorer_model_path,
-    )
+    sa = CraftAssistAgent(opts)
     sa.start()

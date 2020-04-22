@@ -5,7 +5,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 import unittest
 import time
 import shapes
-from dialogue_objects import AwaitResponse
+from base_agent.dialogue_objects import AwaitResponse
 from base_craftassist_test_case import BaseCraftassistTestCase
 
 
@@ -23,7 +23,7 @@ class UndoTest(BaseCraftassistTestCase):
             "filters": {"reference_object": {"coref_resolve": "that"}},
             "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": "fluffy"}},
         }
-        self.handle_action_dict(d)
+        self.handle_logical_form(d)
         self.assertIn(tag, obj.get_tags())
 
         # Destroy it
@@ -34,22 +34,22 @@ class UndoTest(BaseCraftassistTestCase):
                 "reference_object": {"location": {"location_type": "SPEAKER_LOOK"}},
             },
         }
-        self.handle_action_dict(d)
-        self.assertIsNone(self.memory.get_block_object_by_xyz(list(obj.blocks.keys())[0]))
+        self.handle_logical_form(d)
+        self.assertIsNone(self.agent.memory.get_block_object_by_xyz(list(obj.blocks.keys())[0]))
 
         # Undo destroy (will ask confirmation)
         d = {"dialogue_type": "HUMAN_GIVE_COMMAND", "action": {"action_type": "UNDO"}}
-        self.handle_action_dict(d)
-        self.assertIsInstance(self.dialogue_manager.dialogue_stack.peek(), AwaitResponse)
+        self.handle_logical_form(d)
+        self.assertIsInstance(self.agent.dialogue_manager.dialogue_stack.peek(), AwaitResponse)
 
         # confirm undo
         # TODO change tests to record different speakers to avoid the sleep?
         time.sleep(0.02)
-        self.add_incoming_chat("yes")
+        self.add_incoming_chat("yes", self.speaker)
         self.flush()
 
         # Check that block object has tag
-        newobj = self.memory.get_block_object_by_xyz(list(obj.blocks.keys())[0])
+        newobj = self.agent.memory.get_block_object_by_xyz(list(obj.blocks.keys())[0])
         self.assertIsNotNone(newobj)
         self.assertIn(tag, newobj.get_tags())
 

@@ -142,6 +142,21 @@ vector<uint8_t> Encoder::playerBlockPlacementPacket(BlockPos pos) {
   return packet(0x1f, THRESHOLD);
 }
 
+vector<uint8_t> Encoder::playerUseEntityPacket(BlockPos pos) {
+  varint(0);      // what is data type target?
+  varint(2);      // type: interact
+  float32(pos.x); // target x
+  float32(pos.y); // target y
+  float32(pos.z); // target z
+  varint(0);      // main hand
+  return packet(0x0a, THRESHOLD);
+}
+
+vector<uint8_t> Encoder::playerUseItemPacket() {
+  varint(0);     // main hand
+  return packet(0x20, THRESHOLD);
+}
+
 vector<uint8_t> Encoder::playerLookPacket(float yaw, float pitch, bool onGround) {
   float32(yaw);
   float32(pitch);

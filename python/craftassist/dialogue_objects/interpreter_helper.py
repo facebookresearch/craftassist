@@ -9,15 +9,21 @@ import random
 import re
 from typing import cast, List, Tuple, Union, Optional, Dict, Any
 
-from .dialogue_object import ConfirmReferenceObject
+from base_agent.dialogue_objects import ConfirmReferenceObject
 import block_data
 import minecraft_specs
-import perception
+import heuristic_perception
 import rotation
 import shapes
 import size_words
-from memory_nodes import MobNode, PlayerNode, ReferenceObjectNode
-from stop_condition import StopCondition, NeverStopCondition, AgentAdjacentStopCondition
+from mc_memory_nodes import MobNode
+from base_agent.memory_nodes import PlayerNode, ReferenceObjectNode
+from base_agent.stop_condition import StopCondition, NeverStopCondition
+from mc_stop_condition import AgentAdjacentStopCondition
+
+# FIXME!
+from base_agent.util import euclid_dist, ErrorWithResponse, NextDialogueStep
+
 from util import (
     Block,
     Hole,
@@ -26,14 +32,11 @@ from util import (
     XYZ,
     most_common_idm,
     capped_line_of_sight,
-    euclid_dist,
     object_looked_at,
     pos_to_np,
     strip_idmeta,
     to_block_center,
     to_block_pos,
-    ErrorWithResponse,
-    NextDialogueStep,
 )
 from word2number.w2n import word_to_num
 from word_maps import SPECIAL_SHAPE_FNS, SPECIAL_SHAPES_CANONICALIZE
@@ -78,10 +81,13 @@ def interpret_reference_object(
             # no candidates found; ask Clarification
             # TODO: move ttad call to dialogue manager and remove this logic
             interpreter.action_dict_frozen = True
-
-            player = interpreter.memory.get_player_struct_by_name(speaker)
+            player_struct = interpreter.agent.perception_modules[
+                "low_level"
+            ].get_player_struct_by_name(speaker)
             confirm_candidates = get_objects(interpreter)  # no tags
-            objects = object_looked_at(interpreter.agent, confirm_candidates, player, limit=1)
+            objects = object_looked_at(
+                interpreter.agent, confirm_candidates, player_struct, limit=1
+            )
             if len(objects) == 0:
                 raise ErrorWithResponse("I don't know what you're referring to")
             _, mem = objects[0]
@@ -287,11 +293,17 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> Tuple[XY
     mem = None
     location_type = d.get("location_type", "SPEAKER_LOOK")
     if location_type == "SPEAKER_LOOK":
-        player = interpreter.memory.get_player_struct_by_name(speaker)
-        loc = capped_line_of_sight(interpreter.agent, player)
+        player_struct = interpreter.agent.perception_modules[
+            "low_level"
+        ].get_player_struct_by_name(speaker)
+        loc = capped_line_of_sight(interpreter.agent, player_struct)
 
     elif location_type == "SPEAKER_POS":
-        loc = pos_to_np(interpreter.memory.get_player_struct_by_name(speaker).pos)
+        loc = pos_to_np(
+            interpreter.agent.perception_modules["low_level"]
+            .get_player_struct_by_name(speaker)
+            .pos
+        )
 
     elif location_type == "AGENT_POS":
         loc = pos_to_np(interpreter.agent.get_player().pos)
@@ -315,7 +327,7 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> Tuple[XY
         elif reldir == "INSIDE":
             if location_type == "REFERENCE_OBJECT":
                 mem = mems[0]
-                locs = perception.find_inside(mem)
+                locs = heuristic_perception.find_inside(mem)
                 if len(locs) == 0:
                     raise ErrorWithResponse("I don't know how to go inside there")
                 else:
@@ -330,7 +342,11 @@ def interpret_location(interpreter, speaker, d, ignore_reldir=False) -> Tuple[XY
             pass
         else:  # LEFT, RIGHT, etc...
             reldir_vec = rotation.DIRECTIONS[reldir]
-            look = interpreter.memory.get_player_struct_by_name(speaker).look
+            look = (
+                interpreter.agent.perception_modules["low_level"]
+                .get_player_struct_by_name(speaker)
+                .look
+            )
             # this should be an inverse transform so we set inverted=True
             dir_vec = rotation.transform(reldir_vec, look.yaw, 0, inverted=True)
             num_steps = word_to_num(d.get("steps", "5"))
@@ -401,17 +417,23 @@ def interpret_stop_condition(interpreter, speaker, d) -> Optional[StopCondition]
 
 
 def get_holes(interpreter, speaker, location, limit=1, all_proximity=10) -> List[Tuple[XYZ, Hole]]:
-    holes: List[Hole] = perception.get_all_nearby_holes(interpreter.agent, location)
+    holes: List[Hole] = heuristic_perception.get_all_nearby_holes(interpreter.agent, location)
     candidates: List[Tuple[XYZ, Hole]] = [
         (to_block_pos(np.mean(hole[0], axis=0)), hole) for hole in holes
     ]
     if len(candidates) > 0:
         # NB(demiguo): by default, we fill the hole the player is looking at
-        player = interpreter.memory.get_player_struct_by_name(speaker)
-        centroid_hole = object_looked_at(interpreter.agent, candidates, player, limit=limit)
+        player_struct = interpreter.agent.perception_modules[
+            "low_level"
+        ].get_player_struct_by_name(speaker)
+        centroid_hole = object_looked_at(interpreter.agent, candidates, player_struct, limit=limit)
         if centroid_hole is None or len(centroid_hole) == 0:
             # NB(demiguo): if there's no hole in front of the player, we will fill the nearest hole
-            speaker_pos = interpreter.memory.get_player_struct_by_name(speaker).pos
+            speaker_pos = (
+                interpreter.agent.perception_modules["low_level"]
+                .get_player_struct_by_name(speaker)
+                .pos
+            )
             speaker_pos = to_block_pos(pos_to_np(speaker_pos))
             if limit == "ALL":
                 return list(
@@ -435,7 +457,7 @@ def get_mobs(interpreter, *tags) -> List[Tuple[XYZ, MobNode]]:
 def get_players(interpreter, *tags) -> List[Tuple[XYZ, PlayerNode]]:
     """Return a list of (xyz, memory) tuples, filtered by tags"""
     players = interpreter.memory.get_players_tagged(*tags)
-    return [(to_block_pos(pos_to_np(player.pos)), player) for player in players]
+    return [(to_block_pos(np.array((player.pos))), player) for player in players]
 
 
 def get_objects(interpreter, *tags) -> List[Tuple[XYZ, ReferenceObjectNode]]:
@@ -488,8 +510,12 @@ def filter_by_sublocation(
     # handle SPEAKER_LOOK separately due to slightly different semantics
     # (proximity to ray instead of point)
     if location.get("location_type") == "SPEAKER_LOOK":
-        player = interpreter.memory.get_player_struct_by_name(speaker)
-        return object_looked_at(interpreter.agent, candidates, player, limit=limit, loose=loose)
+        player_struct = interpreter.agent.perception_modules[
+            "low_level"
+        ].get_player_struct_by_name(speaker)
+        return object_looked_at(
+            interpreter.agent, candidates, player_struct, limit=limit, loose=loose
+        )
 
     reldir = location.get("relative_direction")
     if reldir:
@@ -500,7 +526,7 @@ def filter_by_sublocation(
                     interpreter, speaker, location["reference_object"]
                 )
                 for l, candidate_mem in candidates:
-                    if perception.check_inside([candidate_mem, ref_mems[0]]):
+                    if heuristic_perception.check_inside([candidate_mem, ref_mems[0]]):
                         return [(l, candidate_mem)]
             raise ErrorWithResponse("I can't find something inside that")
         elif reldir == "AWAY":
@@ -519,7 +545,11 @@ def filter_by_sublocation(
 
             # transform each object into the speaker look coordinate system,
             # and project onto the reldir vector
-            look = interpreter.memory.get_player_struct_by_name(speaker).look
+            look = (
+                interpreter.agent.perception_modules["low_level"]
+                .get_player_struct_by_name(speaker)
+                .look
+            )
             proj = [
                 rotation.transform(np.array(l) - ref_loc, look.yaw, 0) @ reldir_vec
                 for (l, _) in candidates
@@ -543,85 +573,6 @@ def filter_by_sublocation(
     return []  # this fixes flake but seems awful?
 
 
-def process_spans(d, original_words, lemmatized_words):
-    if type(d) is not dict:
-        return
-    for k, v in d.items():
-        if type(v) == dict:
-            process_spans(v, original_words, lemmatized_words)
-        elif type(v) == list and type(v[0]) == dict:
-            for a in v:
-                process_spans(a, original_words, lemmatized_words)
-        else:
-            try:
-                sentence, (L, R) = v
-                if sentence != 0:
-                    raise NotImplementedError("Must update process_spans for multi-string inputs")
-                assert 0 <= L <= R <= (len(lemmatized_words) - 1)
-            except ValueError:
-                continue
-            except TypeError:
-                continue
-            original_w = " ".join(original_words[L : (R + 1)])
-            # The lemmatizer converts 'it' to -PRON-
-            if original_w == "it":
-                d[k] = original_w
-            else:
-                d[k] = " ".join(lemmatized_words[L : (R + 1)])
-
-
-def coref_resolve(memory, d, chat):
-    """Walk the entire action dict "d" and replace coref_resolve values
-
-    Possible substitutions:
-    - a keyword like "SPEAKER_POS"
-    - a MemoryNode object
-    - "NULL"
-
-    Assumes spans have been substituted.
-    """
-
-    c = chat.split()
-    if not type(d) is dict:
-        return
-    for k, v in d.items():
-        if k == "location":
-            # v is a location dict
-            for k_ in v:
-                if k_ == "contains_coreference":
-                    val = "SPEAKER_POS" if "here" in c else "SPEAKER_LOOK"
-                    v["location_type"] = val
-                    del v["contains_coreference"]
-        elif k == "reference_object":
-            # v is a reference object dict
-            for k_ in v:
-                if k_ == "contains_coreference":
-                    if "this" in c or "that" in c:
-                        if "location" in v:
-                            v["location"]["location_type"] = "SPEAKER_LOOK"
-                        else:
-                            # no location dict -- create one
-                            v["location"] = {"location_type": "SPEAKER_LOOK"}
-                        del v["contains_coreference"]
-                    else:
-                        mems = memory.get_recent_entities("BlockObjects")
-                        if len(mems) == 0:
-                            mems = memory.get_recent_entities(
-                                "Mobs"
-                            )  # if its a follow, this should be first, FIXME
-                            if len(mems) == 0:
-                                v[k_] = "NULL"
-                            else:
-                                v[k_] = mems[0]
-                        else:
-                            v[k_] = mems[0]
-        if type(v) == dict:
-            coref_resolve(memory, v, chat)
-        if type(v) == list:
-            for a in v:
-                coref_resolve(memory, a, chat)
-
-
 def get_repeat_arrangement(
     d, interpreter, speaker, schematic, repeat_num=-1, extra_space=1
 ) -> List[XYZ]:
@@ -635,7 +586,11 @@ def get_repeat_arrangement(
         direction_name = d["schematic"].get("repeat", {}).get("repeat_dir", "FRONT")
     if direction_name != "AROUND":
         reldir_vec = rotation.DIRECTIONS[direction_name]
-        look = interpreter.memory.get_player_struct_by_name(speaker).look
+        look = (
+            interpreter.agent.perception_modules["low_level"]
+            .get_player_struct_by_name(speaker)
+            .look
+        )
         # this should be an inverse transform so we set inverted=True
         dir_vec = rotation.transform(reldir_vec, look.yaw, 0, inverted=True)
         shapeparams["orient"] = dir_vec

@@ -32,7 +32,7 @@ class TTADBertModel(object):
         bert_config.num_hidden_layers = args.num_decoder_layers
         dec_with_loss = DecoderWithLoss(bert_config, args, self.tokenizer)
         self.encoder_decoder = EncoderDecoderWithLoss(enc_model, dec_with_loss, args)
-        map_location = None if torch.cuda.is_available() else "cpu"
+        map_location = None if torch.cuda.is_available() else torch.device("cpu")
         self.encoder_decoder.load_state_dict(
             torch.load(model_name + ".pth", map_location=map_location), strict=False
         )

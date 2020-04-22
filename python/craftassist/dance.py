@@ -10,6 +10,8 @@ import shapes
 import search
 from util import ErrorWithResponse
 
+# FIXME! actual jump on client
+jump = [{"translate": (0, 1, 0)}, {"translate": (0, -1, 0)}]
 
 konami_dance = [
     {"translate": (0, 1, 0)},
@@ -54,8 +56,15 @@ head_bob = [
 
 
 def add_default_dances(memory):
-    memory.add_dance(generate_sequential_move_fn(konami_dance), name="konami_dance")
-    memory.add_dance(generate_sequential_move_fn(head_bob), name="head_bob")
+    memory.add_dance(generate_sequential_move_fn(jump), name="jump")
+    memory.add_dance(
+        generate_sequential_move_fn(konami_dance),
+        name="konami dance",
+        tags=["ornamental_dance", "konami"],
+    )
+    memory.add_dance(
+        generate_sequential_move_fn(head_bob), name="head bob", tags=["ornamental_dance"]
+    )
 
 
 def generate_sequential_move_fn(sequence):
@@ -88,8 +97,6 @@ class Movement(object):
         # can output
         return self.move_fn(self, self.agent)
 
-
-# TODO head bob
 
 # class HeadTurnInstant(Movement):
 

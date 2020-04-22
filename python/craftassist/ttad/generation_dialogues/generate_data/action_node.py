@@ -102,10 +102,13 @@ class ActionNode:
                     action_dict[attr] = updated_val
                 # Spans for keys : 'has_*' and repeat_count
                 if (attr.startswith("has_")) or (
-                    attr in ["repeat_count", "dance_type", "target_action_type"]
+                    attr in ["repeat_count", "dance_type_name", "target_action_type"]
                 ):
                     span = find_span(action_description_split, val)
                     action_dict[attr] = span
+                if attr == "dance_type_name":
+                    action_dict["dance_type"] = {attr: action_dict[attr]}
+                    action_dict.pop(attr)
 
         action_name = type(self).__name__
 

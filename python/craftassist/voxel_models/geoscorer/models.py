@@ -52,55 +52,6 @@ def create_xyz_tensor(sl):
     return xyz
 
 
-class ValueNet(nn.Module):
-    def __init__(self, opts):
-        super(ValueNet, self).__init__()
-
-        self.embedding_dim = opts.get("blockid_embedding_dim", 8)
-        self.num_layers = opts.get("num_layers", 4)  # 32x32x32 input
-        num_words = opts.get("num_words", 3)
-        hidden_dim = opts.get("hidden_dim", 64)
-
-        self.embedding = nn.Embedding(num_words, self.embedding_dim)
-        self.layers = nn.ModuleList()
-        indim = self.embedding_dim
-        outdim = hidden_dim
-        self.layers.append(
-            nn.Sequential(
-                nn.Conv3d(indim, outdim, kernel_size=5, stride=2, padding=1),
-                nn.BatchNorm3d(outdim),
-                nn.ReLU(inplace=True),
-            )
-        )
-        indim = outdim
-        for i in range(self.num_layers - 1):
-            layer = nn.Sequential(convbn(indim, outdim), convbn(outdim, outdim, stride=2))
-            indim = outdim
-            self.layers.append(layer)
-        self.out = nn.Linear(outdim, 1)
-
-        # todo normalize things?  margin doesn't mean much here
-
-    def forward(self, x):
-        # FIXME when pytorch is ready for this, embedding
-        # backwards is soooooo slow
-        # z = self.embedding(x)
-        szs = list(x.size())
-        x = x.view(-1)
-        z = self.embedding.weight.index_select(0, x)
-        szs.append(self.embedding_dim)
-        z = z.view(torch.Size(szs))
-        z = z.permute(0, 4, 1, 2, 3).contiguous()
-        for i in range(self.num_layers):
-            z = self.layers[i](z)
-        z = z.mean([2, 3, 4])
-        #        szs = list(z.size())
-        #        z = z.view(szs[0], szs[1], -1)
-        #        z = z.max(2)[0]
-        #        z = nn.functional.normalize(z, dim=1)
-        return self.out(z)
-
-
 class ContextEmbeddingNet(nn.Module):
     def __init__(self, opts, blockid_embedding):
         super(ContextEmbeddingNet, self).__init__()
@@ -538,7 +489,4 @@ if __name__ == "__main__":
     parser.add_argument("--num_layers", type=int, default=4, help="number of layers")
     parser.add_argument("--hsize", type=int, default=64, help="hidden dim")
     opts = vars(parser.parse_args())
-
-    net = ValueNet(opts)
-    x = torch.LongTensor(7, 32, 32, 32).zero_()
-    y = net(x)
+    print("Todo implement this: {}".format(opts))

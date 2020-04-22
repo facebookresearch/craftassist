@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import random
 
-import tasks
 from string_lists import MAP_YES, MAP_NO
 from util import pos_to_np
 
@@ -54,7 +53,7 @@ a response from the user."""
 
 # TODO check who is speaking
 class AwaitResponse(DialogueObject):
-    def __init__(self, wait_time=2000, **kwargs):
+    def __init__(self, wait_time=800, **kwargs):
         super().__init__(**kwargs)
         self.init_time = self.memory.get_time()
         self.response = []
@@ -220,7 +219,7 @@ class BotMoveStatus(DialogueObject):
     def step(self):
         """Extract bot's target coordinates."""
         self.finished = True
-        task = self.memory.task_stack_find_lowest_instance(tasks.Move)
+        task = self.memory.task_stack_find_lowest_instance("Move")
         if task is None:
             answer_options = [
                 "I am not going anywhere",
@@ -307,31 +306,3 @@ class ConfirmReferenceObject(DialogueObject):
             else:
                 output_data = {"response": "unkown"}
         return "", output_data
-
-
-"""This class represents a sub-type of the DialogueObject to help debug the
-bot's vision system."""
-##### this is probably dead, if not, kill it
-
-
-class BotVisionDebug(DialogueObject):
-    def step(self):
-        chatmem = self.memory.get_most_recent_incoming_chat()
-        words = chatmem.chat_text.split()
-
-        objs = self.memory.get_block_objects_with_tags(
-            words[1]
-        ) + self.memory.get_component_objects_with_tags(words[1])
-        if objs:
-            for obj in objs:
-                if type(obj) == tuple:
-                    blocks_to_destroy = obj
-                else:
-                    blocks_to_destroy = list(obj.blocks.keys())
-                task = tasks.Destroy(self.agent, {"schematic": blocks_to_destroy})
-                self.memory.task_stack_push(task, words)
-        else:
-            print("The object does not exist!")
-
-        self.finished = True
-        return "", None

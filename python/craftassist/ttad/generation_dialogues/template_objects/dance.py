@@ -32,7 +32,7 @@ class Fly(TemplateObject):
                 [["flying", "keep flying"], ["fly", "fly until I tell you to stop"]]
             )
 
-        self.node.dance_type = command[0]
+        self.node.dance_type_name = command[0]
         self.node._dance_text = command[1]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
@@ -53,7 +53,7 @@ class Jump(TemplateObject):
             )
 
         self._dance_text = command[1]
-        self.node.dance_type = command[0]
+        self.node.dance_type_name = command[0]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         command = self._dance_text
@@ -84,7 +84,7 @@ class Hop(TemplateObject):
                 [["hopping", "keep hopping"], ["hop", "hop until I tell you to stop"]]
             )
 
-        self.node.dance_type = command[0]
+        self.node.dance_type_name = command[0]
         self.node._dance_text = command[1]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):

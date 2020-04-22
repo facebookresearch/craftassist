@@ -7,7 +7,7 @@ import sys
 import random
 import pickle
 import torch
-from torch.utils import data as tds
+import torch.utils.data
 
 GEOSCORER_DIR = os.path.dirname(os.path.realpath(__file__))
 CRAFTASSIST_DIR = os.path.join(GEOSCORER_DIR, "../../")
@@ -95,60 +95,6 @@ def load_and_parse_segments(data_dir, min_seg_size, data_preparsed, save_prepars
             spath = os.path.join(data_dir, "training_data_min{}.pkl".format(min_seg_size))
             save_specific_segments(spath, all_segs, schematics)
     return all_segs, schematics
-
-
-class SegmentContextCombinedInstanceData(tds.Dataset):
-    def __init__(
-        self,
-        data_dir="/checkpoint/drotherm/minecraft_dataset/vision_training/training3/",
-        nexamples=10000,
-        sidelength=32,
-        useid=False,
-        nneg=5,
-        shift_max=10,
-        min_seg_size=6,
-        ntype_probs=[1.0, 0.0, 0.0],
-    ):
-        self.sidelength = sidelength
-        self.useid = useid
-        self.nneg = nneg
-        self.shift_max = shift_max
-        self.nexamples = nexamples
-        self.negative_sampler = NegativeSampler(
-            self, shift_max=self.shift_max, ntype_probs=ntype_probs
-        )
-        self.examples = []
-        dpath = os.path.join(data_dir, "training_data.pkl")
-        self.all_segs, self.schematics = load_segments(dpath, min_seg_size)
-
-    def toggle_useid(self):
-        self.useid = not self.useid
-
-    def _get_example(self):
-        sl = self.sidelength
-        inst = random.choice(self.all_segs)
-        seg, s = inst["inst"], self.schematics[inst["schematic"]]
-        c = center_of_mass(s, seg=seg)
-        out = torch.zeros(self.nneg + 1, sl, sl, sl)
-        p, _ = densify(s, [sl, sl, sl], center=c, useid=self.useid)
-        out[0] = torch.tensor(p)
-        for i in range(self.nneg):
-            n = self.negative_sampler.build_negative(s, seg)
-            out[i + 1] = torch.tensor(densify(n, [sl, sl, sl], center=c, useid=self.useid)[0])
-        return out
-
-    def __getitem__(self, index):
-        if len(self.examples) > 0:
-            #            sl = self.sidelength
-            #            out = torch.zeros(self.nneg + 1, sl, sl, sl)
-            #            out[1:] = 1
-            #            return out
-            return self.examples[index]
-        else:
-            return self._get_example()
-
-    def __len__(self):
-        return abs(self.nexamples)
 
 
 # Returns three tensors: 32x32x32 context, 8x8x8 segment, 1 target
@@ -260,7 +206,7 @@ if __name__ == "__main__":
     import plot_voxels as pv
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_type", type=str, default="combined", help="(combined|separate)")
+    parser.add_argument("--data_type", type=str, default="separate", help="(separate)")
     parser.add_argument("--min_seg_size", type=int, default=6, help="min seg size")
     parser.add_argument(
         "--save_dataset", type=bool, default=False, help="should we save this min seg size dataset"
@@ -277,30 +223,18 @@ if __name__ == "__main__":
     vis = visdom.Visdom(server="http://localhost")
     sp = pv.SchematicPlotter(vis)
 
-    if opts.data_type == "separate":
-        dataset = SegmentContextSeparateInstanceData(
-            nexamples=3,
-            min_seg_size=opts.min_seg_size,
-            data_preparsed=opts.load_saved_dataset,
-            save_preparsed=opts.save_dataset,
-            for_vis=True,
-            useid=opts.useid,
-        )
-        for n in range(len(dataset)):
-            shape, seg, target = dataset[n]
-            sp.drawPlotly(shape)
-            sp.drawPlotly(seg)
-            target_coord = index_to_coord(target.item(), 32)
-            completed_shape = combine_seg_context(seg, shape, target_coord, seg_mult=3)
-            sp.drawPlotly(completed_shape)
-    else:
-        num_examples = 2
-        num_neg = 2
-        dataset = SegmentContextCombinedInstanceData(
-            nexamples=num_examples, shift_max=10, min_seg_size=opts.min_seg_size, nneg=num_neg
-        )
-        for n in range(num_examples):
-            curr_data = dataset[n]
-            sp.drawPlotly(curr_data[0])
-            for i in range(num_neg):
-                sp.drawPlotly(curr_data[i + 1])
+    dataset = SegmentContextSeparateInstanceData(
+        nexamples=3,
+        min_seg_size=opts.min_seg_size,
+        data_preparsed=opts.load_saved_dataset,
+        save_preparsed=opts.save_dataset,
+        for_vis=True,
+        useid=opts.useid,
+    )
+    for n in range(len(dataset)):
+        shape, seg, target = dataset[n]
+        sp.drawPlotly(shape)
+        sp.drawPlotly(seg)
+        target_coord = index_to_coord(target.item(), 32)
+        completed_shape = combine_seg_context(seg, shape, target_coord, seg_mult=3)
+        sp.drawPlotly(completed_shape)

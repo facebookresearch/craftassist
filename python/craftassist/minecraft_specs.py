@@ -35,14 +35,24 @@ def get_colour_data():
     return _COLOUR_DATA
 
 
-_PROP_DATA = None
+_BLOCK_PROPERTY_DATA = None
 
 
-def get_prop_data():
-    global _PROP_DATA
-    if _PROP_DATA is None:
-        _PROP_DATA = _pickle_load("block_images/prop_data")
-    return _PROP_DATA
+def get_block_property_data():
+    global _BLOCK_PROPERTY_DATA
+    if _BLOCK_PROPERTY_DATA is None:
+        _BLOCK_PROPERTY_DATA = _pickle_load("block_images/block_property_data")
+    return _BLOCK_PROPERTY_DATA
+
+
+_MOB_PROPERTY_DATA = None
+
+
+def get_mob_property_data():
+    global _MOB_PROPERTY_DATA
+    if _MOB_PROPERTY_DATA is None:
+        _MOB_PROPERTY_DATA = _pickle_load("block_images/mob_property_data")
+    return _MOB_PROPERTY_DATA
 
 
 def get_bid_to_colours():

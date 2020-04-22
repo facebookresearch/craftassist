@@ -7,6 +7,8 @@ COMMON_LOGGING_CPP=logging/src/anvil_reader.cpp logging/src/logging_reader.cpp
 COMPILE_FLAGS=-std=c++17 -Wall -Wextra -Werror -O3
 LINK_FLAGS=-lglog -lgflags -lz -pthread
 
+BIN=bin/log_render bin/render_view bin/schematic_convert
+CUBERITE_MAKEFILE=cuberite/Makefile
 all: cuberite client log_render render_view schematic_convert
 
 cuberite:
@@ -42,3 +44,19 @@ schematic_convert:
 
 clang-format:
 	bin/clang-format
+
+.PHONY: clean
+
+clean:
+	find . -name '*.so' -delete
+	find . -name 'cmake_install.cmake' -delete
+	find . -name 'CMakeCache.txt' -delete
+	if [ -f "$(CUBERITE_MAKEFILE)" ]; then \
+		cd cuberite && make clean && cd ..; \
+	fi
+	rm -rf bin/log_render bin/render_view bin/schematic_convert
+	rm -rf client/pybind11/CMakeFiles
+	rm -rf client/pybind11/Makefile
+	rm -rf client/CMakeFiles
+	rm -rf client/Makefile
+	rm -rf cuberite/Release

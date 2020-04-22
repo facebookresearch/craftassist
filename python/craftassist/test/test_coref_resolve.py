@@ -25,7 +25,7 @@ class CorefResolveTestCase(BaseCraftassistTestCase):
                 "location": {"location_type": "COORDINATES", "coordinates": "0 66 0"},
             },
         }
-        changes = self.handle_action_dict(d)
+        changes = self.handle_logical_form(d)
 
         # assert cube was built
         self.assertGreater(len(changes), 0)
@@ -40,7 +40,7 @@ class CorefResolveTestCase(BaseCraftassistTestCase):
                 "reference_object": {"contains_coreference": "yes"},
             },
         }
-        changes = self.handle_action_dict(d, chatstr="destroy it")
+        changes = self.handle_logical_form(d, chatstr="destroy it")
 
         # assert cube was destroyed
         self.assertEqual(cube_xyzs, set(changes.keys()))

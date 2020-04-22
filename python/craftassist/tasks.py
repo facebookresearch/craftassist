@@ -15,10 +15,10 @@ from block_data import (
 from build_utils import blocks_list_to_npy, npy_to_blocks_list
 from entities import MOBS_BY_ID
 import search
-from perception import ground_height
+from heuristic_perception import ground_height
 import util
-from task import Task
-from memory_nodes import MobNode
+from base_agent.task import Task
+from mc_memory_nodes import MobNode
 
 # tasks should be interruptible; that is, if they
 # store state, stopping the task and doing something
@@ -28,24 +28,22 @@ from memory_nodes import MobNode
 
 
 class Dance(Task):
-    def __init__(self, agent, task_data, featurizer=None):
-        super(Dance, self).__init__(featurizer=featurizer)
+    def __init__(self, agent, task_data):
+        super(Dance, self).__init__()
         # movement should be a Movement object from dance.py
         self.movement = task_data.get("movement")
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
         self.interrupted = False
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
         mv = self.movement.get_move()
         if mv is None:
             self.finished = True
             return
         agent.memory.task_stack_push(mv, parent_memid=self.memid)
-
-    def featurize(self):
-        if self.featurizer is not None:
-            return self.featurizer(self)
-        else:
-            return "dance"
 
 
 class DanceMove(Task):
@@ -68,8 +66,12 @@ class DanceMove(Task):
         self.head_xyz = task_data.get("head_xyz")
 
         self.translate = task_data.get("translate")
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
         if self.relative_yaw:
             agent.turn_angle(self.relative_yaw)
         if self.relative_pitch:
@@ -96,8 +98,12 @@ class Point(Task):
         super(Point, self).__init__()
         self.target = task_data.get("target")
         self.start_time = agent.memory.get_time()
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
         if self.target is not None:
             agent.point_at(self.target)
             self.target = None
@@ -115,15 +121,19 @@ class Move(Task):
         (0, 0, -1): "step_neg_z",
     }
 
-    def __init__(self, agent, task_data, featurizer=None):
-        super(Move, self).__init__(featurizer=featurizer)
+    def __init__(self, agent, task_data):
+        super(Move, self).__init__()
         self.target = util.to_block_pos(np.array(task_data["target"]))
         self.approx = task_data.get("approx", 1)
         self.path = None
         self.replace = set()
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
         self.interrupted = False
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
 
         # replace blocks if possible
         R = self.replace.copy()
@@ -169,6 +179,8 @@ class Move(Task):
         step_fn = getattr(agent, self.STEP_FNS[step])
         step_fn()
 
+        self.last_stepped_time = agent.memory.get_time()
+
     def handle_no_path(self, agent):
         delta = self.target - agent.pos
         for vec, step_fn_name in self.STEP_FNS.items():
@@ -185,19 +197,13 @@ class Move(Task):
                 step_fn()
                 break
 
-    def featurize(self):
-        if self.featurizer is not None:
-            return self.featurizer(self)
-        else:
-            return "Move {} {} {}".format(*self.target)
-
     def __repr__(self):
         return "<Move {} ±{}>".format(self.target, self.approx)
 
 
 class Build(Task):
-    def __init__(self, agent, task_data, featurizer=None):
-        super(Build, self).__init__(featurizer=featurizer)
+    def __init__(self, agent, task_data):
+        super(Build, self).__init__()
         self.task_data = task_data
         self.embed = task_data.get("embed", False)
         self.schematic, _ = blocks_list_to_npy(task_data["blocks_list"])
@@ -206,7 +212,6 @@ class Build(Task):
         self.relations = task_data.get("relations", [])
         self.default_behavior = task_data.get("default_behavior")
         self.force = task_data.get("force", False)
-        self.block_memory = None
         self.attempts = 3 * np.ones(self.schematic.shape[:3], dtype=np.uint8)
         self.fill_message = task_data.get("fill_message", False)
         self.schematic_memid = task_data.get("schematic_memid", None)
@@ -218,16 +223,18 @@ class Build(Task):
         self.PLACE_REACH = task_data.get("PLACE_REACH", 3)
 
         # negative schematic related
-        self.is_neg_schm = task_data.get("is_neg_schm", False)
+        self.is_destroy_schm = task_data.get("is_destroy_schm", False)
         self.dig_message = task_data.get("dig_message", False)
         self.blockobj_memid = None
         self.DIG_REACH = task_data.get("DIG_REACH", 3)
+        self.last_stepped_time = agent.memory.get_time()
 
-        if self.is_neg_schm:
+        if self.is_destroy_schm:
             # is it destroying a whole block object? if so, save its tags
             self.destroyed_block_object_triples = []
             xyzs = set(util.strip_idmeta(task_data["blocks_list"]))
             mem = agent.memory.get_block_object_by_xyz(next(iter(xyzs)))
+            # TODO what if there are several objects being destroyed?
             if mem and all(xyz in xyzs for xyz in mem.blocks.keys()):
                 for pred in ["has_tag", "has_name", "has_colour"]:
                     self.destroyed_block_object_triples.extend(
@@ -261,6 +268,10 @@ class Build(Task):
 
     def step(self, agent):
         self.interrupted = False
+
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
 
         # get blocks occupying build area
         ox, oy, oz = self.origin
@@ -307,18 +318,26 @@ class Build(Task):
 
             if util.manhat_dist(agent.pos, target) <= self.DIG_REACH:
                 success = agent.dig(*target)
-                if self.dig_message and success:
-                    agent.memory.pending_agent_placed_blocks.add(target)
-                    self.add_tags(agent, (target, (0, 0)))
+                if success:
+                    if self.is_destroy_schm:
+                        agent.perception_modules["low_level"].maybe_remove_block_from_memory(
+                            target, (0, 0)
+                        )
+                    else:
+                        agent.perception_modules["low_level"].maybe_add_block_to_memory(
+                            target, (0, 0), agent_placed=True
+                        )
+                        self.add_tags(agent, (target, (0, 0)))
+                    agent.get_changed_blocks()
             else:
-                mv = Move(agent, {"target": target, "approx": self.DIG_REACH}, self.featurizer)
+                mv = Move(agent, {"target": target, "approx": self.DIG_REACH})
                 agent.memory.task_stack_push(mv, parent_memid=self.memid)
 
             return
 
-        # for a build task with negative schematic,
+        # for a build task with destroy schematic,
         # it is done when all different blocks are removed
-        elif self.is_neg_schm:
+        elif self.is_destroy_schm:
             self.finish(agent)
             return
 
@@ -349,9 +368,12 @@ class Build(Task):
                 if agent.place_block(x, y, z):
                     B = agent.get_blocks(x, x, y, y, z, z)
                     if B[0, 0, 0, 0] == idm[0]:
-                        agent.memory.pending_agent_placed_blocks.add((x, y, z))
-                        self.new_blocks.append(((x, y, z), idm))
-                        self.add_tags(agent, ((x, y, z), idm))
+                        agent.perception_modules["low_level"].maybe_add_block_to_memory(
+                            (x, y, z), tuple(idm), agent_placed=True
+                        )
+                        changed_blocks = agent.get_changed_blocks()
+                        self.new_blocks.append(((x, y, z), tuple(idm)))
+                        self.add_tags(agent, ((x, y, z), tuple(idm)))
                     else:
                         logging.error(
                             "failed to place block {} @ {}, but place_block returned True. \
@@ -361,6 +383,19 @@ class Build(Task):
                         )
                 else:
                     logging.warn("failed to place block {} from {}".format(target, agent.pos))
+                if idm[0] == 6:  # hacky: all saplings have id 6
+                    agent.set_held_item([351, 15])  # use bone meal on tree saplings
+                    if len(changed_blocks) > 0:
+                        sapling_pos = changed_blocks[0][0]
+                        x, y, z = sapling_pos
+                        for _ in range(6):  # use at most 6 bone meal (should be enough)
+                            agent.use_item_on_block(x, y, z)
+                            changed_blocks = agent.get_changed_blocks()
+                            changed_block_poss = {block[0] for block in changed_blocks}
+                            # sapling has grown to a full tree, stop using bone meal
+                            if (x, y, z) in changed_block_poss:
+                                break
+
             self.attempts[tuple(yzx)] -= 1
             if self.attempts[tuple(yzx)] == 0 and not self.giving_up_message_sent:
                 agent.send_chat(
@@ -369,20 +404,19 @@ class Build(Task):
                 self.giving_up_message_sent = True
         else:
             # too far to place; move first
-            task = Move(agent, {"target": target, "approx": self.PLACE_REACH}, self.featurizer)
+            task = Move(agent, {"target": target, "approx": self.PLACE_REACH})
             agent.memory.task_stack_push(task, parent_memid=self.memid)
 
     def add_tags(self, agent, block):
         # xyz, _ = npy_to_blocks_list(self.schematic, self.origin)[0]
         xyz = block[0]
-        agent.memory.update(agent)
         # this should not be an empty list- it is assumed the block passed in was just placed
         try:
             memid = agent.memory.get_block_object_ids_by_xyz(xyz)[0]
             self.blockobj_memid = memid
         except:
             logging.debug(
-                "Warning: place air block returned true, but no block in memory after update"
+                "Warning: place block returned true, but no block in memory after update"
             )
         if self.schematic_memid:
             agent.memory.tag_block_object_from_schematic(memid, self.schematic_memid)
@@ -400,7 +434,7 @@ class Build(Task):
         if self.blockobj_memid is not None:
             agent.memory.untag(self.blockobj_memid, "_in_progress")
         if self.verbose:
-            if self.is_neg_schm:
+            if self.is_destroy_schm:
                 agent.send_chat("I finished destroying this")
             else:
                 agent.send_chat("I finished building this")
@@ -468,7 +502,7 @@ class Build(Task):
 
     def undo(self, agent):
         schematic_tags = []
-        if self.is_neg_schm:
+        if self.is_destroy_schm:
             # if rebuilding an object, get old object tags
             schematic_tags = [(pred, obj) for _, pred, obj in self.destroyed_block_object_triples]
             agent.send_chat("ok I will build it back.")
@@ -495,24 +529,23 @@ class Build(Task):
                 Destroy(agent, {"schematic": self.new_blocks}), parent_memid=self.memid
             )
 
-    def featurize(self):
-        if self.featurizer is not None:
-            return self.featurizer(self)
-        else:  # fixme
-            return "Build"
-
     def __repr__(self):
         return "<Build {} @ {}>".format(len(self.schematic), self.origin)
 
 
 class Fill(Task):
-    def __init__(self, agent, task_data, featurizer=None):
-        super(Fill, self).__init__(featurizer=featurizer)
+    def __init__(self, agent, task_data):
+        super(Fill, self).__init__()
         self.schematic = task_data["schematic"]  # a list of xyz tuples
         self.block_idm = task_data.get("block_idm", (2, 0))  # default 2: grass
         self.build_task = None
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
+
         origin = np.min(self.schematic, axis=0)
         blocks_list = np.array([((x, y, z), self.block_idm) for (x, y, z) in self.schematic])
 
@@ -536,21 +569,26 @@ class Fill(Task):
 
 
 class Destroy(Task):
-    def __init__(self, agent, task_data, featurizer=None):
-        super(Destroy, self).__init__(featurizer=featurizer)
+    def __init__(self, agent, task_data):
+        super(Destroy, self).__init__()
         self.schematic = task_data["schematic"]  # list[(xyz, idm)]
         self.dig_message = True if "dig_message" in task_data else False
         self.build_task = None
         self.DIG_REACH = task_data.get("DIG_REACH", 3)
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
+
         origin = np.min([(x, y, z) for ((x, y, z), (b, m)) in self.schematic], axis=0)
 
-        def to_negative_schm(block_list):
+        def to_destroy_schm(block_list):
             """Convert idm of block list to negative
 
             For each block ((x, y, z), (b, m)), convert (b, m) to (-1, 0) indicating
-            it is a negative schematic which should be digged or destroyed.
+            it should be digged or destroyed.
 
             Args:
             - block_list: a list of ((x,y,z), (id, meta))
@@ -558,21 +596,20 @@ class Destroy(Task):
             Returns:
             - a block list of ((x,y,z), (-1, 0))
             """
-            neg_schm = [((x, y, z), (-1, 0)) for ((x, y, z), (b, m)) in block_list]
-            return neg_schm
+            destroy_schm = [((x, y, z), (-1, 0)) for ((x, y, z), (b, m)) in block_list]
+            return destroy_schm
 
-        neg_schm = to_negative_schm(self.schematic)
-
+        destroy_schm = to_destroy_schm(self.schematic)
         self.build_task = Build(
             agent,
             {
-                "blocks_list": neg_schm,
+                "blocks_list": destroy_schm,
                 "origin": origin,
                 "force": True,
                 "verbose": False,
                 "embed": True,
                 "dig_message": self.dig_message,
-                "is_neg_schm": True,
+                "is_destroy_schm": not self.dig_message,
                 "DIG_REACH": self.DIG_REACH,
             },
         )
@@ -583,19 +620,18 @@ class Destroy(Task):
         if self.build_task is not None:
             self.build_task.undo(agent)
 
-    def featurize(self):
-        if self.featurizer is not None:
-            return self.featurizer(self)
-        else:  # fixme
-            return "smash"
-
 
 class Undo(Task):
     def __init__(self, agent, task_data):
         super(Undo, self).__init__()
         self.to_undo_memid = task_data["memid"]
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
+
         old_task_mem = agent.memory.get_task_by_id(self.to_undo_memid)
         old_task_mem.task.undo(agent)
         self.finished = True
@@ -611,6 +647,7 @@ class Spawn(Task):
         self.mobtype = MOBS_BY_ID[self.object_idm[1]]
         self.pos = task_data["pos"]
         self.PLACE_REACH = task_data.get("PLACE_REACH", 3)
+        self.last_stepped_time = agent.memory.get_time()
 
     def find_nearby_new_mob(self, agent):
         mindist = 1000000
@@ -629,6 +666,10 @@ class Spawn(Task):
         return mindist, near_new_mob
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
+
         if util.manhat_dist(agent.pos, self.pos) > self.PLACE_REACH:
             task = Move(agent, {"target": self.pos, "approx": self.PLACE_REACH})
             agent.memory.task_stack_push(task, parent_memid=self.memid)
@@ -666,12 +707,16 @@ class Dig(Task):
         self.width = task_data["width"]
         self.depth = task_data["depth"]
         self.destroy_task = None
+        self.last_stepped_time = agent.memory.get_time()
 
     def undo(self, agent):
         if self.destroy_task is not None:
             self.destroy_task.undo(agent)
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
 
         mx, My, mz = self.origin
         Mx = mx + (self.width - 1)
@@ -703,8 +748,12 @@ class Loop(Task):
         super(Loop, self).__init__()
         self.new_tasks_fn = task_data["new_tasks_fn"]
         self.stop_condition = task_data["stop_condition"]
+        self.last_stepped_time = agent.memory.get_time()
 
     def step(self, agent):
+        # wait certain amount of ticks until issuing next step
+        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+            pass
         if self.stop_condition.check():
             self.finished = True
             agent.interpreter.loop_data = None

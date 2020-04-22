@@ -58,6 +58,9 @@ class TtadModelDialogueManager(DialogueManager):
             "what are your capabilities",
             "show me what you can do",
             "what are you capable of",
+            "help me",
+            "help",
+            "do something",
         ]
         self.botGreetings = ["hi", "hello", "hey"]
         logging.info("using ttad_prev_model_path={}".format(ttad_prev_model_path))

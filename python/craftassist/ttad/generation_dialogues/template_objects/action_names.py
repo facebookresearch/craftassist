@@ -37,7 +37,7 @@ class Dance(TemplateObject):
             ]
 
         command = random.choice(single_commands)
-        self.node.dance_type = command[0]
+        self.node.dance_type_name = command[0]
         self.node._dance_text = command[1]
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):

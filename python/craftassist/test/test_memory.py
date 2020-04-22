@@ -5,7 +5,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 import unittest
 
 import shapes
-from memory import AgentMemory
+from mc_memory import MCAgentMemory
 from .utils import Mob, Pos
 from entities import MOBS_BY_ID
 from base_craftassist_test_case import BaseCraftassistTestCase
@@ -20,8 +20,8 @@ class ObjectsTest(BaseCraftassistTestCase):
         self.obj_b = self.add_object([((0, 0, z), (41, 0)) for z in [-4, -5]])
 
         # give them unique tags
-        self.memory.tag(self.obj_a.memid, "tag_A")
-        self.memory.tag(self.obj_b.memid, "tag_B")
+        self.agent.memory.tag(self.obj_a.memid, "tag_A")
+        self.agent.memory.tag(self.obj_b.memid, "tag_B")
 
     def test_merge_tags(self):
         obj = self.add_object([((0, 0, -3), (41, 0))])
@@ -39,7 +39,7 @@ class TriggersTests(BaseCraftassistTestCase):
     def test_workspace_cleared_on_object_delete(self):
         # Tag object
         tag = "fluff"
-        self.handle_action_dict(
+        self.handle_logical_form(
             {
                 "dialogue_type": "PUT_MEMORY",
                 "filters": {"reference_object": {"location": {"location_type": "SPEAKER_LOOK"}}},
@@ -49,7 +49,7 @@ class TriggersTests(BaseCraftassistTestCase):
         self.assertIn(tag, self.cube_right.get_tags())
 
         # Destroy it
-        changes = self.handle_action_dict(
+        changes = self.handle_logical_form(
             {
                 "dialogue_type": "HUMAN_GIVE_COMMAND",
                 "action": {"action_type": "DESTROY", "reference_object": {"has_tag": tag}},
@@ -58,13 +58,13 @@ class TriggersTests(BaseCraftassistTestCase):
         self.assertEqual(set(changes.keys()), set(self.cube_right.blocks.keys()))
 
         # Ensure it is not in recent entities
-        recent_memids = [m.memid for m in self.memory.get_recent_entities("BlockObjects")]
+        recent_memids = [m.memid for m in self.agent.memory.get_recent_entities("BlockObjects")]
         self.assertNotIn(self.cube_right.memid, recent_memids)
 
 
 class MethodsTests(unittest.TestCase):
     def setUp(self):
-        self.memory = AgentMemory()
+        self.memory = MCAgentMemory()
 
     def test_peek_empty(self):
         self.assertEqual(self.memory.task_stack_peek(), None)

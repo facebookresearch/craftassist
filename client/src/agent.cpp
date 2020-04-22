@@ -143,6 +143,19 @@ class Agent {
   // Use setHeldItem() to change the block to be placed.
   bool placeBlock(int x, int y, int z) { return client_.placeBlock({x, y, z}); }
 
+  // Send a packet to attack or right-click another entity (a player, minecart, etc).
+  bool useEntity(int x, int y, int z) { return client_.useEntity({x, y, z}); }
+
+  // Send a packet to use the currently held item
+  //
+  // Use setHeldItem() to change the item to be used.
+  bool useItem() { return client_.useItem(); }
+
+  // Send a packet to use the currently held item on a target block
+  //
+  // Use setHeldItem() to change the item to be used.
+  bool useItemOnBlock(int x, int y, int z) { return client_.useItemOnBlock({x, y, z}); }
+
   // Craft an item specified by id/meta
   //
   // On success, returns the number of such items crafted
@@ -320,6 +333,9 @@ PYBIND11_MODULE(agent, m) {
       .def("turn_left", &Agent::turnLeft)
       .def("turn_right", &Agent::turnRight)
       .def("place_block", &Agent::placeBlock)
+      .def("use_entity", &Agent::useEntity)
+      .def("use_item", &Agent::useItem)
+      .def("use_item_on_block", &Agent::useItemOnBlock)
       .def("craft", &Agent::craft)
       .def("get_blocks", &Agent::getBlocks)
       .def("get_local_blocks", &Agent::getLocalBlocks)

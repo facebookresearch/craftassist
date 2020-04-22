@@ -21,7 +21,9 @@ jobs:
           command: |
             pip3 install $(cat requirements.txt | grep -e flake8 -e black -e awscli)
             sh ./codetools/check_py_style.sh
-
+          name: Get branch env variable
+          command: |
+            echo 'export DOCKER_BUILD_ARGS="--build-arg current_branch=${CIRCLE_BRANCH}"' >> $BASH_ENV
 
       - setup_remote_docker
       - run:
@@ -37,6 +39,12 @@ jobs:
       - run:
           name: Python unit tests
           command: docker run --entrypoint=/minecraft/python/craftassist/test.sh craftassist
+
+      - run:
+          name: Python style checks
+          command: |
+            pip3 install $(cat requirements.txt | grep -e flake8 -e black -e awscli)
+            sh ./codetools/check_and_fix_py_style.sh
 
       - run:
           name: Push versioned docker containers

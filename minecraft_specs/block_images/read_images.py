@@ -3,6 +3,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 
 import json
+import matplotlib.pyplot
 import numpy as np
 from scipy.ndimage import imread
 import visdom
@@ -48,7 +49,7 @@ for line in q:
         bid = (int(ids[0]), int(ids[1]))
         bid_to_offsets[bid] = int_offsets
 
-big_image = imread(home_dir + '/minecraft_specs/block_images/all_blocks')
+big_image = matplotlib.pyplot.imread(home_dir + '/minecraft_specs/block_images/all_blocks')
 
 bid_to_image = {}
 name_to_image = {}
@@ -168,66 +169,93 @@ colors_to_name = {}
 name_to_simple_colors = {}
 simple_colors_to_name = {}
 
-for i in name_to_image:
-    c = get_colors(name_to_image[i])
-    for j in c:
-        if c[j] > 100:
-            if name_to_colors.get(i) is None:
-                name_to_colors[i] = [j]
+# for i in name_to_image:
+#     c = get_colors(name_to_image[i])
+#     for j in c:
+#         if c[j] > 100:
+#             if name_to_colors.get(i) is None:
+#                 name_to_colors[i] = [j]
+#             else:
+#                 name_to_colors[i].append(j)
+
+#             if name_to_simple_colors.get(i) is None:
+#                 name_to_simple_colors[i] = [CMAP[j]]
+#             else:
+#                 name_to_simple_colors[i].append(CMAP[j])
+
+#             if colors_to_name.get(j) is None:
+#                 colors_to_name[j] = [i]
+#             else:
+#                 colors_to_name[j].append(i)
+
+#             if simple_colors_to_name.get(CMAP[j]) is None:
+#                 simple_colors_to_name[CMAP[j]] = [i]
+#             else:
+#                 simple_colors_to_name[CMAP[j]].append(i)
+
+
+# out = {'name_to_colors':name_to_colors,
+#        'name_to_simple_colors':name_to_simple_colors,
+#        'colors_to_name':colors_to_name,
+#        'simple_colors_to_name':simple_colors_to_name,
+#        'cmap':CMAP}
+
+# f = open(home_dir + '/minecraft_specs/block_images/color_data','wb')
+# pickle.dump(out, f)
+# f.close()
+
+
+with open(home_dir + '/minecraft_specs/block_images/block_property_data.json') as f:
+    block_property_data = json.load(f)
+
+name_to_properties = {}
+properties_to_name = {}
+
+for name in name_to_image:
+    if name in block_property_data:
+        properties = block_property_data[name]['properties']
+        for property in properties:
+            if name_to_properties.get(name) is None:
+                name_to_properties[name] = [property]
             else:
-                name_to_colors[i].append(j)
+                name_to_properties[name].append(property)
 
-            if name_to_simple_colors.get(i) is None:
-                name_to_simple_colors[i] = [CMAP[j]]
+            if properties_to_name.get(property) is None:
+                properties_to_name[property] = [name]
             else:
-                name_to_simple_colors[i].append(CMAP[j])
+                properties_to_name[property].append(name)
 
-            if colors_to_name.get(j) is None:
-                colors_to_name[j] = [i]
-            else:
-                colors_to_name[j].append(i)
+out = {'name_to_properties': name_to_properties,
+       'properties_to_name': properties_to_name}
 
-            if simple_colors_to_name.get(CMAP[j]) is None:
-                simple_colors_to_name[CMAP[j]] = [i]
-            else:
-                simple_colors_to_name[CMAP[j]].append(i)
-
-
-out = {'name_to_colors':name_to_colors,
-       'name_to_simple_colors':name_to_simple_colors,
-       'colors_to_name':colors_to_name,
-       'simple_colors_to_name':simple_colors_to_name,
-       'cmap':CMAP}
-
-f = open(home_dir + '/minecraft_specs/block_images/color_data','wb')
+f = open(home_dir + '/minecraft_specs/block_images/block_property_data','wb')
 pickle.dump(out, f)
 f.close()
 
+with open(home_dir + '/minecraft_specs/block_images/mob_property_data.json') as f:
+    mob_property_data = json.load(f)
 
-with open(home_dir + '/minecraft_specs/block_images/block_prop_data.json') as f:
-    block_prop_data = json.load(f)
-
-name_to_props = {}
-props_to_name = {}
+name_to_properties = {}
+properties_to_name = {}
 
 for name in name_to_image:
-    if name in block_prop_data:
-        props = block_prop_data[name]['props']
-        for prop in props:
-            if name_to_props.get(name) is None:
-                name_to_props[name] = [prop]
+    if name in mob_property_data:
+        properties = mob_property_data[name]['properties']
+        for property in properties:
+            if name_to_properties.get(name) is None:
+                name_to_properties[name] = [property]
             else:
-                name_to_props[name].append(prop)
+                name_to_properties[name].append(property)
 
-            if props_to_name.get(prop) is None:
-                props_to_name[prop] = [name]
+            if properties_to_name.get(property) is None:
+                properties_to_name[property] = [name]
             else:
-                props_to_name[prop].append(name)
+                properties_to_name[property].append(name)
 
-out = {'name_to_props': name_to_props,
-       'props_to_name': props_to_name}
+out = {'name_to_properties': name_to_properties,
+       'properties_to_name': properties_to_name}
 
-f = open(home_dir + '/minecraft_specs/block_images/prop_data','wb')
+f = open(home_dir + '/minecraft_specs/block_images/mob_property_data','wb')
 pickle.dump(out, f)
 f.close()
 

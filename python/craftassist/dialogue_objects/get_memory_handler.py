@@ -4,9 +4,9 @@ Copyright (c) Facebook, Inc. and its affiliates.
 
 from typing import Dict, Tuple, Any, Optional, Sequence
 
-from .dialogue_object import DialogueObject
+from base_agent.dialogue_objects import DialogueObject
 from .interpreter_helper import interpret_reference_object, ErrorWithResponse
-from memory_nodes import MemoryNode, ReferenceObjectNode
+from base_agent.memory_nodes import MemoryNode, ReferenceObjectNode
 from string_lists import ACTION_ING_MAPPING
 from tasks import Build
 from ttad.generation_dialogues.generate_utils import prepend_a_an

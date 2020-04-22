@@ -6,6 +6,9 @@ import logging
 from multiprocessing import Queue, Process
 import sys
 import os
+from mc_memory_nodes import ComponentObjectNode
+from heuristic_perception import all_nearby_objects
+from shapes import get_bounds
 
 VISION_DIR = os.path.dirname(os.path.realpath(__file__))
 CRAFTASSIST_DIR = os.path.join(VISION_DIR, "../")
@@ -15,6 +18,63 @@ sys.path.append(SEMSEG_DIR)
 
 import build_utils as bu
 from semseg_models import SemSegWrapper
+
+
+# TODO all "subcomponent" operations are replaced with InstSeg
+class SubcomponentClassifierWrapper:
+    def __init__(self, agent, model_path, perceive_freq=0):
+        self.perceive_freq = perceive_freq
+        if model_path is not None:
+            self.subcomponent_classifier = SubComponentClassifier(voxel_model_path=model_path)
+            self.subcomponent_classifier.start()
+        else:
+            self.subcomponent_classifier = None
+
+    def perceive(self, force=False):
+        if self.perceive_freq == 0 and not force:
+            return
+        if self.agent.count % self.perceive_freq != 0 and not force:
+            return
+        if self.subcomponent_classifier is None:
+            return
+        # TODO don't all_nearby_objects again, search in memory instead
+        to_label = []
+        for obj in all_nearby_objects(self.agent.get_blocks, self.agent.pos):
+            # If any xyz of obj is has not been labeled
+            if any([(not self.memory.get_component_object_ids_by_xyz(xyz)) for xyz, _ in obj]):
+                to_label.append(obj)
+        for obj in to_label:
+            self.subcomponent_classifier.block_objs_q.put(obj)
+
+        # everytime we try to retrieve as many recognition results as possible
+        while not self.subcomponent_classifier.loc2labels_q.empty():
+            loc2labels, obj = self.subcomponent_classifier.loc2labels_q.get()
+            loc2ids = dict(obj)
+            label2blocks = {}
+
+            def contaminated(blocks):
+                """
+                Check if blocks are still consistent with the current world
+                """
+                mx, Mx, my, My, mz, Mz = get_bounds(blocks)
+                yzxb = self.agent.get_blocks(mx, Mx, my, My, mz, Mz)
+                for b, _ in blocks:
+                    x, y, z = b
+                    if loc2ids[b][0] != yzxb[y - my, z - mz, x - mx, 0]:
+                        return True
+                return False
+
+            for loc, labels in loc2labels.items():
+                b = (loc, loc2ids[loc])
+                for l in labels:
+                    if l in label2blocks:
+                        label2blocks[l].append(b)
+                    else:
+                        label2blocks[l] = [b]
+            for l, blocks in label2blocks.items():
+                ## if the blocks are contaminated we just ignore
+                if not contaminated(blocks):
+                    ComponentObjectNode.create(self.memory, blocks, [l])
 
 
 class SubComponentClassifier(Process):

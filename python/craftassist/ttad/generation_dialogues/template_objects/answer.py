@@ -50,7 +50,7 @@ class AskSize(TemplateObject):
     def add_generate_args(self, index=0, templ_index=0):
         self.node.answer_type = "TAG"
         self.node.tag_name = "has_size"
-        self.node._filters_args["mem_type"]= "REFERENCE_OBJECT"
+        self.node._filters_args["mem_type"] = "REFERENCE_OBJECT"
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         size_options = random.choice(
@@ -67,11 +67,18 @@ class AskColour(TemplateObject):
     def add_generate_args(self, index=0, templ_index=0):
         self.node.answer_type = "TAG"
         self.node.tag_name = "has_colour"
-        self.node._filters_args["mem_type"]= "REFERENCE_OBJECT"
+        self.node._filters_args["mem_type"] = "REFERENCE_OBJECT"
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         phrase = random.choice(
-            ["what colour is", "what colour do you think is", "what is the colour of"]
+            [
+                "what colour is",
+                "what colour do you think is",
+                "what is the colour of",
+                "what color is",
+                "what color do you think is",
+                "what is the color of",
+            ]
         )
 
         return phrase
@@ -82,7 +89,7 @@ class AskIs(TemplateObject):
 
     def add_generate_args(self, index=0, templ_index=0):
         self.node.answer_type = "EXISTS"
-        self.node._filters_args["mem_type"]= "REFERENCE_OBJECT"
+        self.node._filters_args["mem_type"] = "REFERENCE_OBJECT"
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
         phrase = random.choice(["is"])

@@ -7,8 +7,11 @@ import unittest
 
 import shapes
 from util import euclid_dist
-from ttad_model_dialogue_manager import TtadModelDialogueManager
 from base_craftassist_test_case import BaseCraftassistTestCase
+
+
+class Opt:
+    pass
 
 
 TTAD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert/model/")
@@ -17,10 +20,14 @@ TTAD_BERT_DATA_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_ber
 
 class PutMemoryTestCase(BaseCraftassistTestCase):
     def setUp(self):
-        super().setUp()
-        self.dialogue_manager = TtadModelDialogueManager(
-            self.agent, None, TTAD_MODEL_DIR, TTAD_BERT_DATA_DIR, None, None
-        )
+        opts = Opt()
+        opts.nsp_model_dir = TTAD_MODEL_DIR
+        opts.nsp_data_dir = TTAD_BERT_DATA_DIR
+        opts.nsp_embedding_path = None
+        opts.model_base_path = None
+        opts.QA_nsp_model_path = None
+        opts.ground_truth_file_path = ""
+        super().setUp(agent_opts=opts)
 
         self.cube_right = self.add_object(shapes.cube(bid=(42, 0)), (9, 63, 4))
         self.cube_left = self.add_object(shapes.cube(), (9, 63, 10))
@@ -28,16 +35,14 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
 
     def test_come_here(self):
         chat = "come here"
-        self.add_incoming_chat(chat)
-        self.dialogue_manager.step((self.speaker, chat))
+        self.add_incoming_chat(chat, self.speaker)
         self.flush()
 
         self.assertLessEqual(euclid_dist(self.agent.pos, self.get_speaker_pos()), 1)
 
     def test_stop(self):
         chat = "stop"
-        self.add_incoming_chat(chat)
-        self.dialogue_manager.step((self.speaker, chat))
+        self.add_incoming_chat(chat, self.speaker)
         self.flush()
 
 

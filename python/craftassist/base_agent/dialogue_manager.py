@@ -30,13 +30,12 @@ agent_mem, dialogue_stack, dialogue_object_data, where
 dialogue_object_data is for explicit commands to force the manager to
 return a specific Dialogue object to put on the stack.
 """
-
 import logging
 import os
 from typing import Tuple, Optional
 
 from dialogue_stack import DialogueStack
-from dialogue_objects import DialogueObject, Say
+from .dialogue_objects import DialogueObject, Say
 
 
 class DialogueManager(object):
@@ -78,7 +77,7 @@ class DialogueManager(object):
             # object on the stack if it sees that whatever is on
             # the stack should continue.
             # TODO: Maybe we need a HoldOn dialogue object?
-            obj = self.run_model(chat)
+            obj = self.maybe_get_dialogue_obj(chat)
             if obj is not None:
                 self.dialogue_stack.append(obj)
 
@@ -86,5 +85,5 @@ class DialogueManager(object):
         if len(self.dialogue_stack) > 0:
             self.dialogue_stack.step()
 
-    def run_model(self, chat: Tuple[str, str]) -> Optional[DialogueObject]:
-        raise NotImplementedError("Must implement run_model in subclass")
+    def maybe_get_dialogue_obj(self, chat: Tuple[str, str]) -> Optional[DialogueObject]:
+        raise NotImplementedError("Must implement maybe_get_dialogue_object in subclass")

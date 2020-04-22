@@ -1,62 +1,68 @@
 {
   "granite":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "rock"
         ]
     },
   "polished granite":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "rock"
         ]
     },
   "diorite":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "rock"
         ]
     },
   "polished diorite":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "rock"
         ]
     },
   "andesite":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "rock"
         ]
     },
   "polished andesite":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "rock"
         ]
     },
   "podzol":
     {
-      "props":
+      "properties":
         [
           "dirt"
         ]
     },
   "oak sapling":
     {
-      "props":
+      "properties":
         [
           "tree",
           "sapling",
@@ -65,7 +71,7 @@
     },
   "spruce sapling":
     {
-      "props":
+      "properties":
         [
           "tree",
           "sapling",
@@ -74,7 +80,7 @@
     },
   "birch sapling":
     {
-      "props":
+      "properties":
         [
           "tree",
           "sapling",
@@ -83,7 +89,7 @@
     },
   "jungle sapling":
     {
-      "props":
+      "properties":
         [
           "tree",
           "sapling",
@@ -92,7 +98,7 @@
     },
   "acacia sapling":
     {
-      "props":
+      "properties":
         [
           "tree",
           "sapling",
@@ -101,7 +107,7 @@
     },
   "dark oak sapling":
     {
-      "props":
+      "properties":
         [
           "tree",
           "sapling",
@@ -110,21 +116,21 @@
     },
   "flowing lava":
     {
-      "props":
+      "properties":
         [
           "hot"
         ]
     },
   "still lava":
     {
-      "props":
+      "properties":
         [
           "hot"
         ]
     },
   "oak leaves":
     {
-      "props":
+      "properties":
         [
           "oak",
           "leaves"
@@ -132,7 +138,7 @@
     },
   "spruce leaves":
     {
-      "props":
+      "properties":
         [
           "spruce",
           "leaves"
@@ -140,7 +146,7 @@
     },
   "birch leaves":
     {
-      "props":
+      "properties":
         [
           "birch",
           "leaves"
@@ -148,7 +154,7 @@
     },
   "jungle leaves":
     {
-      "props":
+      "properties":
         [
           "jungle",
           "leaves"
@@ -156,63 +162,67 @@
     },
   "glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "brittle"
         ]
     },
   "sandstone":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone"
         ]
     },
   "chiseled sandstone":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone"
         ]
     },
   "smooth sandstone":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone"
         ]
     },
   "dead shrub":
     {
-      "props":
+      "properties":
         [
           "grass"
         ]
     },
   "fern":
     {
-      "props":
+      "properties":
         [
           "grass"
         ]
     },
   "dandelion":
     {
-      "props":
+      "properties":
         [
           "flower"
         ]
     },
   "poppy":
     {
-      "props":
+      "properties":
         [
           "flower"
         ]
     },
   "blue orchid":
     {
-      "props":
+      "properties":
         [
           "flower",
           "orchid"
@@ -220,14 +230,14 @@
     },
   "allium":
     {
-      "props":
+      "properties":
         [
           "flower"
         ]
     },
   "azure bluet":
     {
-      "props":
+      "properties":
         [
           "flower",
           "bluet"
@@ -235,7 +245,7 @@
     },
   "red tulip":
     {
-      "props":
+      "properties":
         [
           "flower",
           "tulip"
@@ -243,7 +253,7 @@
     },
   "orange tulip":
     {
-      "props":
+      "properties":
         [
           "flower",
           "tulip"
@@ -251,7 +261,7 @@
     },
   "white tulip":
     {
-      "props":
+      "properties":
         [
           "flower",
           "tulip"
@@ -259,7 +269,7 @@
     },
   "pink tulip":
     {
-      "props":
+      "properties":
         [
           "flower",
           "tulip"
@@ -267,7 +277,7 @@
     },
   "oxeye daisy":
     {
-      "props":
+      "properties":
         [
           "flower",
           "daisy"
@@ -275,44 +285,48 @@
     },
   "brown mushroom":
     {
-      "props":
+      "properties":
         [
           "mushroom"
         ]
     },
   "red mushroom":
     {
-      "props":
+      "properties":
         [
           "mushroom"
         ]
     },
   "gold block":
     {
-      "props":
+      "properties":
         [
+          "block",
           "gold"
         ]
     },
   "iron block":
     {
-      "props":
+      "properties":
         [
+          "block",
           "iron"
         ]
     },
   "double stone slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "slab"
         ]
     },
   "double sandstone slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "sandstone",
           "stone",
           "slab"
@@ -320,16 +334,18 @@
     },
   "double wooden slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "wood",
           "slab"
         ]
     },
   "double cobblestone slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "cobblestone",
           "stone",
           "slab"
@@ -337,40 +353,45 @@
     },
   "double brick slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "brick",
           "slab"
         ]
     },
   "double stone brick slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "brick",
           "slab"
         ]
     },
   "double quartz slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "quartz",
           "slab"
         ]
     },
   "stone slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "slab"
         ]
     },
   "sandstone slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "sandstone",
           "stone",
           "slab"
@@ -378,16 +399,18 @@
     },
   "wooden slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "wood",
           "slab"
         ]
     },
   "cobblestone slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "cobblestone",
           "stone",
           "slab"
@@ -395,39 +418,43 @@
     },
   "brick slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "brick",
           "slab"
         ]
     },
   "stone brick slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "brick",
           "slab"
         ]
     },
   "quartz slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "quartz",
           "slab"
         ]
     },
   "moss stone":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stone",
           "mossy"
         ]
     },
   "oak wood stairs":
     {
-      "props":
+      "properties":
         [
           "oak",
           "wood",
@@ -436,21 +463,21 @@
     },
   "diamond ore":
     {
-      "props":
+      "properties":
         [
           "diamond"
         ]
     },
   "diamond block":
     {
-      "props":
+      "properties":
         [
           "diamond"
         ]
     },
   "wheat crops":
     {
-      "props":
+      "properties":
         [
           "wheat",
           "crop"
@@ -458,7 +485,7 @@
     },
   "oak door block":
     {
-      "props":
+      "properties":
         [
           "oak",
           "door"
@@ -466,7 +493,7 @@
     },
   "cobblestone stairs":
     {
-      "props":
+      "properties":
         [
           "cobblestone",
           "stone",
@@ -475,16 +502,18 @@
     },
   "glowstone":
     {
-      "props":
+      "properties":
         [
+          "block",
           "glowing",
           "stone"
         ]
     },
   "white stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -492,8 +521,9 @@
     },
   "orange stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -501,8 +531,9 @@
     },
   "magenta stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -510,8 +541,9 @@
     },
   "light blue stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -519,8 +551,9 @@
     },
   "yellow stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -528,8 +561,9 @@
     },
   "lime stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -537,8 +571,9 @@
     },
   "pink stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -546,8 +581,9 @@
     },
   "gray stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -555,8 +591,9 @@
     },
   "light gray stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -564,8 +601,9 @@
     },
   "cyan stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -573,8 +611,9 @@
     },
   "purple stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -582,8 +621,9 @@
     },
   "blue stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -591,8 +631,9 @@
     },
   "brown stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -600,8 +641,9 @@
     },
   "green stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -609,8 +651,9 @@
     },
   "red stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -618,8 +661,9 @@
     },
   "black stained glass":
     {
-      "props":
+      "properties":
         [
+          "block",
           "stained",
           "brittle",
           "glass"
@@ -627,8 +671,9 @@
     },
   "mossy stone bricks":
     {
-      "props":
+      "properties":
         [
+          "block",
           "mossy",
           "stone",
           "brick"
@@ -636,8 +681,9 @@
     },
   "double oak wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "oak",
           "wood",
           "slab"
@@ -645,8 +691,9 @@
     },
   "double spruce wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "spruce",
           "wood",
           "slab"
@@ -654,8 +701,9 @@
     },
   "double birch wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "birch",
           "wood",
           "slab"
@@ -663,8 +711,9 @@
     },
   "double jungle wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "jungle",
           "wood",
           "slab"
@@ -672,8 +721,9 @@
     },
   "double acacia wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "acacia",
           "wood",
           "slab"
@@ -681,8 +731,9 @@
     },
   "double dark oak wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "dark",
           "oak",
           "wood",
@@ -691,8 +742,9 @@
     },
   "oak wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "oak",
           "wood",
           "slab"
@@ -700,8 +752,9 @@
     },
   "spruce wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "spruce",
           "wood",
           "slab"
@@ -709,8 +762,9 @@
     },
   "birch wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "birch",
           "wood",
           "slab"
@@ -718,8 +772,9 @@
     },
   "jungle wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "jungle",
           "wood",
           "slab"
@@ -727,8 +782,9 @@
     },
   "acacia wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "acacia",
           "wood",
           "slab"
@@ -736,8 +792,9 @@
     },
   "dark oak wood slab":
     {
-      "props":
+      "properties":
         [
+          "block",
           "dark",
           "oak",
           "wood",

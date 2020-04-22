@@ -201,15 +201,21 @@ def strip_idmeta(blockobj):
         return None
 
 
+# TODO move this to "reasoning"
 def object_looked_at(
-    agent, candidates: Sequence[Tuple[XYZ, T]], player, limit=1, max_distance=30, loose=False
+    agent,
+    candidates: Sequence[Tuple[XYZ, T]],
+    player_struct,
+    limit=1,
+    max_distance=30,
+    loose=False,
 ) -> List[Tuple[XYZ, T]]:
     """Return the object that `player` is looking at
 
     Args:
     - agent: agent object, for API access
     - candidates: list of (centroid, object) tuples
-    - player: player struct whose POV to use for calculation
+    - player_struct: player struct whose POV to use for calculation
     - limit: 'ALL' or int; max candidates to return
     - loose:  if True, don't filter candaidates behind agent
 
@@ -218,8 +224,8 @@ def object_looked_at(
     if len(candidates) == 0:
         return []
 
-    pos = pos_to_np(player.pos)
-    yaw, pitch = player.look.yaw, player.look.pitch
+    pos = pos_to_np(player_struct.pos)
+    yaw, pitch = player_struct.look.yaw, player_struct.look.pitch
 
     # append to each candidate its relative position to player, rotated to
     # player-centric coordinates
@@ -230,7 +236,7 @@ def object_looked_at(
 
     # reject objects behind player or not in cone of sight (but always include
     # an object if it's directly looked at)
-    xsect = tuple(capped_line_of_sight(agent, player, 25))
+    xsect = tuple(capped_line_of_sight(agent, player_struct, 25))
     if not loose:
         candidates_ = [
             (p, o, r)
@@ -253,15 +259,15 @@ def object_looked_at(
     return [(p, o) for (p, o, r) in candidates_[:limit]]
 
 
-def capped_line_of_sight(agent, player, cap=20):
+def capped_line_of_sight(agent, player_struct, cap=20):
     """Return the block directly in the entity's line of sight, or a point in the distance"""
-    xsect = agent.get_player_line_of_sight(player)
-    if xsect is not None and euclid_dist(pos_to_np(xsect), pos_to_np(player.pos)) <= cap:
+    xsect = agent.get_player_line_of_sight(player_struct)
+    if xsect is not None and euclid_dist(pos_to_np(xsect), pos_to_np(player_struct.pos)) <= cap:
         return pos_to_np(xsect)
 
     # default to cap blocks in front of entity
-    vec = rotation.look_vec(player.look.yaw, player.look.pitch)
-    return cap * np.array(vec) + to_block_pos(pos_to_np(player.pos))
+    vec = rotation.look_vec(player_struct.look.yaw, player_struct.look.pitch)
+    return cap * np.array(vec) + to_block_pos(pos_to_np(player_struct.pos))
 
 
 def get_locs_from_entity(e):

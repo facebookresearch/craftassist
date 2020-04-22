@@ -18,7 +18,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
     def test_get_name(self):
         # set the name
         name = "fluffball"
-        self.memory.add_triple(self.cube_right.memid, "has_name", name)
+        self.agent.memory.add_triple(self.cube_right.memid, "has_name", name)
 
         # get the name
         d = {
@@ -30,7 +30,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
             "answer_type": "TAG",
             "tag_name": "has_name",
         }
-        self.handle_action_dict(d, stop_on_chat=True)
+        self.handle_logical_form(d, stop_on_chat=True)
 
         # check that proper chat was sent
         self.assertIn(name, self.last_outgoing_chat())
@@ -44,7 +44,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
                 "schematic": {"has_name": "cube", "has_size": "small"},
             },
         }
-        self.handle_action_dict(d, max_steps=5)
+        self.handle_logical_form(d, max_steps=5)
 
         # what are you doing?
         d = {
@@ -53,7 +53,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
             "answer_type": "TAG",
             "tag_name": "action_name",
         }
-        self.handle_action_dict(d, stop_on_chat=True)
+        self.handle_logical_form(d, stop_on_chat=True)
 
         # check that proper chat was sent
         self.assertIn("building", self.last_outgoing_chat())
@@ -67,7 +67,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
                 "schematic": {"has_name": "cube", "has_size": "small"},
             },
         }
-        self.handle_action_dict(d, max_steps=5)
+        self.handle_logical_form(d, max_steps=5)
 
         # what are you building
         d = {
@@ -76,7 +76,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
             "answer_type": "TAG",
             "tag_name": "action_reference_object_name",
         }
-        self.handle_action_dict(d, stop_on_chat=True)
+        self.handle_logical_form(d, stop_on_chat=True)
 
         # check that proper chat was sent
         self.assertIn("cube", self.last_outgoing_chat())
@@ -94,7 +94,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
                 },
             },
         }
-        self.handle_action_dict(d, max_steps=3)
+        self.handle_logical_form(d, max_steps=3)
 
         # where are you going?
         d = {
@@ -103,7 +103,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
             "answer_type": "TAG",
             "tag_name": "move_target",
         }
-        self.handle_action_dict(d, stop_on_chat=True)
+        self.handle_logical_form(d, stop_on_chat=True)
 
         # check that proper chat was sent
         for x in target:
@@ -122,7 +122,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
                 },
             },
         }
-        self.handle_action_dict(d)
+        self.handle_logical_form(d)
 
         # where are you?
         d = {
@@ -131,7 +131,7 @@ class GetMemoryTestCase(BaseCraftassistTestCase):
             "answer_type": "TAG",
             "tag_name": "location",
         }
-        self.handle_action_dict(d)
+        self.handle_logical_form(d)
 
         # check that proper chat was sent
         for x in target:

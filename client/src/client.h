@@ -15,7 +15,7 @@
 #include "packet_writer.h"
 
 class Client {
-  const long STEP_COOLDOWN_MS = 250;
+  const long STEP_COOLDOWN_MS = 125;
   const uint16_t HELD_ITEM_IDX = 36;  // see player inventory diagram
 
  public:
@@ -98,6 +98,18 @@ class Client {
   bool placeBlock(BlockPos pos);
   bool placeBlockFace();
   bool placeBlockFeet();
+
+  // Use currently-held item on a target entity (e.g. a block)
+  // Return true if successful, false otherwise (e.g. if the target block was too far)
+  bool useEntity(BlockPos pos);
+
+  // Use currently-held item
+  // Return true if successful, false otherwise
+  bool useItem();
+
+  // Use the currently held item on a target block
+  // Return true if successful, false otherwise
+  bool useItemOnBlock(BlockPos pos);
 
   // Dig a block to completion.
   // Return true if successful, false otherwise (e.g. if the block was too far)

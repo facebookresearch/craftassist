@@ -1086,6 +1086,7 @@ class LocationDelta(ComponentNode):
             direction_dict["CLOCKWISE"] = ["clockwise"]
             direction_dict["ANTICLOCKWISE"] = ["anticlockwise"]
             direction_dict["BETWEEN"] = ["between", "in between", "in the middle of"]
+            direction_dict["ACROSS"] = ["across", "across from"]
         else:
             direction_dict["LEFT"] = ["to the left", "to your left", "east", "left"]
             direction_dict["RIGHT"] = ["to the right", "to your right", "right", "west"]

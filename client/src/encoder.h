@@ -47,6 +47,8 @@ class Encoder {
   std::vector<uint8_t> heldItemChangePacket(uint8_t i);
   std::vector<uint8_t> creativeInventoryActionPacket(uint8_t index, Slot slot);
   std::vector<uint8_t> playerBlockPlacementPacket(BlockPos p);
+  std::vector<uint8_t> playerUseEntityPacket(BlockPos p);
+  std::vector<uint8_t> playerUseItemPacket();
   std::vector<uint8_t> playerLookPacket(float yaw, float pitch, bool onGround);
   std::vector<uint8_t> playerStartDiggingPacket(BlockPos pos);
   std::vector<uint8_t> playerFinishedDiggingPacket(BlockPos pos);

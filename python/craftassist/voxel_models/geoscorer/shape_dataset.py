@@ -218,57 +218,6 @@ def shift_vector_gen(side_length):
                 yield (i - shift_max, j - shift_max, k - shift_max)
 
 
-class SegmentContextCombinedShapeData(torch.utils.data.Dataset):
-    def __init__(
-        self, nexamples=100000, sidelength=32, useid=False, nneg=1, shift_max=10, for_vis=False
-    ):
-        self.sidelength = sidelength
-        self.useid = useid
-        self.nneg = nneg
-        self.shift_max = shift_max
-        self.for_vis = for_vis
-        self.examples = []
-        if nexamples < 0:
-            nexamples = -nexamples
-            for i in range(nexamples):
-                self.examples.append(self._get_example())
-        self.nexamples = nexamples
-
-    def _get_example(self):
-        sl = self.sidelength
-        shape, seg = get_shape_segment(max_chunk=10)
-        center = center_of_mass(shape, seg=seg)
-        out = torch.zeros(self.nneg + 1, sl, sl, sl)
-        if self.for_vis:
-            id_shape = shift_negative(shape, seg, {"shift_max": 0, "seg_id": 2})
-            context_dense, _ = densify(id_shape, [sl, sl, sl], center=center, useid=self.useid)
-        else:
-            context_dense, _ = densify(shape, [sl, sl, sl], center=center, useid=self.useid)
-
-        out[0] = torch.Tensor(context_dense)
-        for i in range(self.nneg):
-            shift_args = {"shift_max": self.shift_max}
-            if self.for_vis:
-                shift_args["seg_id"] = 2
-            negative = shift_negative(shape, seg, shift_args)
-            neg_dense = densify(negative, [sl, sl, sl], center=center, useid=self.useid)[0]
-            out[i + 1] = torch.Tensor(neg_dense)
-        return out
-
-    def __getitem__(self, index):
-        if len(self.examples) > 0:
-            #            sl = self.sidelength
-            #            out = torch.zeros(self.nneg + 1, sl, sl, sl)
-            #            out[1:] = 1
-            #            return out
-            return self.examples[index]
-        else:
-            return self._get_example()
-
-    def __len__(self):
-        return self.nexamples
-
-
 # Returns three tensors: 32x32x32 context, 8x8x8 segment, 1 target
 class SegmentContextSeparateShapeData(torch.utils.data.Dataset):
     def __init__(
@@ -317,29 +266,17 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_type", type=str, default="combined", help="(combined|separate)")
+    parser.add_argument("--data_type", type=str, default="separate", help="(separate)")
     opts = parser.parse_args()
 
     vis = visdom.Visdom(server="http://localhost")
     sp = pv.SchematicPlotter(vis)
 
-    if opts.data_type == "separate":
-        dataset = SegmentContextSeparateShapeData(nexamples=3, for_vis=True)
-        for n in range(len(dataset)):
-            shape, seg, target = dataset[n]
-            sp.drawPlotly(shape)
-            sp.drawPlotly(seg)
-            target_coord = index_to_coord(target.item(), 32)
-            completed_shape = combine_seg_context(seg, shape, target_coord, seg_mult=3)
-            sp.drawPlotly(completed_shape)
-    else:
-        num_examples = 4
-        num_neg = 3
-        dataset = SegmentContextCombinedShapeData(
-            nexamples=num_examples, for_vis=True, useid=True, shift_max=10, nneg=num_neg
-        )
-        for n in range(num_examples):
-            curr_data = dataset[n]
-            sp.drawPlotly(curr_data[0])
-            for i in range(num_neg):
-                sp.drawPlotly(curr_data[i + 1])
+    dataset = SegmentContextSeparateShapeData(nexamples=3, for_vis=True)
+    for n in range(len(dataset)):
+        shape, seg, target = dataset[n]
+        sp.drawPlotly(shape)
+        sp.drawPlotly(seg)
+        target_coord = index_to_coord(target.item(), 32)
+        completed_shape = combine_seg_context(seg, shape, target_coord, seg_mult=3)
+        sp.drawPlotly(completed_shape)
