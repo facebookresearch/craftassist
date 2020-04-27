@@ -5,8 +5,6 @@ __pycache__
 *.DS_Store
 *.ipynb
 *.log
-*.sql
-!memory_schema.sql
 *~
 bin/*
 python/craftassist/models/*
