@@ -4,7 +4,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 
 import argparse
 import models
-from geoscorer_util import *
+from spatial_utils import index_to_coord
 
 
 class ContextSegmentMergerWrapper(object):

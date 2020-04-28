@@ -1,0 +1,215 @@
+\clearpage
+
+\section{Analysis of errors on prompts and interactive data}
+\label{sec:analysis_prompts}
+
+We performed error analysis on the mistakes that the model made. Table ~\ref{tab:action-type} shows the accuracy scores per action-type for the SentenceRec model.
+\begin{table*}
+\small
+\center
+\begin{tabular}{c|cccc|cccc}
+	& \multicolumn{4}{c|}{Validation} 	& \multicolumn{4}{c}{Test} \\
+Action Type 	& Temp.	&	Rep.	&	Prompts	&	Inter.	&	Temp.	& Rep. 	&	Prompts 	&	Inter. \\
+\midrule
+Answer	&	1.000	&	0.758	& \textbf{0.000	}	&	\textbf{0.000}	&	1.000	&	0.859	&	\textbf{0.000}	&	\textbf{0.000} \\
+\midrule
+ Build	&	0.983	&	0.725	&	0.417	&	0.705	&	0.979	&	0.763	&	0.396	&	0.667 \\
+ \midrule
+ Destroy	&	0.985	&	0.777	&	0.185	&	0.560	&	0.972	&	0.787	&	0.241	&	0.406 \\
+ \midrule
+ Dig	&	1.000	&	0.781	&	0.382	&	0.462	&	0.995	&	0.797	&	0.389	&	0.667 \\
+ \midrule
+ Fill	&	1.000	&	0.782	&	0.111	&	0.000	&	0.995	&	0.806	&	0.083	&	0.500 \\
+ \midrule
+ FreeBuild	&	0.993	&	0.779	&	\textbf{0.000}	&	\textbf{0.000}	&	0.987	&	0.747	&	\textbf{0.000}	&	\textbf{0.000} \\
+ \midrule
+ Move	&	1.000	&	0.768	&	0.419	&	0.357	&	1.000	&	0.707	&	0.269	&	0.455 \\
+ \midrule
+ Noop	&	0.952	&	0.970	&	0.800	&	0.878	&	0.963	&	0.960	&	0.685	&	0.861 \\
+ \midrule
+ Resume	&	1.000	&	0.857	&	0.486	&	1.000	&	1.000	&	0.956	&	0.625	&	1.000 \\
+ \midrule
+ Stop		&	1.000	&	0.979	&	0.829	&	0.750	&	1.000	&	0.880	&	0.744	&	1.000 \\
+ \midrule
+ Tag	&	0.995	&	0.708	&	\textbf{0.000}	&	\textbf{0.000}	&	0.988	&	0.709	&	\textbf{0.000}	&	\textbf{0.000} \\
+ \midrule
+ Undo	&	1.000	&	0.817	&	0.462	&	N/A	&	1.000	&	0.782	&	0.632	&	1.000 \\
+ \midrule
+ CompositeAction	&	N/A	&	N/A	&	\textbf{0.000}	&	N/A	&	N/A	&	N/A	&	\textbf{0.000}	&	N/A \\
+ \midrule
+ OtherAction	&	N/A	&	N/A	&	\textbf{0.000}	&	\textbf{0.000}	&	N/A	&	N/A	&	\textbf{0.000}	&	\textbf{0.000} \\
+
+\end{tabular}
+\caption{Action type accuracy breakdown for the SentenceRec model over the validation and test datasets. 'N/A' refers to the action type not found in that dataset. }
+\label{tab:action-type}
+\end{table*}
+
+We conclude from Table ~\ref{tab:action-type} that the model makes most mistakes on prompts and interactive data. We found that the parsing model does poorly on specifically : Answer, CompositeAction, OtherAction, Destroy, FreeBuild and Tag actions. The following sections go into a deeper understanding of the errors.
+
+\subsection{Answer action}
+The Answer action errors can be categorized into the following:
+\begin{itemize}
+\item A significant portion of the errors in Answer happens because crowd-sourced workers annotated the action with just an ``answer\_type" key, however the model tries to predict more details for the object being referred to, example:
+\begin{verbatim}
+sentence: "what is this" 
+ground truth tree: {"action_type" :  "Answer"}
+prediction tree :{
+"reference_object": {
+    "location": {"location_type": "SpeakerLook"}}, 
+"action_type": "Answer", 
+"answer_type": "query_all_tags"
+}
+\end{verbatim}
+another example:
+\begin{verbatim}
+sentence: "what do you think is under this pyramid ?"
+ground truth tree: {"action_type": "Answer"}
+prediction tree : {
+"reference_object": {
+    "location": {
+	    "reference_object": {
+		    "location": {"location_type": "SpeakerLook"}, 
+		    "has_name_": (0, (7, 7))}, 
+        "location_type": "ReferenceObject",
+        "relative_direction": "DOWN"}}, 
+"action_type": "Answer", 
+"answer_type": "query_all_tags"}
+\end{verbatim}
+
+\item Some commands have been tagged as ``Answer" by humans but model predicts them as other action types, example:
+\begin{verbatim}
+sentence: "can we build a garden"
+ground truth tree: {"action_type": "Answer"}
+prediction tree : {
+"schematic": {
+    "has_name_": (0, (4, 4))}, 
+"action_type": "Build"}
+\end{verbatim}
+
+\item Some are ambiguous and can be classified as either, example:
+\begin{verbatim}
+sentence: "can you chop down that tree for me ?"
+ground truth tree: {"action_type": "Answer"}
+prediction tree : {
+"reference_object": {
+    "location": {"location_type": "SpeakerLook"},
+     "has_name_": (0, (5, 5))}, 
+"action_type": "Destroy"}
+\end{verbatim}
+
+\item Some are out of distribution questions, example:
+\begin{verbatim}
+sentence: "what can you tag"
+ground truth tree: {"action_type": "Answer"}
+prediction tree : {
+"action_type": "Undo, 
+"undo_action": "Tag_Action"
+}
+\end{verbatim}
+\end{itemize}
+
+\subsection{Tag action}
+The main category of errors in the Tag action is commands that have no reference objects example:
+\begin{verbatim}
+sentence: "label as grass"
+ground truth tree: {
+"tag": [2, 2], 
+"action_type": "Tag"}
+prediction tree : {
+"reference_object": {
+    "has_name_": (0, (2, 2))}, 
+"action_type": "Tag", 
+"tag": (0, (2, 2))}
+\end{verbatim}
+
+In the training data, the model always sees commands that try to tag some object.
+
+\subsection{FreeBuild action}
+The Freebuild mistakes fall into two major categories:
+\begin{itemize}
+\item Distinction between FreeBuild and Build is ambiguous, example:
+\begin{verbatim}
+sentence: "ok build me a house with me"
+ground truth tree: {
+"schematic": {
+    "has_name_": [4, 4]}, 
+"action_type": "FreeBuild"}
+prediction tree : {"action_type": "Build"}
+\end{verbatim}
+These are new kinds of commands for the FreeBuild action that the model doesn't see in training data and the action type can be easily confused with ``Build"
+\item Distinction between FreeBuild and Resume is ambiguous, example:
+\begin{verbatim}
+sentence: "continue building the house"
+ground truth tree: {
+"schematic": {
+    "has_name_": [3, 3]}, 
+"action_type": "FreeBuild"}
+prediction tree : {"action_type": "Resume"}
+\end{verbatim}
+These commands can be easily (and perhaps correctly) confused with Resume action.
+\end{itemize}
+ 
+ \subsection{OtherAction and CompositeAction}
+ The models do very poorly on these action types as they never see these actions in the training data. 
+ These actions represent all the commands that do not fall into the category of defined commands in the training data and the data points are too few for these action types. 
+ 
+ \begin{itemize}
+ \item Ambiguous action types:
+ \begin{verbatim}
+ sentence: 'stop the car .'
+ground truth tree: {
+'reference_object': {
+    'has_name_': [2, 2]}, 
+'action_type': 'OtherAction'}
+prediction tree : {'action_type': 'Stop'}
+\end{verbatim}
+This can be correctly classified as Stop action. There's a bunch of these in the data for other action types like Build, Fill etc
+\item There are a lot of `annotation errors:
+\begin{verbatim}
+sentence: 'spawn a garden .'
+ground truth tree: {
+'reference_object': {
+    'has_name_': [2, 2]}, 
+'action_type': 'OtherAction'}
+prediction tree : {
+'schematic': {
+    'has_name_': (0, (2, 2))}, 
+'action_type': 'Build'}
+\end{verbatim}
+ \end{itemize}
+
+ \subsection{Other Errors}
+ \begin{itemize}
+ \item Sometimes the model gets more details than ground truth annotations :
+\begin{verbatim}
+sentence: "build a fortified base"
+ground truth tree: {
+"schematic": {
+    "has_name_": [2, 3]}, 
+"action_type": "Build"}
+prediction tree : {
+"schematic": {
+    "has_name_": (0, (3, 3)), 
+    "has_block_type_": (0, (2, 2))}, 
+"action_type": "Build"}
+\end{verbatim}
+\item Out of training distribution commands:
+
+\begin{verbatim}
+sentence: "demolish the guest house in the backyard ."
+ground truth tree: {
+"location": {
+    "location_type": "ReferenceObject", 
+    "reference_object": {
+        "has_name_": [6, 6]}}, 
+"reference_object": {
+    "has_name_": [2, 3]}, 
+"action_type": "Destroy"}
+prediction tree : {
+"reference_object": {
+    "has_name_": (0, (2, 2))},
+"action_type": "Destroy"}
+\end{verbatim}
+The model doesn't see location descriptions that are described by ``in" in the training data.
+ \end{itemize}
+

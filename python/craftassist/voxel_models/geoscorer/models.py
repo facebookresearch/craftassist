@@ -2,15 +2,10 @@
 Copyright (c) Facebook, Inc. and its affiliates.
 """
 
-import argparse
 import torch
 import torch.optim as optim
 import torch.nn as nn
-import os
-import random
-import string
-from shutil import copyfile
-from geoscorer_util import get_xyz_viewer_look_coords_batched
+import directional_utils as du
 
 
 def conv3x3x3(in_planes, out_planes, stride=1, bias=True):
@@ -62,7 +57,7 @@ class ContextEmbeddingNet(nn.Module):
         hidden_dim = opts.get("hidden_dim", 64)
         self.use_direction = opts.get("cont_use_direction", False)
         self.use_xyz_from_viewer_look = opts.get("cont_use_xyz_from_viewer_look", False)
-        self.context_sl = opts.get("context_side_length", 32)
+        self.c_sl = opts.get("context_side_length", 32)
         self.xyz = None
 
         input_dim = self.blockid_embedding_dim
@@ -70,9 +65,11 @@ class ContextEmbeddingNet(nn.Module):
             input_dim += 5
         if self.use_xyz_from_viewer_look:
             input_dim += 3
-            self.xyz = create_xyz_tensor(self.context_sl).view(1, -1, 3)
+            self.xyz = create_xyz_tensor(self.c_sl).view(1, -1, 3)
+            self.viewer_look = du.get_viewer_look(self.c_sl)
             if opts.get("cuda", 0):
                 self.xyz = self.xyz.cuda()
+                self.viewer_look = self.viewer_look.cuda()
 
         # A shared embedding for the block id types
         self.blockid_embedding = blockid_embedding
@@ -101,13 +98,17 @@ class ContextEmbeddingNet(nn.Module):
 
     # Input: [context, opt:viewer_pos, opt:viewer_look, opt:direction]
     # Returns N x D x H x W x L
-    def forward(self, inp):
-        if inp[0].size()[1] != 32 or inp[0].size()[2] != 32 or inp[0].size()[3] != 32:
-            raise Exception("Size of input should be Nx32x32x32 but it is {}".format(inp.size()))
+    def forward(self, b):
+        bsls = b["context"].size()[1:]
+        if bsls[0] != self.c_sl or bsls[1] != self.c_sl or bsls[2] != self.c_sl:
+            raise Exception(
+                "Size of context should be Nx{}x{}x{} but it is {}".format(
+                    self.c_sl, self.c_sl, self.c_sl, b["context"].size()
+                )
+            )
 
-        x = inp[0]
-        sizes = list(x.size())
-        x = x.view(-1)
+        sizes = list(b["context"].size())
+        x = b["context"].view(-1)
         # Get the blockid embedding for each space in the context input
         z = self.blockid_embedding.weight.index_select(0, x)
         z = z.float()
@@ -116,13 +117,10 @@ class ContextEmbeddingNet(nn.Module):
 
         # z: N*D x B
         if self.use_xyz_from_viewer_look:
-            viewer_pos = inp[1]
-            viewer_look = inp[2]
-            n = viewer_pos.size()[0]
-            n_xyz = self.xyz.expand(n, -1, -1)
+            n_xyz = self.xyz.expand(sizes[0], -1, -1)
             # Input: viewer pos, viewer look (N x 3), n_xyz (N x D x 3)
             n_xyz = (
-                get_xyz_viewer_look_coords_batched(viewer_pos, viewer_look, n_xyz)
+                du.get_xyz_viewer_look_coords_batched(b["viewer_pos"], self.viewer_look, n_xyz)
                 .view(-1, 3)
                 .float()
             )
@@ -132,8 +130,8 @@ class ContextEmbeddingNet(nn.Module):
 
         if self.use_direction:
             # direction: N x 5
-            direction = inp[3]
-            d = self.context_sl * self.context_sl * self.context_sl
+            direction = b["dir_vec"]
+            d = self.c_sl * self.c_sl * self.c_sl
             direction = direction.unsqueeze(1).expand(-1, d, -1).contiguous().view(-1, 5)
             direction = direction.float()
             z = torch.cat([z, direction], 1)
@@ -156,6 +154,7 @@ class SegmentEmbeddingNet(nn.Module):
         self.blockid_embedding_dim = opts.get("blockid_embedding_dim", 8)
         spatial_embedding_dim = opts.get("spatial_embedding_dim", 8)
         hidden_dim = opts.get("hidden_dim", 64)
+        self.s_sl = 8  # TODO make this changeable in model arch
 
         # A shared embedding for the block id types
         self.blockid_embedding = blockid_embedding
@@ -189,13 +188,14 @@ class SegmentEmbeddingNet(nn.Module):
         self.out = nn.Linear(hidden_dim, spatial_embedding_dim)
 
     # Returns N x D x 1 x 1 x 1
-    def forward(self, x):
-        if x.size()[1] != 8:
-            raise Exception("Size of input should be Nx8x8x8 but it is {}".format(x.size()))
-        sizes = list(x.size())
-        x = x.view(-1)
+    def forward(self, b):
+        bsls = b["seg"].size()[1:]
+        if bsls[0] != self.s_sl or bsls[1] != self.s_sl or bsls[2] != self.s_sl:
+            raise Exception("Size of input should be Nx8x8x8 but it is {}".format(b["seg"].size()))
+        sizes = list(b["seg"].size())
+        seg = b["seg"].view(-1)
         # Get the blockid embedding for each space in the context input
-        z = self.blockid_embedding.weight.index_select(0, x)
+        z = self.blockid_embedding.weight.index_select(0, seg)
         # Add the embedding dim B
         sizes.append(self.blockid_embedding_dim)
         z = z.view(torch.Size(sizes))
@@ -213,16 +213,13 @@ class SegmentDirectionEmbeddingNet(nn.Module):
 
         output_embedding_dim = opts.get("output_embedding_dim", 8)
         self.use_viewer_pos = opts.get("seg_use_viewer_pos", False)
-        self.use_viewer_look = opts.get("seg_use_viewer_look", False)
         self.use_direction = opts.get("seg_use_direction", False)
         hidden_dim = opts.get("hidden_dim", 64)
         num_layers = opts.get("num_seg_dir_layers", 3)
         self.seg_input_dim = opts.get("spatial_embedding_dim", 8)
-        self.context_side_length = opts.get("context_side_length", 32)
+        self.c_sl = opts.get("context_side_length", 32)
         input_dim = self.seg_input_dim
         if self.use_viewer_pos:
-            input_dim += 3
-        if self.use_viewer_look:
             input_dim += 3
         if self.use_direction:
             input_dim += 5
@@ -234,22 +231,18 @@ class SegmentDirectionEmbeddingNet(nn.Module):
             self.layers.append(nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU()))
         self.out = nn.Linear(hidden_dim, output_embedding_dim)
 
-    # In: [seg_embedding, viewer_pos, viewer_look, direction]
+    # In: batch dict, must have s_embeds, viewer_pos, dir_vec
     # Out: N x D x 1 x 1 x 1
-    def forward(self, x):
-        if len(x) != 4:
-            raise Exception("There should be 5 elements in the input")
-        if x[0].size()[1] != self.seg_input_dim:
-            raise Exception("The seg spatial embed is wrong size: {}".format(x[0].size()))
+    def forward(self, b):
+        if b["s_embeds"].size()[1] != self.seg_input_dim:
+            raise Exception("The seg spatial embed is wrong size: {}".format(b["s_embeds"].size()))
 
-        inp = [x[0]]
-        normalizing_const = self.context_side_length * 1.0 / 2.0
+        inp = [b["s_embeds"]]
+        normalizing_const = self.c_sl * 1.0 / 2.0
         if self.use_viewer_pos:
-            inp.append(x[1].float().div_(normalizing_const))
-        if self.use_viewer_look:
-            inp.append(x[2].float().div_(normalizing_const))
+            inp.append(b["viewer_pos"].float().div_(normalizing_const))
         if self.use_direction:
-            inp.append(x[3].float())
+            inp.append(b["dir_vec"].float())
 
         z = torch.cat(inp, 1)
         for i in range(len(self.layers)):
@@ -262,8 +255,8 @@ class ContextSegmentScoringModule(nn.Module):
         super(ContextSegmentScoringModule, self).__init__()
 
     def forward(self, x):
-        context_emb = x[0]  # N x 32 x 32 x 32 x D
-        seg_emb = x[1]  # N x 1 x 1 x 1 x D
+        context_emb = x["c_embeds"]  # N x 32 x 32 x 32 x D
+        seg_emb = x["s_embeds"]  # N x 1 x 1 x 1 x D
 
         c_szs = context_emb.size()  # N x 32 x 32 x 32 x D
         batch_dim = c_szs[0]
@@ -334,35 +327,20 @@ class reshape_nll(nn.Module):
         return self.crit(logsuminp, o)
 
 
-def prepare_variables(b, opts):
-    X = b.long()
-    if opts["cuda"]:
-        X = X.cuda()
-    return X
+def get_optim(model_params, opts):
+    optim_type = opts.get("optim", "adagrad")
+    lr = opts.get("lr", 0.1)
+    momentum = opts.get("momentum", 0.0)
+    betas = (0.9, 0.999)
 
-
-def save_checkpoint(tms, metadata, opts, path):
-    model_dict = {"context_net": tms["context_net"], "seg_net": tms["seg_net"]}
-    if opts.get("seg_direction_net", False):
-        model_dict["seg_direction_net"] = tms["seg_direction_net"]
-
-    # Add all models to dicts and move state to cpu
-    state_dicts = {}
-    for model_name, model in model_dict.items():
-        state_dicts[model_name] = model.state_dict()
-        for n, s in state_dicts[model_name].items():
-            state_dicts[model_name][n] = s.cpu()
-
-    # Save to path
-    torch.save(
-        {
-            "metadata": metadata,
-            "model_state_dicts": state_dicts,
-            "optimizer_state_dict": tms["optimizer"].state_dict(),
-            "options": opts,
-        },
-        path,
-    )
+    if optim_type == "adagrad":
+        return optim.Adagrad(model_params, lr=lr)
+    elif optim_type == "sgd":
+        return optim.SGD(model_params, lr=lr, momentum=momentum)
+    elif optim_type == "adam":
+        return optim.Adam(model_params, lr=lr, betas=betas)
+    else:
+        raise Exception("Undefined optim type {}".format(optim_type))
 
 
 def create_context_segment_modules(opts):
@@ -393,100 +371,3 @@ def create_context_segment_modules(opts):
             all_params.extend(list(tms[n].parameters()))
     tms["optimizer"] = get_optim(all_params, opts)
     return tms
-
-
-def load_context_segment_checkpoint(checkpoint_path, opts, backup=True, verbose=False):
-    if not os.path.isfile(checkpoint_path):
-        check_and_print_opts(opts, None)
-        return {}
-
-    if backup:
-        random_uid = "".join(
-            [random.choice(string.ascii_letters + string.digits) for n in range(4)]
-        )
-        backup_path = checkpoint_path + ".backup_" + random_uid
-        copyfile(checkpoint_path, backup_path)
-        print(">> Backing up checkpoint before loading and overwriting:")
-        print("        {}\n".format(backup_path))
-
-    checkpoint = torch.load(checkpoint_path)
-
-    if verbose:
-        print(">> Loading model from checkpoint {}".format(checkpoint_path))
-        for opt, val in checkpoint["metadata"].items():
-            print("    - {:>20}: {:<30}".format(opt, val))
-        print("")
-        check_and_print_opts(opts, checkpoint["options"])
-
-    checkpoint_opts_dict = checkpoint["options"]
-    if type(checkpoint_opts_dict) is not dict:
-        checkpoint_opts_dict = vars(checkpoint_opts_dict)
-
-    for opt, val in checkpoint_opts_dict.items():
-        opts[opt] = val
-    print(opts)
-
-    trainer_modules = create_context_segment_modules(opts)
-    trainer_modules["context_net"].load_state_dict(checkpoint["model_state_dicts"]["context_net"])
-    trainer_modules["seg_net"].load_state_dict(checkpoint["model_state_dicts"]["seg_net"])
-    trainer_modules["optimizer"].load_state_dict(checkpoint["optimizer_state_dict"])
-    if opts.get("seg_direction_net", False):
-        trainer_modules["seg_direction_net"].load_state_dict(
-            checkpoint["model_state_dicts"]["seg_direction_net"]
-        )
-    return trainer_modules
-
-
-def get_context_segment_trainer_modules(opts, checkpoint_path=None, backup=False, verbose=False):
-    trainer_modules = load_context_segment_checkpoint(checkpoint_path, opts, backup, verbose)
-
-    if len(trainer_modules) == 0:
-        trainer_modules = create_context_segment_modules(opts)
-    return trainer_modules
-
-
-def check_and_print_opts(curr_opts, old_opts):
-    mismatches = []
-    print(">> Options:")
-    for opt, val in curr_opts.items():
-        if opt and val:
-            print("   - {:>20}: {:<30}".format(opt, val))
-        else:
-            print("   - {}: {}".format(opt, val))
-
-        if old_opts and opt in old_opts and old_opts[opt] != val:
-            mismatches.append((opt, val, old_opts[opt]))
-            print("")
-
-    if len(mismatches) > 0:
-        print(">> Mismatching options:")
-        for m in mismatches:
-            print("   - {:>20}: new '{:<10}' != old '{:<10}'".format(m[0], m[1], m[2]))
-            print("")
-    return True if len(mismatches) > 0 else False
-
-
-def get_optim(model_params, opts):
-    optim_type = opts.get("optim", "adagrad")
-    lr = opts.get("lr", 0.1)
-    momentum = opts.get("momentum", 0.0)
-    betas = (0.9, 0.999)
-
-    if optim_type == "adagrad":
-        return optim.Adagrad(model_params, lr=lr)
-    elif optim_type == "sgd":
-        return optim.SGD(model_params, lr=lr, momentum=momentum)
-    elif optim_type == "adam":
-        return optim.Adam(model_params, lr=lr, betas=betas)
-    else:
-        raise Exception("Undefined optim type {}".format(optim_type))
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--num_words", type=int, default=3, help="number of words in embedding")
-    parser.add_argument("--imsize", type=int, default=32, help="imsize, use 32 or 64")
-    parser.add_argument("--num_layers", type=int, default=4, help="number of layers")
-    parser.add_argument("--hsize", type=int, default=64, help="hidden dim")
-    opts = vars(parser.parse_args())
-    print("Todo implement this: {}".format(opts))

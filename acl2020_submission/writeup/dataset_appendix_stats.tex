@@ -1,0 +1,27 @@
+\section{More dataset Statistics}
+\label{sec:dataset_appendix_stats}
+This section covers additional quantitative analysis done on the dataset .
+
+The table \ref{tab:N-gram} shows N-gram precision, recall and f1 scores of prompts and interactive data with templated.
+\begin{table*}
+\small
+\center
+\begin{tabular}{ll|ccc|ccc}
+				& 								& \multicolumn{3}{c|}{All} 					& \multicolumn{3}{c}{Unique} \\
+N-gram     	&   Source data       				& Precision		& Recall 		& F1 	& Precision		& Recall 		& F1 \\
+\midrule
+\multirow{2}{*}{Unigram}      & Prompts 	& 0.959    	& 0.899  	& 0.928		& 0.742    	& 0.153    	& 0.254  \\
+                                & Interactive    	& 0.954    	& 0.760  	& 0.846		& 0.770    	& 0.057   	& 0.106 \\
+\midrule
+\multirow{2}{*}{Bigram}        & Prompts   & 0.662   & 0.434   & 0.524   & 0.389   & 0.025   & 0.046   \\
+                                & Interactive    	& 0.708   & 0.212   & 0.327   & 0.524   & 0.007   & 0.015    \\ 
+\midrule
+\multirow{2}{*}{Trigram}	& Prompts 	& 0.269   & 0.166   & 0.205   & 0.154   & 0.004   & 0.007   \\ 
+                                & Interactive    	& 0.331   & 0.043   & 0.076   & 0.258   & 0.001   & 0.002   \\ 
+\midrule
+\multirow{2}{*}{Four-gram}	& Prompts 	& 0.095   & 0.057   & 0.071   & 0.054   & 0.001   & 0.001   \\ 
+                                & Interactive    	& 0.131   & 0.006   & 0.012   & 0.111   & 0.000   & 0.000   \\
+\end{tabular}
+\caption{We show precision, recall and f1 of n-grams of prompts and interactive data with the templated data source. The ``All'' column here refers to all n-grams and ``Unique'' refers to only unique ones. }
+\label{tab:N-gram}
+\end{table*}

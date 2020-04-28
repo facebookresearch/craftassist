@@ -1,0 +1,309 @@
+\begin{thebibliography}{45}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Alaniz(2018)}]{alaniz2018deep}
+Stephan Alaniz. 2018.
+\newblock Deep reinforcement learning with model learning and monte carlo tree
+  search in minecraft.
+\newblock \emph{arXiv preprint arXiv:1803.08456}.
+
+\bibitem[{Allison et~al.(2018)Allison, Luger, and Hofmann}]{allison2018players}
+Fraser Allison, Ewa Luger, and Katja Hofmann. 2018.
+\newblock How players speak to an intelligent game character using natural
+  language messages.
+\newblock \emph{Transactions of the Digital Games Research Association}, 4(2).
+
+\bibitem[{Artzi and Zettlemoyer(2013)}]{artzi2013weakly}
+Yoav Artzi and Luke Zettlemoyer. 2013.
+\newblock Weakly supervised learning of semantic parsers for mapping
+  instructions to actions.
+\newblock \emph{Transactions of the Association for Computational Linguistics},
+  1:49--62.
+
+\bibitem[{Bojanowski et~al.(2017)Bojanowski, Grave, Joulin, and
+  Mikolov}]{BojanowskiGJM17}
+Piotr Bojanowski, Edouard Grave, Armand Joulin, and Tomas Mikolov. 2017.
+\newblock Enriching word vectors with subword information.
+\newblock \emph{{TACL}}, 5:135--146.
+
+\bibitem[{Bos and Oka(2007)}]{bos2007spoken}
+Johan Bos and Tetsushi Oka. 2007.
+\newblock A spoken language interface with a mobile robot.
+\newblock \emph{Artificial Life and Robotics}, 11(1):42--47.
+
+\bibitem[{Boye et~al.(2006)Boye, Gustafson, and Wir{\'e}n}]{Boye2006RobustSL}
+Johan Boye, Joakim Gustafson, and Mats Wir{\'e}n. 2006.
+\newblock Robust spoken language understanding in a computer game.
+\newblock \emph{Speech Commun.}, 48:335--353.
+
+\bibitem[{Cai and Yates(2013)}]{cai2013large}
+Qingqing Cai and Alexander Yates. 2013.
+\newblock Large-scale semantic parsing via schema matching and lexicon
+  extension.
+\newblock In \emph{Proceedings of the 51st Annual Meeting of the Association
+  for Computational Linguistics (Volume 1: Long Papers)}, volume~1, pages
+  423--433.
+
+\bibitem[{Cho et~al.(2014)Cho, van Merrienboer, G{\"{u}}l{\c{c}}ehre, Bahdanau,
+  Bougares, Schwenk, and Bengio}]{ChoMGBBSB14}
+Kyunghyun Cho, Bart van Merrienboer, {\c{C}}aglar G{\"{u}}l{\c{c}}ehre, Dzmitry
+  Bahdanau, Fethi Bougares, Holger Schwenk, and Yoshua Bengio. 2014.
+\newblock Learning phrase representations using {RNN} encoder-decoder for
+  statistical machine translation.
+\newblock In \emph{Proceedings of the 2014 Conference on Empirical Methods in
+  Natural Language Processing, {EMNLP} 2014, October 25-29, 2014, Doha, Qatar,
+  {A} meeting of SIGDAT, a Special Interest Group of the {ACL}}, pages
+  1724--1734.
+
+\bibitem[{Devlin et~al.(2018)Devlin, Chang, Lee, and
+  Toutanova}]{devlin2018bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2018.
+\newblock Bert: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock \emph{arXiv preprint arXiv:1810.04805}.
+
+\bibitem[{Dong and Lapata(2016)}]{dong2016language}
+Li~Dong and Mirella Lapata. 2016.
+\newblock Language to logical form with neural attention.
+\newblock \emph{arXiv preprint arXiv:1601.01280}.
+
+\bibitem[{Gray et~al.(2019)Gray, Srinet, Jernite, Yu, Chen, Guo, Goyal,
+  Zitnick, and Szlam}]{gray2019craftassist}
+Jonathan Gray, Kavya Srinet, Yacine Jernite, Haonan Yu, Zhuoyuan Chen, Demi
+  Guo, Siddharth Goyal, C~Lawrence Zitnick, and Arthur Szlam. 2019.
+\newblock Craftassist: A framework for dialogue-enabled interactive agents.
+\newblock \emph{arXiv preprint arXiv:1907.08584}.
+
+\bibitem[{Guss et~al.(2019{\natexlab{a}})Guss, Codel, Hofmann, Houghton, Kuno,
+  Milani, Mohanty, Liebana, Salakhutdinov, Topin
+  et~al.}]{guss2019minerlCompetition}
+William~H Guss, Cayden Codel, Katja Hofmann, Brandon Houghton, Noboru Kuno,
+  Stephanie Milani, Sharada Mohanty, Diego~Perez Liebana, Ruslan Salakhutdinov,
+  Nicholay Topin, et~al. 2019{\natexlab{a}}.
+\newblock The minerl competition on sample efficient reinforcement learning
+  using human priors.
+\newblock \emph{arXiv preprint arXiv:1904.10079}.
+
+\bibitem[{Guss et~al.(2019{\natexlab{b}})Guss, Houghton, Topin, Wang, Codel,
+  Veloso, and Salakhutdinov}]{guss2019minerl}
+William~H Guss, Brandon Houghton, Nicholay Topin, Phillip Wang, Cayden Codel,
+  Manuela Veloso, and Ruslan Salakhutdinov. 2019{\natexlab{b}}.
+\newblock Minerl: a large-scale dataset of minecraft demonstrations.
+\newblock \emph{arXiv preprint arXiv:1907.13440}.
+
+\bibitem[{Guu et~al.(2017)Guu, Pasupat, Liu, and Liang}]{guu2017language}
+Kelvin Guu, Panupong Pasupat, Evan~Zheran Liu, and Percy Liang. 2017.
+\newblock From language to programs: Bridging reinforcement learning and
+  maximum marginal likelihood.
+\newblock \emph{arXiv preprint arXiv:1704.07926}.
+
+\bibitem[{Hwang et~al.(2019)Hwang, Yim, Park, and Seo}]{hwang2019comprehensive}
+Wonseok Hwang, Jinyeung Yim, Seunghyun Park, and Minjoon Seo. 2019.
+\newblock A comprehensive exploration on wikisql with table-aware word
+  contextualization.
+\newblock \emph{arXiv preprint arXiv:1902.01069}.
+
+\bibitem[{Jia and Liang(2016)}]{jia2016data}
+Robin Jia and Percy Liang. 2016.
+\newblock Data recombination for neural semantic parsing.
+\newblock \emph{arXiv preprint arXiv:1606.03622}.
+
+\bibitem[{Johnson et~al.(2016)Johnson, Hofmann, Hutton, and
+  Bignell}]{johnson2016malmo}
+Matthew Johnson, Katja Hofmann, Tim Hutton, and David Bignell. 2016.
+\newblock The malmo platform for artificial intelligence experimentation.
+\newblock In \emph{IJCAI}, pages 4246--4247.
+
+\bibitem[{Kitaev and Klein(2017)}]{kitaev2017misty}
+Nikita Kitaev and Dan Klein. 2017.
+\newblock Where is misty? interpreting spatial descriptors by modeling regions
+  in space.
+\newblock In \emph{Proceedings of the 2017 Conference on Empirical Methods in
+  Natural Language Processing}, pages 157--166.
+
+\bibitem[{Kollar et~al.(2018)Kollar, Berry, Stuart, Owczarzak, Chung, Mathias,
+  Kayser, Snow, and Matsoukas}]{kollar2018alexa}
+Thomas Kollar, Danielle Berry, Lauren Stuart, Karolina Owczarzak, Tagyoung
+  Chung, Lambert Mathias, Michael Kayser, Bradford Snow, and Spyros Matsoukas.
+  2018.
+\newblock The alexa meaning representation language.
+\newblock In \emph{Proceedings of the 2018 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies, Volume 3 (Industry Papers)}, volume~3, pages 177--184.
+
+\bibitem[{Kollar et~al.(2013)Kollar, Krishnamurthy, and
+  Strimel}]{kollar2013toward}
+Thomas Kollar, Jayant Krishnamurthy, and Grant~P Strimel. 2013.
+\newblock Toward interactive grounded language acqusition.
+\newblock In \emph{Robotics: Science and systems}, volume~1, pages 721--732.
+
+\bibitem[{Lauria et~al.(2001)Lauria, Bugmann, Kyriacou, Bos, and
+  Klein}]{lauria2001training}
+Stanislao Lauria, Guido Bugmann, Theocharis Kyriacou, Johan Bos, and A~Klein.
+  2001.
+\newblock Training personal robots using natural language instruction.
+\newblock \emph{IEEE Intelligent systems}, 16(5):38--45.
+
+\bibitem[{Liang et~al.(2016)Liang, Berant, Le, Forbus, and
+  Lao}]{liang2016neural}
+Chen Liang, Jonathan Berant, Quoc Le, Kenneth~D Forbus, and Ni~Lao. 2016.
+\newblock Neural symbolic machines: Learning semantic parsers on freebase with
+  weak supervision.
+\newblock \emph{arXiv preprint arXiv:1611.00020}.
+
+\bibitem[{Matuszek et~al.(2013)Matuszek, Herbst, Zettlemoyer, and
+  Fox}]{matuszek2013learning}
+Cynthia Matuszek, Evan Herbst, Luke Zettlemoyer, and Dieter Fox. 2013.
+\newblock Learning to parse natural language commands to a robot control
+  system.
+\newblock In \emph{Experimental Robotics}, pages 403--415. Springer.
+
+\bibitem[{Neelakantan et~al.(2016)Neelakantan, Le, Abadi, McCallum, and
+  Amodei}]{neelakantan2016learning}
+Arvind Neelakantan, Quoc~V Le, Martin Abadi, Andrew McCallum, and Dario Amodei.
+  2016.
+\newblock Learning a natural language interface with neural programmer.
+\newblock \emph{arXiv preprint arXiv:1611.08945}.
+
+\bibitem[{Oh et~al.(2016)Oh, Chockalingam, Singh, and Lee}]{oh2016control}
+Junhyuk Oh, Valliappa Chockalingam, Satinder Singh, and Honglak Lee. 2016.
+\newblock Control of memory, active perception, and action in minecraft.
+\newblock \emph{arXiv preprint arXiv:1605.09128}.
+
+\bibitem[{Oh et~al.(2017)Oh, Singh, Lee, and Kohli}]{oh2017zero}
+Junhyuk Oh, Satinder Singh, Honglak Lee, and Pushmeet Kohli. 2017.
+\newblock Zero-shot task generalization with multi-task deep reinforcement
+  learning.
+\newblock \emph{arXiv preprint arXiv:1706.05064}.
+
+\bibitem[{Price(1990)}]{price1990evaluation}
+Patti~J Price. 1990.
+\newblock Evaluation of spoken language systems: The atis domain.
+\newblock In \emph{Speech and Natural Language: Proceedings of a Workshop Held
+  at Hidden Valley, Pennsylvania, June 24-27, 1990}.
+
+\bibitem[{Riedel et~al.(2016)Riedel, Bosnjak, and
+  Rockt{\"a}schel}]{riedel2016programming}
+Sebastian Riedel, Matko Bosnjak, and Tim Rockt{\"a}schel. 2016.
+\newblock Programming with a differentiable forth interpreter.
+\newblock \emph{CoRR, abs/1605.06640}.
+
+\bibitem[{Sanh et~al.(2019)Sanh, Debut, Chaumond, and
+  Wolf}]{sanh2019distilbert}
+Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf. 2019.
+\newblock \href {http://arxiv.org/abs/1910.01108} {Distilbert, a distilled
+  version of {BERT:} smaller, faster, cheaper and lighter}.
+\newblock \emph{CoRR}, abs/1910.01108.
+
+\bibitem[{Shu et~al.(2017)Shu, Xiong, and Socher}]{shu2017hierarchical}
+Tianmin Shu, Caiming Xiong, and Richard Socher. 2017.
+\newblock Hierarchical and interpretable skill acquisition in multi-task
+  reinforcement learning.
+\newblock \emph{arXiv preprint arXiv:1712.07294}.
+
+\bibitem[{Song et~al.(2019)Song, Tan, Qin, Lu, and Liu}]{song2019mass}
+Kaitao Song, Xu~Tan, Tao Qin, Jianfeng Lu, and Tie{-}Yan Liu. 2019.
+\newblock \href {http://proceedings.mlr.press/v97/song19d.html} {{MASS:} masked
+  sequence to sequence pre-training for language generation}.
+\newblock In \emph{Proceedings of the 36th International Conference on Machine
+  Learning, {ICML} 2019, 9-15 June 2019, Long Beach, California, {USA}}, pages
+  5926--5936.
+
+\bibitem[{Tang and Mooney(2001)}]{tang2001using}
+Lappoon~R Tang and Raymond~J Mooney. 2001.
+\newblock Using multiple clause constructors in inductive logic programming for
+  semantic parsing.
+\newblock In \emph{European Conference on Machine Learning}, pages 466--477.
+  Springer.
+
+\bibitem[{Tellex et~al.(2011)Tellex, Kollar, Dickerson, Walter, Banerjee,
+  Teller, and Roy}]{tellex2011understanding}
+Stefanie Tellex, Thomas Kollar, Steven Dickerson, Matthew~R Walter, Ashis~Gopal
+  Banerjee, Seth Teller, and Nicholas Roy. 2011.
+\newblock Understanding natural language commands for robotic navigation and
+  mobile manipulation.
+\newblock In \emph{Twenty-Fifth AAAI Conference on Artificial Intelligence}.
+
+\bibitem[{Tessler et~al.(2017)Tessler, Givony, Zahavy, Mankowitz, and
+  Mannor}]{tessler2017deep}
+Chen Tessler, Shahar Givony, Tom Zahavy, Daniel~J Mankowitz, and Shie Mannor.
+  2017.
+\newblock A deep hierarchical approach to lifelong learning in minecraft.
+\newblock In \emph{AAAI}, volume~3, page~6.
+
+\bibitem[{Thomason et~al.(2019)Thomason, Padmakumar, Sinapov, Walker, Jiang,
+  Yedidsion, Hart, Stone, and Mooney}]{thomason2019improving}
+Jesse Thomason, Aishwarya Padmakumar, Jivko Sinapov, Nick Walker, Yuqian Jiang,
+  Harel Yedidsion, Justin Hart, Peter Stone, and Raymond~J Mooney. 2019.
+\newblock Improving grounded natural language understanding through human-robot
+  dialog.
+\newblock \emph{arXiv preprint arXiv:1903.00122}.
+
+\bibitem[{Thomason et~al.(2015)Thomason, Zhang, Mooney, and
+  Stone}]{thomason2015learning}
+Jesse Thomason, Shiqi Zhang, Raymond~J Mooney, and Peter Stone. 2015.
+\newblock Learning to interpret natural language commands through human-robot
+  dialog.
+\newblock In \emph{Twenty-Fourth International Joint Conference on Artificial
+  Intelligence}.
+
+\bibitem[{Udagawa et~al.(2016)Udagawa, Narasimhan, and
+  Lee}]{udagawa2016fighting}
+Hiroto Udagawa, Tarun Narasimhan, and Shim-Young Lee. 2016.
+\newblock Fighting zombies in minecraft with deep reinforcement learning.
+\newblock Technical report, Technical report, Stanford University.
+
+\bibitem[{Wang et~al.(2017)Wang, Ginn, Liang, and
+  Manning}]{wang2017naturalizing}
+Sida~I Wang, Samuel Ginn, Percy Liang, and Christoper~D Manning. 2017.
+\newblock Naturalizing a programming language via interactive learning.
+\newblock \emph{arXiv preprint arXiv:1704.06956}.
+
+\bibitem[{Wang et~al.(2016)Wang, Liang, and Manning}]{wang2016learning}
+Sida~I Wang, Percy Liang, and Christopher~D Manning. 2016.
+\newblock Learning language games through interaction.
+\newblock \emph{arXiv preprint arXiv:1606.02447}.
+
+\bibitem[{Wang et~al.(2018)Wang, Tian, Xiong, Wang, and Ku}]{wang2018transfer}
+Wenlu Wang, Yingtao Tian, Hongyu Xiong, Haixun Wang, and Wei-Shinn Ku. 2018.
+\newblock A transfer-learnable natural language interface for databases.
+\newblock \emph{arXiv preprint arXiv:1809.02649}.
+
+\bibitem[{Wang et~al.(2015)Wang, Berant, and Liang}]{wang2015building}
+Yushi Wang, Jonathan Berant, and Percy Liang. 2015.
+\newblock Building a semantic parser overnight.
+\newblock In \emph{Proceedings of the 53rd Annual Meeting of the Association
+  for Computational Linguistics and the 7th International Joint Conference on
+  Natural Language Processing (Volume 1: Long Papers)}, volume~1, pages
+  1332--1342.
+
+\bibitem[{Yao et~al.(2019)Yao, Su, Sun, and Yih}]{yao2019interactive}
+Ziyu Yao, Yu~Su, Huan Sun, and Wen{-}tau Yih. 2019.
+\newblock \href {http://arxiv.org/abs/1910.05389} {Model-based interactive
+  semantic parsing: {A} unified framework and {A} text-to-sql case study}.
+\newblock \emph{CoRR}, abs/1910.05389.
+
+\bibitem[{Yi et~al.(2018)Yi, Wu, Gan, Torralba, Kohli, and
+  Tenenbaum}]{yi2018neural}
+Kexin Yi, Jiajun Wu, Chuang Gan, Antonio Torralba, Pushmeet Kohli, and Josh
+  Tenenbaum. 2018.
+\newblock Neural-symbolic vqa: Disentangling reasoning from vision and language
+  understanding.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  1039--1050.
+
+\bibitem[{Yih et~al.(2016)Yih, Richardson, Meek, Chang, and Suh}]{yih2016value}
+Wen-tau Yih, Matthew Richardson, Chris Meek, Ming-Wei Chang, and Jina Suh.
+  2016.
+\newblock The value of semantic parse labeling for knowledge base question
+  answering.
+\newblock In \emph{Proceedings of the 54th Annual Meeting of the Association
+  for Computational Linguistics (Volume 2: Short Papers)}, pages 201--206.
+
+\bibitem[{Zhong et~al.(2017)Zhong, Xiong, and Socher}]{zhong2017seq2sql}
+Victor Zhong, Caiming Xiong, and Richard Socher. 2017.
+\newblock Seq2sql: Generating structured queries from natural language using
+  reinforcement learning.
+\newblock \emph{arXiv preprint arXiv:1709.00103}.
+
+\end{thebibliography}

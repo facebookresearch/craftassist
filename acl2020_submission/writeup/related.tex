@@ -1,0 +1,29 @@
+\section{Related Work}
+
+%Semantic parsing -- 1970s AI -- Question answering approaches -- FSP -- Grounded Language -- Relevant MC recent work -- Alexa Meaning Representation / Challenge
+
+
+There have been a number of datasets of natural language paired with logical forms to evaluate semantic parsing approaches, e.g. \cite{price1990evaluation, tang2001using, cai2013large, wang2015building, zhong2017seq2sql}. The dataset presented in this work is an order of magnitude larger than those in \cite{price1990evaluation, tang2001using, cai2013large} and is similar in scale to the datasets in \cite{wang2015building}, but smaller than \cite{zhong2017seq2sql}. 
+%We use a similar data collection strategy to \cite{wang2015building}: first define the grammar of possible semantic parses, then use it to generate parse trees along with corresponding text description via templates, and finally ask crowd-sourced workers to rephrase the templated generations into more natural language. We also collect a set of ``free'' commands and use crowd-sourced workers to annotate these.
+
+
+In addition to mapping natural language to logical forms, our dataset connects both of these to a dynamic environment.  
+In \cite{lauria2001training, bos2007spoken, tellex2011understanding, matuszek2013learning, thomason2019improving} semantic parsing has been used for interpreting natural language commands for robots. %, matuszek2013learning}.  
+In our paper, the ``robot'' is embodied in the Minecraft game instead of in the physical world. In \cite{Boye2006RobustSL} semantic parsing has been used for spoken dialogue with an embodied character in a 3-D world with pattern matching and rewriting phases. In our work, the user along with the assistant is embodied in game and instructs using language. We go from language to logical forms end-to-end with no pattern match necessary.
+%\cite{matuszek2013learning} :~500 examples, RCL differences (but similar- we have loops etc.), deep models instead of feature reps, templates
+%
+Semantic parsing in a voxel-world recalls \cite{wang2017naturalizing}, where the authors describe a method for building up a programming language from a small core via interactions with players.  %In this work, we made a substantial effort to build coverage ourselves via a corpus of templates, but 
+
+%\cite{wang2016learning, wang2017naturalizing} %maybe second cite should go to discussion
+ 
+
+We demonstrate the results of several neural parsing models on our dataset.  In particular, we show the results of a re-implementation of \cite{dong2016language} adapted to our grammar, and a straightforward fine-tuned BERT model \cite{devlin2018bert}. There have been several other papers proposing neural architectures for semantic parsing, for example \cite{jia2016data, zhong2017seq2sql, wang2018transfer, hwang2019comprehensive}; in particular \cite{hwang2019comprehensive} uses a BERT based model.  In those papers, as in this one, the models are trained with full supervision of the mapping from natural language to logical forms, without considering the results of executing the logical form (in this case, the effect on the environment of executing the actions denoted by the logical form). There has been progress towards ``weakly supervised'' semantic parsing
+% (with or without deep architectures ) 
+ \cite{artzi2013weakly, liang2016neural, guu2017language} where the logical forms are hidden variables, and the only supervision given is the result of executing the logical form. There are now approaches that have shown promise without even passing through (discrete) logical forms at all \cite{riedel2016programming, neelakantan2016learning}.  We hope that the dataset introduced here, which has supervision at the level of the logical forms, but whose underlying grammar and environment can be used to generate essentially infinite weakly supervised or execution rewards, will also be useful for studying these models.
+
+
+Minecraft, especially via the MALMO project \cite{johnson2016malmo} has been used as a base environment for several machine learning papers. It is often used as a testbed for reinforcement learning (RL) \cite{shu2017hierarchical,udagawa2016fighting,alaniz2018deep,oh2016control,tessler2017deep}. In these works, the agent is trained to complete tasks by issuing low level actions (as opposed to our higher level primitives) and receiving a reward on success.  Others have collected large-scale datasets for RL and imitation learning \cite{guss2019minerlCompetition, guss2019minerl}.   Some of these works (e.g. \cite{oh2017zero}) do consider simplified, templated language as a method for composably specifying tasks, but training an RL agent to execute the scripted primitives in our grammar is already nontrivial, and so the task space and language in those works is more constrained  than what we use here.  Nevertheless, our work may be useful to researchers interested in RL (or imitation): using our grammar and executing in game can supply (hard) tasks and descriptions, and demonstrations.
+Another set of works \cite{kitaev2017misty, yi2018neural} have used Minecraft for visual question answering with logical forms. Our work extends these to interactions with the environment.
+Finally, \cite{allison2018players} is a more focused study on how a human might interact with a Minecraft agent; our collection of free generations (see \ref{sec:prompts}) includes annotated 
+examples from similar studies of players interacting with a player pretending to be a bot.
+

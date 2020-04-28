@@ -13,7 +13,7 @@ import traceback
 from typing import cast, Tuple, List, TypeVar, Sequence
 import uuid
 
-import rotation
+import base_agent.rotation as rotation
 
 XYZ = Tuple[int, int, int]
 # two points p0(x0, y0, z0), p1(x1, y1, z1) determine a 3d cube(point_at_target)

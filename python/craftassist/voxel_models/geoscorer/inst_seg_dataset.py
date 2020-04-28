@@ -2,103 +2,119 @@
 Copyright (c) Facebook, Inc. and its affiliates.
 """
 
+import math
 import os
-import sys
 import random
 import pickle
 import torch
 import torch.utils.data
-
-GEOSCORER_DIR = os.path.dirname(os.path.realpath(__file__))
-CRAFTASSIST_DIR = os.path.join(GEOSCORER_DIR, "../../")
-sys.path.append(CRAFTASSIST_DIR)
-
-from geoscorer_util import *
+from collections import defaultdict
+import spatial_utils as su
+import directional_utils as du
 
 
-def load_segments(dpath, min_seg_size, save_path=None):
-    inst_data = pickle.load(open(dpath, "rb"))
-    all_segs = []
-    schematics = []
-    N = len(inst_data)
-    num_segs_total = 0
-    num_segs_kept = 0
-    for j in range(N):
-        h = inst_data[j]
-        S, segs, _, _ = h
+def parse_instance_data(inst_data):
+    parsed_instance_data = []
+    for h in inst_data:
+        S, segs, labels, _ = h
         segs = segs.astype("int32")
         blocks = list(zip(*S.nonzero()))
-        schematics.append([tuple((b, tuple((S[b], 0)))) for b in blocks])
-        instances = [
-            [True if segs[blocks[p]] == q else False for p in range(len(blocks))]
-            for q in range(1, segs.max() + 1)
-        ]
-        for i in instances:
-            num_segs_total += 1
-            if np.sum(np.asarray(i).astype("int32")) < min_seg_size:
-                continue
-            num_segs_kept += 1
-            all_segs.append({"inst": i, "schematic": j})
-    pretty_log("Num Segs {} Num Kept {}".format(num_segs_total, num_segs_kept))
-    if save_path:
-        save_specific_segments(save_path, all_segs, schematics)
-    return all_segs, schematics
+        # First convert the schematic into sparse segment info
+        offsets = [[i, j, k] for i in range(-1, 2) for j in range(-1, 2) for k in range(-1, 2)]
+        sizes = [len(segs), len(segs[0]), len(segs[0][0])]
+        instances = defaultdict(list)
+        touching = defaultdict(set)
+        for b in blocks:
+            b_w_id = [b[i] for i in range(3)]
+            b_w_id.append(S[b])
+            seg_id = segs[b]
+            instances[seg_id].append(b_w_id)
+            for off in offsets:
+                nc = tuple([a + b for a, b in zip(b, off)])
+                # check out of bounds
+                if not all(e > 0 for e in nc) or not all([nc[i] < sizes[i] for i in range(3)]):
+                    continue
+                if segs[nc] != 0 and segs[nc] != seg_id:
+                    touching[seg_id].add(segs[nc])
+
+        # Then get the width/height/depth metadata
+        metadata = {}
+        for i, blocks in instances.items():
+            maxs = [0, 0, 0]
+            mins = [sizes[i] for i in range(3)]
+            for b in blocks:
+                maxs = [max(b[i], maxs[i]) for i in range(3)]
+                mins = [min(b[i], mins[i]) for i in range(3)]
+            metadata[i] = {"size": [x - n + 1 for n, x in zip(mins, maxs)], "label": labels[i]}
+        # For now remove houses where there are no touching components
+        # this is only one house
+        if len(touching) == 0:
+            continue
+        parsed_instance_data.append(
+            {"segments": instances, "touching": touching, "metadata": metadata}
+        )
+    return parsed_instance_data
 
 
-def load_specific_segments(dpath):
-    specific_seg_data = pickle.load(open(dpath, "rb"))
-    return specific_seg_data
+def parse_segments_into_file(dpath, save_path):
+    inst_data = pickle.load(open(dpath, "rb"))
+    parsed_instance_data = parse_instance_data(inst_data)
+    pickle.dump(parsed_instance_data, open(save_path, "wb+"))
 
 
-def save_specific_segments(dpath, all_segs, schematic):
-    to_save = [all_segs, schematic]
-    with open(dpath, "wb") as f:
-        pickle.dump(to_save, f)
-    pretty_log("Saved segments and schematics to {}".format(dpath))
+def convert_tuple_to_block(b):
+    if b[3] < 0 or b[3] > 255:
+        raise Exception("block id out of bounds")
+    return ((b[0], b[1], b[2]), (b[3], 0))
 
 
-# Get a random 8x8x8 portion of the segment
-def get_seg_bounded_sparse(seg_sparse, sl):
-    bounds = get_bounds(seg_sparse)
-    sizes = get_side_lengths(bounds)
+def get_seg_context_sparse(seg_data, drop_perc, rand_drop=True):
+    # first choose a house
+    sd = random.choice(seg_data)
 
-    seg_bounded_sparse = []
-    num_tries = 0
-    while len(seg_bounded_sparse) == 0:
-        new_starts = [bounds[0], bounds[2], bounds[4]]
-        for i in range(3):
-            if sizes[i] >= sl:
-                diff = sizes[i] - sl
-                new_starts[i] += random.randint(0, diff + 1)  # [0, diff] inclusive
-        for s in seg_sparse:
-            use = True
-            for i in range(3):
-                if s[0][i] < new_starts[i] or s[0][i] >= new_starts[i] + sl:
-                    use = False
-            if use:
-                seg_bounded_sparse.append(s)
-        num_tries += 1
-        if num_tries > 20:
-            print("num tries: {}".format(num_tries))
-    return seg_bounded_sparse
+    # then drop some segs
+    if drop_perc < 0:
+        drop_perc = random.randint(0, 80) * 1.0 / 100
+    seg_ids = list(sd["segments"].keys())
+    random.shuffle(seg_ids)
+    num_segs = len(seg_ids)
+    to_keep = math.ceil(num_segs - num_segs * drop_perc)
+    keep_ids = seg_ids[:to_keep]
+
+    # choose a remaining seg to get a connected one
+    conn_to_target_id = random.choice(keep_ids)
+    if conn_to_target_id not in sd["touching"]:
+        conn_to_target_id = random.choice(list(sd["touching"].keys()))
+        keep_ids.append(conn_to_target_id)
+
+    # get a connected seg as target
+    target_seg_id = random.choice(list(sd["touching"][conn_to_target_id]))
+    keep_ids = [k for k in keep_ids if k != target_seg_id]
+
+    # make segment out of blocks from target_seg
+    seg_sparse = [convert_tuple_to_block(b) for b in sd["segments"][target_seg_id]]
+
+    # make context out of blocks from keep_ids
+    context_sparse = []
+    for i in set(keep_ids):
+        context_sparse += [convert_tuple_to_block(b) for b in sd["segments"][i]]
+
+    return seg_sparse, context_sparse
 
 
-def load_and_parse_segments(data_dir, min_seg_size, data_preparsed, save_preparsed):
-    dpath = os.path.join(data_dir, "training_data.pkl")
-    if data_preparsed:
-        spath = os.path.join(data_dir, "training_data_min{}.pkl".format(min_seg_size))
-        print("The path we should load from: {}".format(spath))
-        all_segs, schematics = load_specific_segments(spath)
-    else:
-        all_segs, schematics = load_segments(dpath, min_seg_size)
-        if save_preparsed:
-            spath = os.path.join(data_dir, "training_data_min{}.pkl".format(min_seg_size))
-            save_specific_segments(spath, all_segs, schematics)
-    return all_segs, schematics
+def get_inst_seg_example(seg_data, drop_perc, c_sl, s_sl, use_id):
+    seg_sparse, context_sparse = get_seg_context_sparse(seg_data, drop_perc)
+    schem_sparse = seg_sparse + context_sparse
+    return su.convert_sparse_context_seg_to_example(
+        context_sparse, seg_sparse, c_sl, s_sl, use_id, schem_sparse=schem_sparse
+    )
 
 
 # Returns three tensors: 32x32x32 context, 8x8x8 segment, 1 target
-class SegmentContextSeparateInstanceData(torch.utils.data.Dataset):
+# TODO: Note that 1/7 segments are larger than 8x8x8
+# Only 1/70 are larger than 16x16x16, maybe move to this size seg
+# Returns three tensors: 32x32x32 context, 8x8x8 segment, 1 target
+class SegmentContextInstanceData(torch.utils.data.Dataset):
     def __init__(
         self,
         data_dir="/checkpoint/drotherm/minecraft_dataset/vision_training/training3/",
@@ -106,88 +122,40 @@ class SegmentContextSeparateInstanceData(torch.utils.data.Dataset):
         context_side_length=32,
         seg_side_length=8,
         useid=False,
-        min_seg_size=6,
-        data_preparsed=False,
-        save_preparsed=False,
-        for_vis=False,
+        use_direction=False,
+        drop_perc=0.8,
     ):
-        self.context_side_length = context_side_length
-        self.seg_side_length = seg_side_length
+        self.use_direction = use_direction
+        self.c_sl = context_side_length
+        self.s_sl = seg_side_length
         self.num_examples = nexamples
         self.useid = useid
-        self.examples = []
-        self.for_vis = for_vis
-        print("Data preparsed {} Save Preparsed {}".format(data_preparsed, save_preparsed))
-        self.all_segs, self.schematics = load_and_parse_segments(
-            data_dir, min_seg_size, data_preparsed, save_preparsed
-        )
+        self.drop_perc = drop_perc
 
-    def toggle_useid(self):
-        self.useid = not self.useid
-
-    def _get_example(self):
-        inst = random.choice(self.all_segs)
-        seg, context_sparse = inst["inst"], self.schematics[inst["schematic"]]
-        seg_sparse = sparsify_segment(seg, context_sparse)
-        seg_bounded_sparse = get_seg_bounded_sparse(seg_sparse, self.seg_side_length)
-        return convert_sparse_context_seg_to_example(
-            context_sparse,
-            seg_bounded_sparse,
-            self.context_side_length,
-            self.seg_side_length,
-            self.useid,
-            self.for_vis,
-        )
-
-    def __getitem__(self, index):
-        return self._get_example()
-
-    def __len__(self):
-        return abs(self.num_examples)
-
-
-# Returns a 32x32x32 context, 8x8x8 segment, 6 viewer, 1 direction, 1 target
-class SegmentContextDirectionalInstanceData(torch.utils.data.Dataset):
-    def __init__(
-        self,
-        data_dir="/checkpoint/drotherm/minecraft_dataset/vision_training/training3/",
-        nexamples=10000,
-        context_side_length=32,
-        seg_side_length=8,
-        useid=False,
-        min_seg_size=6,
-        data_preparsed=False,
-        save_preparsed=False,
-        for_vis=False,
-    ):
-        self.context_side_length = context_side_length
-        self.seg_side_length = seg_side_length
-        self.num_examples = nexamples
-        self.useid = useid
-        self.examples = []
-        self.for_vis = for_vis
-        print("Data preparsed {} Save Preparsed {}".format(data_preparsed, save_preparsed))
-        self.all_segs, self.schematics = load_and_parse_segments(
-            data_dir, min_seg_size, data_preparsed, save_preparsed
-        )
+        # Load the parsed data
+        parsed_file = os.path.join(data_dir, "training_parsed.pkl")
+        if not os.path.exists(parsed_file):
+            print(">> Redo inst seg parse")
+            data_path = os.path.join(data_dir, "training_data.pkl")
+            parse_segments_into_file(data_path, parsed_file)
+        self.seg_data = pickle.load(open(parsed_file, "rb"))
 
     def _get_example(self):
-        inst = random.choice(self.all_segs)
-        seg, context_sparse = inst["inst"], self.schematics[inst["schematic"]]
-        seg_sparse = sparsify_segment(seg, context_sparse)
-        seg_bounded_sparse = get_seg_bounded_sparse(seg_sparse, self.seg_side_length)
-        context, seg, target = convert_sparse_context_seg_to_example(
-            context_sparse,
-            seg_bounded_sparse,
-            self.context_side_length,
-            self.seg_side_length,
-            self.useid,
-            self.for_vis,
-        )
-        viewer_pos, viewer_look = get_random_viewer_info(self.context_side_length)
-        target_coord = torch.tensor(index_to_coord(target, self.context_side_length))
-        dir_vec = get_sampled_direction_vec(viewer_pos, viewer_look, target_coord)
-        return [context, seg, target, viewer_pos, viewer_look, dir_vec]
+        if not self.use_direction:
+            return get_inst_seg_example(
+                self.seg_data, self.drop_perc, self.c_sl, self.s_sl, self.useid
+            )
+        else:
+            example = get_inst_seg_example(
+                self.seg_data, self.drop_perc, self.c_sl, self.s_sl, self.useid
+            )
+            viewer_pos, viewer_look = du.get_random_viewer_info(self.c_sl)
+            target_coord = torch.tensor(su.index_to_coord(example["target"], self.c_sl))
+            example["dir_vec"] = du.get_sampled_direction_vec(
+                viewer_pos, viewer_look, target_coord
+            )
+            example["viewer_pos"] = viewer_pos
+            return example
 
     def __getitem__(self, index):
         return self._get_example()
@@ -197,44 +165,20 @@ class SegmentContextDirectionalInstanceData(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
-    import os
     import argparse
-    import visdom
-
-    VOXEL_MODELS_DIR = os.path.join(GEOSCORER_DIR, "../../")
-    sys.path.append(VOXEL_MODELS_DIR)
-    import plot_voxels as pv
+    from visualization_utils import GeoscorerDatasetVisualizer
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_type", type=str, default="separate", help="(separate)")
-    parser.add_argument("--min_seg_size", type=int, default=6, help="min seg size")
     parser.add_argument(
-        "--save_dataset", type=bool, default=False, help="should we save this min seg size dataset"
+        "--use_direction", action="store_true", help="use direction in example creation"
     )
-    parser.add_argument(
-        "--load_saved_dataset",
-        type=bool,
-        default=False,
-        help="should we load a presaved dataset for this mss",
-    )
-    parser.add_argument("--useid", type=bool, default=False, help="should we use the block id")
+    parser.add_argument("--useid", action="store_true", help="should we use the block id")
+    parser.add_argument("--drop_perc", type=float, default=0.8, help="should we use the block id")
     opts = parser.parse_args()
 
-    vis = visdom.Visdom(server="http://localhost")
-    sp = pv.SchematicPlotter(vis)
-
-    dataset = SegmentContextSeparateInstanceData(
-        nexamples=3,
-        min_seg_size=opts.min_seg_size,
-        data_preparsed=opts.load_saved_dataset,
-        save_preparsed=opts.save_dataset,
-        for_vis=True,
-        useid=opts.useid,
+    dataset = SegmentContextInstanceData(
+        nexamples=3, use_direction=opts.use_direction, drop_perc=opts.drop_perc, useid=opts.useid
     )
+    vis = GeoscorerDatasetVisualizer(dataset)
     for n in range(len(dataset)):
-        shape, seg, target = dataset[n]
-        sp.drawPlotly(shape)
-        sp.drawPlotly(seg)
-        target_coord = index_to_coord(target.item(), 32)
-        completed_shape = combine_seg_context(seg, shape, target_coord, seg_mult=3)
-        sp.drawPlotly(completed_shape)
+        vis.visualize()

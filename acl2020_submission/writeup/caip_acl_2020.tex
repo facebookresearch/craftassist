@@ -1,0 +1,99 @@
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl2020}
+\usepackage{times}
+\usepackage{latexsym}
+\renewcommand{\UrlFont}{\ttfamily\small}
+
+\usepackage{microtype}
+
+\usepackage{verbatim}
+
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{amsfonts}
+
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{booktabs}
+
+\usepackage{url}
+
+%\aclfinalcopy % Uncomment this line for the final submission
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+
+\newcommand\BibTeX{B\textsc{ib}\TeX}
+
+\title{CraftAssist Instruction Parsing: Semantic Parsing for a Minecraft Assistant}
+
+\author{First Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  {\tt email@domain} \\\And
+  Second Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  {\tt email@domain} \\}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+We propose a semantic parsing dataset focused on instruction-driven communication with an agent in the game Minecraft.  
+%The dataset consists of 32K human generated instructions with their parses, derived from a large collection of templates.   
+The dataset consists of 
+%several thousand templates that can synthesize surface forms and their parses, and
+ ~7K human utterances and their corresponding parses.  Given proper world state, the parses can be interpreted and executed in game. 
+We report the performance of baseline models, and analyze their successes and failures.
+% and find that while we are able to train a usable interface with the agent, there is 
+ % dataset reveals interesting generalization challenges.
+\end{abstract}
+
+\input{introduction}
+\input{grammar}
+\input{data}
+\input{related}
+\input{modeling}
+\input{experiments}
+
+\section{Conclusion}
+In this work, we have described a grammar over a mid-level interface for a Minecraft assistant. We then discussed the creation of a dataset of natural language utterances with associated logical forms over this grammar that can be executed in-game. Finally, we showed the results of using this new dataset to train several neural models for parsing natural language instructions.  %We find that the models we trained were able to fit the templated data nearly perfectly, but were less accurate on human-generated data.  v
+Consistently with recent works, we find that BERT pre-trained models do better than models trained from scratch, but there is much space for improvement.
+We believe this data will be useful to researchers studying semantic parsing, especially interactive semantic parsing, human-robot interaction, and even imitation and reinforcement learning.  
+
+
+
+% The problem of using a small amount of parsed human data with the infinite generations of our grammar to improve results on human-distribution; or otherwise building models that can generalize to the human distributions is an exciting area for future work.   
+%More generally, we hope that the grammar, templates, and human data will be useful to researchers studying human-robot and human assistant interaction.  
+
+
+%and hope that future work tackling the task presented here may produce better results.
+
+\clearpage
+
+\bibliography{refs}
+\bibliographystyle{acl_natbib}
+
+\clearpage
+
+\appendix
+
+\label{sec:supplemental}
+\input{data_cleanup_appendix}
+\input{task_instructions}
+\input{action_tree}
+\input{dataset_examples}
+% \input{error_analysis}
+
+\end{document}

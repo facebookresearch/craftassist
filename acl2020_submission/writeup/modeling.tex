@@ -1,0 +1,87 @@
+\section{Baseline Models}
+\label{sec:modeling}
+
+In order to assess the challenges of the dataset, we implement two models which learn to read a sentence and output a logical form by formulating the problem as a sequence-to-tree and a sequence-to-sequence prediction task respectively.
+
+\subsection{Sequence to Tree Model}
+
+Our first model adapts the Seq2Tree approach of \citep{dong2016language} to our grammar. In short, a bidirectional RNN encodes the input sentence into a sequence of vectors, and a decoder recursively predicts the tree representation of the logical form, starting at the root and predicting all of the children of each node based on its parent and left siblings and input representation.
+
+\paragraph{Sentence Encoder and Attention: } We use a bidirectional GRU encoder \citep{ChoMGBBSB14} which encodes a sentence of length $T$  $\mathbf{s} = (w_1, \ldots \ w_{T})$ into a sequence of $T$ dimension $d$ vectors:
+\begin{equation*}
+f_{GRU}(\textbf{s}) = (\mathbf{h}_1,\ldots, \mathbf{h}_T) \in \mathbb{R}^{d \times T}
+\end{equation*}
+\begin{comment}
+The tree decoder is then conditioned on the sequence encoder output via an attention mechanism.
+We follow the attention implementation of \cite{opennmt}. Given $K$ matrices $\textbf{M}^\alpha = (M_1^\alpha,\ldots, M_1^\alpha) \in \mathbb{R}^{d \times d \times K}$, we have:
+\begin{align*}
+& \alpha^k_n = \text{softmax}\Big(\frac{\mathbf{x}^{\text{T}} M^{\alpha}_k (\mathbf{h}_1,\ldots, \mathbf{h}_T)}{\sqrt{d}} \Big) \\
+& \mathbf{x}^{\alpha} = \sum_{k=1}^K {\alpha^k_n}^{\text{T}} (\mathbf{h}_1,\ldots, \mathbf{h}_T) \\
+& \text{attn}(\mathbf{x}, (\mathbf{h}_1,\ldots, \mathbf{h}_T); \textbf{M}^\alpha) = \mathbf{x} + \mathbf{x}^{\alpha}
+\end{align*}
+\end{comment}
+\paragraph{Tree Decoder: } The decoder starts at the root, computes its node representation and predicts the state of its children, then recursively computes the representations of the predicted descendants. Similarly to Seq2Tree, a node representation $\mathbf{r}_n$ is computed based on its ancestors and left siblings. We also found it useful to condition each of the node representation on the encoder output explicitly for each node. Thus, we compute the representation $\mathbf{r}_{n_t}$ and recurrent hidden state $\mathbf{g}_{n_t}$ for node $n_t$ as:
+\begin{align}
+& \mathbf{r}_{n_t} = \text{attn}(\mathbf{v}_{n_t} + \mathbf{g}_{n_{t-1}}, (\mathbf{h}_1,\ldots, \mathbf{h}_T); \; \textbf{M}^\sigma) \\
+& \mathbf{g}_{n_{t}} =
+    f_{rec}(\mathbf{g}_{n_{t-1}}, (\mathbf{v'}_{n_t} + \mathbf{r}_{n_t}))
+\end{align}
+Where  $\text{attn}$ is multi-head attention, $\textbf{M}^{\sigma} \in \mathbb{R}^{d \times d \times K}$ is a tree-wise parameter, $f_{rec}$ is the GRU recurrence function, and $\mathbf{v'}_{n_t}$ is a node parameter (one per category for categorical nodes), and $n_{t-1}$ denotes either the last predicted left sibling if there is one or the parent node otherwise.
+
+\paragraph{Prediction Heads: } Finally, the decoder uses the computed node representations to predict the state of each of the internal, categorical, and span nodes in the grammar. We denote each of these sets by $\mathcal{I}$, $\mathcal{C}$ and $\mathcal{S}$ respectively, and the full set of nodes as $\mathcal{N} = \mathcal{I} \cup \mathcal{C} \cup \mathcal{S}$.
+
+First, each node in $\mathcal{N}$ is either active or inactive in a specific logical form. We denote the state of a node $n$ by ${a_n \in \{0, 1\}}$. All the descendants of an inactive internal node $n \in \mathcal{I}$ are considered to be inactive. Additionally, each categorical node $n \in \mathcal{C}$ has a set of possible values $C^n$; its value in a specific logical form is denoted by the category label ${c_n \in \{1,\ldots,|C^n|\}}$. Finally, active span nodes $n \in \mathcal{S}$ for a sentence of length $T$ have a start and end index ${(s_n, e_n) \in \{1,\ldots,T\}^2}$. We compute, the representations $\mathbf{r}_n$ of the nodes as outlined above, then obtain the probabilities of each of the labels by:
+\begin{align}
+&\forall n \in \mathcal{N}, &p(a_n) &= \sigma(\langle \mathbf{r}_n, \mathbf{p}_n \rangle) \label{eq:int_pred}\\
+&\forall n \in \mathcal{C}, &p(c_n) &= \text{softmax}(M^c_n \mathbf{r}_n) \label{eq:cat_pred} \\
+&\forall n \in \mathcal{S}, &p(s_n) &= \text{softmax}(\mathbf{r}_n ^{\text{T}} M^s_n (\mathbf{h}_1,\ldots, \mathbf{h}_T)) \nonumber \\
+& &p(e_n) &= \text{softmax}(\mathbf{r}_n ^{\text{T}} M^e_n (\mathbf{h}_1,\ldots, \mathbf{h}_T)) \label{eq:span_pred}
+\end{align}
+where the following are model parameters:
+\begin{align*}
+\forall n \in \mathcal{N},& \quad \mathbf{p}_n \in \mathbb{R}^d\\
+\forall n \in \mathcal{C},& \quad M^c_n \in \mathbb{R}^{d \times d} \\
+\forall n \in \mathcal{S},& \quad (M^s_n, M^e_n) _n \in \mathbb{R}^{d \times d \times 2}
+\end{align*}
+Let us note the parent of a node $n$ as $\pi(n)$. Given Equations~\ref{eq:int_pred} to \ref{eq:span_pred}, the log-likelihood of a tree with states $(\textbf{a}, \textbf{c}, \textbf{s}, \textbf{e})$ given a sentence $\textbf{s}$ is then:
+\begin{align}
+\mathcal{L} & = \sum_{n \in \mathcal{N}} a_{\pi(n)} \log(p(a_n))  + \sum_{n \in \mathcal{C}} a_n \log(p(c_n)) \nonumber \\
+& \quad + \sum_{n \in \mathcal{S}} a_n \Big(\log(p(s_n)) + \log(p(e_n))\Big)
+\end{align}
+
+Overall, our implementation differs from the original Seq2Tree in three ways,  which we found lead to better performance in our setting. First, we replace single-head with multi-head attention. Secondly, the cross-attention between the decoder and attention is conditioned on both the node embedding and previous recurrent state. Finally, we replace the categorical prediction of the next node by a binary prediction problem: since we know which nodes are eligible as the children of a specific node (see Figures~\ref{fig:AS} and ~\ref{fig:NOT_AS}), we find that this enforces a stronger prior. We refer to this modified implementation as SentenceRec.% in the rest of the paper.
+
+\subsection{Sequence to Sequence Model}
+
+Our second approach treats the problem of predicting the logical form as a general sequence-to-sequence (Seq2Seq) task; such approaches have been used in semantic parsing in e.g. \citep{jia2016data, wang2018transfer}. We take the approach of \citep{jia2016data} and linearize the output trees:
+the target sequence corresponds to a Depth First Search walk through the tree representation of the logical form. More specifically the model needs to predict, in DFS order, a sequence of tokens corresponding to opening and closing internal nodes, categorical leaves and their value, and span leaves with start and end sequences.  
+\begin{comment}
+\begin{itemize}
+\item opening of internal nodes, the corresponding sub-tree, then closing the node: \\ \textsc{open:location}, \ldots, \textsc{close:location}
+\item categorical leaves along with their value: \\
+\textsc{relative\_dir:up} or \textsc{action\_type:build}
+\item span leaves, with start and end indexes:\\
+\textsc{has\_size}-(1, 2) $\leftarrow$ \emph{make} {\bf{very large}} \emph{doors}
+\end{itemize}
+\end{comment}
+In practice, we let the model predict span nodes in two steps: first predict the presence of the node, then predict the span value, using the same prediction heads as for the SentenceRec model (see Equation~\ref{eq:span_pred} above). With this formalism, the logical form for e.g. {\emph{``build a large blue dome on top of the walls''}} will be:
+
+\begin{footnotesize}
+\begin{verbatim}
+(ACTION_TYPE:BUILD, OPEN:SCHEMATIC,
+   HAS_SIZE, SIZE_SPAN-(2,2),
+   HAS_COLOR, COLOR_SPAN-(3,3),
+   HAS_NAME, NAME_SPAN-(4,4),
+ CLOSE:SCHEMATIC, OPEN:LOCATION,
+   LOC_TYPE:REF_OBJECT, REL_DIR:UP,
+   OPEN:REF_OBJECT,
+     HAS_NAME, NAME_SPAN-(9,9),
+   CLOSE:REF_OBJECT,
+ CLOSE:LOCATION)
+\end{verbatim}
+\end{footnotesize}
+
+We train a BERT encoder-decoder architecture on this sequence transduction task, where the training loss is a convex combination of the output sequence log-likelihood and the span cross-entropy loss.
+
+\paragraph{Pre-trained Sentence Encoder: } Finally, recent work has shown that using sentence encoder that has been pre-trained on large-scale language modeling tasks can lead to substantial performance improvements \citep{song2019mass}.%, especially in cases where training data is spares . Given the size of our dataset, 
+We use the pre-trained DistilBERT model of \cite{sanh2019distilbert} as the encoder of our sequence-to-sequence model, and also propose a version of the SentenceRec which uses it to replace the bidirectional RNN.

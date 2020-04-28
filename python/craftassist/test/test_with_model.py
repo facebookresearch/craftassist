@@ -14,8 +14,10 @@ class Opt:
     pass
 
 
-TTAD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert/model/")
-TTAD_BERT_DATA_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert/annotated_data/")
+TTAD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert_updated/model/")
+TTAD_BERT_DATA_DIR = os.path.join(
+    os.path.dirname(__file__), "../models/ttad_bert_updated/annotated_data/"
+)
 
 
 class PutMemoryTestCase(BaseCraftassistTestCase):

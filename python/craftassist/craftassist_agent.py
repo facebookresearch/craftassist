@@ -24,7 +24,10 @@ from base_agent.loco_mc_agent import LocoMCAgent
 from base_agent.util import hash_user
 
 # python/ dir, for agent.so
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
+# sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from agent import Agent as MCAgent
 
@@ -267,7 +270,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--nsp_model_dir",
-        default="models/ttad_bert/model/",
+        default="models/ttad_bert_updated/model/",
         help="path to current listener model dir",
     )
     parser.add_argument(
@@ -279,7 +282,9 @@ if __name__ == "__main__":
         "--nsp_grammar_path", default="models/ttad/dialogue_grammar.json", help="path to grammar"
     )
     parser.add_argument(
-        "--nsp_data_dir", default="models/ttad_bert/annotated_data/", help="path to annotated data"
+        "--nsp_data_dir",
+        default="models/ttad_bert_updated/annotated_data/",
+        help="path to annotated data",
     )
     parser.add_argument(
         "--ground_truth_file_path",

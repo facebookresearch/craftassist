@@ -7,14 +7,11 @@ import sys
 import os
 import torch
 
-VOXEL_MODELS_DIR = os.path.dirname(os.path.realpath(__file__))
-CRAFTASSIST_DIR = os.path.join(VOXEL_MODELS_DIR, "../")
-GEOSCORER_DIR = os.path.join(VOXEL_MODELS_DIR, "geoscorer/")
-sys.path.append(CRAFTASSIST_DIR)
+GEOSCORER_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "geoscorer/")
 sys.path.append(GEOSCORER_DIR)
 
 from geoscorer_wrapper import ContextSegmentMergerWrapper
-from geoscorer_util import *
+from spatial_utils import shift_sparse_voxel_to_origin, densify
 
 
 class Geoscorer(object):
@@ -68,7 +65,7 @@ class Geoscorer(object):
             ((x, y, z), (block_id, ?))
         Returns an 8x8x8 block with the segment shifted to the origin its bounds.
         """
-        shifted_seg, _ = shift_subsegment_corner(segment)
+        shifted_seg, _ = shift_sparse_voxel_to_origin(segment)
 
         sl = self.seg_sl
         c = self.seg_sl // 2

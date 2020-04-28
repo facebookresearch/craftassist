@@ -6,16 +6,16 @@ import numpy as np
 import os
 import sys
 import random
+import torch
+import torch.utils.data
 
-GEOSCORER_DIR = os.path.dirname(os.path.realpath(__file__))
-CRAFTASSIST_DIR = os.path.join(GEOSCORER_DIR, "../../")
+CRAFTASSIST_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../")
 sys.path.append(CRAFTASSIST_DIR)
 
 import shapes
 import shape_helpers as sh
-import torch
-import torch.utils.data
-from geoscorer_util import *
+import spatial_utils as su
+import directional_utils as du
 
 # subshapes by everything in a l1 or l2 ball from a point.
 # put pairs + triples of shapes in frame, sometimes one partially built
@@ -26,102 +26,126 @@ r = np.arange(0, 256) / 256
 CMAP = np.stack((r, np.roll(r, 80), np.roll(r, 160)))
 
 
-SMALL = 5
-LARGE = 20
+MIN_SIZE = 4
 
 
-def get_shape(name="random", opts=None):
+def get_shape(name="random", max_size=20, opts=None):
     if name != "random" and name not in SHAPENAMES:
-        pretty_log("Shape name {} not in dict, choosing randomly".format(name))
+        print(">> Shape name {} not in dict, choosing randomly".format(name))
         name = "random"
     if name == "random":
         name = random.choice(SHAPENAMES)
     if not opts:
-        opts = SHAPE_HELPERS[name]()
+        opts = SHAPE_HELPERS[name](max_size)
     opts["labelme"] = False
     return SHAPEFNS[name](**opts), opts, name
 
 
-def options_cube():
-    return {"size": np.random.randint(SMALL, LARGE)}
+def options_cube(max_size):
+    return {"size": np.random.randint(MIN_SIZE, max_size + 1)}
 
 
-def options_hollow_cube():
+def options_hollow_cube(max_size):
     opts = {}
-    opts["size"] = np.random.randint(SMALL, LARGE)
-    opts["thickness"] = np.random.randint(1, opts["size"] - 3)
+    opts["size"] = np.random.randint(MIN_SIZE, max_size + 1)
+    if opts["size"] < 5:
+        opts["thickness"] = 1
+    else:
+        opts["thickness"] = np.random.randint(1, opts["size"] - 3)
     return opts
 
 
-def options_rectanguloid():
-    return {"size": np.random.randint(SMALL, LARGE, size=3)}
+def options_rectanguloid(max_size):
+    return {"size": np.random.randint(MIN_SIZE, max_size + 1, size=3)}
 
 
-def options_hollow_rectanguloid():
+def options_hollow_rectanguloid(max_size):
     opts = {}
-    opts["size"] = np.random.randint(SMALL, LARGE, size=3)
+    opts["size"] = np.random.randint(MIN_SIZE, max_size + 1, size=3)
     ms = min(opts["size"])
-    opts["thickness"] = np.random.randint(1, ms - 3)
+    opts["thickness"] = np.random.randint(1, ms - 3 + 1)
     return opts
 
 
-def options_sphere():
-    return {"radius": np.random.randint(SMALL, LARGE)}
+def options_sphere(max_size):
+    min_r = MIN_SIZE // 2
+    max_r = max_size // 2
+    return {"radius": np.random.randint(min_r, max_r + 1)}
 
 
-def options_spherical_shell():
+def options_spherical_shell(max_size):
+    min_r = MIN_SIZE // 2
+    max_r = max_size // 2
     opts = {}
-    opts["radius"] = np.random.randint(SMALL, LARGE)
-    opts["thickness"] = np.random.randint(1, opts["radius"] - 3)
+    if max_r <= 5:
+        opts["radius"] = np.random.randint(min_r, max_r + 1)
+        opts["thickness"] = 1
+    else:
+        opts["radius"] = np.random.randint(5, max_r + 1)
+        opts["thickness"] = np.random.randint(1, opts["radius"] - 3)
     return opts
 
 
-def options_square_pyramid():
+# TODO: can we make this work??
+def options_square_pyramid(max_size):
+    min_r = MIN_SIZE
+    max_r = max_size
     opts = {}
-    opts["radius"] = np.random.randint(SMALL, LARGE)
+    opts["radius"] = np.random.randint(min_r, max_r + 1)
     opts["slope"] = np.random.rand() * 0.4 + 0.8
     fullheight = opts["radius"] * opts["slope"]
     opts["height"] = np.random.randint(0.5 * fullheight, fullheight)
     return opts
 
 
-def options_square():
-    return {"size": np.random.randint(SMALL, LARGE), "orient": sh.orientation3()}
+def options_square(max_size):
+    return {"size": np.random.randint(MIN_SIZE, max_size + 1), "orient": sh.orientation3()}
 
 
-def options_rectangle():
-    return {"size": np.random.randint(SMALL, LARGE, size=2), "orient": sh.orientation3()}
+def options_rectangle(max_size):
+    return {"size": np.random.randint(MIN_SIZE, max_size + 1, size=2), "orient": sh.orientation3()}
 
 
-def options_circle():
-    return {"radius": np.random.randint(SMALL, LARGE), "orient": sh.orientation3()}
+def options_circle(max_size):
+    min_r = MIN_SIZE // 2
+    max_r = max_size // 2
+    return {"radius": np.random.randint(min_r, max_r + 1), "orient": sh.orientation3()}
 
 
-def options_disk():
-    return {"radius": np.random.randint(SMALL, LARGE), "orient": sh.orientation3()}
+def options_disk(max_size):
+    min_r = MIN_SIZE // 2
+    max_r = max_size // 2
+    return {"radius": np.random.randint(min_r, max_r + 1), "orient": sh.orientation3()}
 
 
-def options_triangle():
-    return {"size": np.random.randint(SMALL, LARGE), "orient": sh.orientation3()}
+def options_triangle(max_size):
+    return {"size": np.random.randint(MIN_SIZE, max_size + 1), "orient": sh.orientation3()}
 
 
-def options_dome():
-    return {"radius": np.random.randint(SMALL, LARGE)}
+def options_dome(max_size):
+    min_r = MIN_SIZE // 2
+    max_r = max_size // 2
+    return {"radius": np.random.randint(min_r, max_r + 1)}
 
 
-def options_arch():
-    return {"size": np.random.randint(SMALL, LARGE), "distance": 2 * np.random.randint(2, 5) + 1}
+# TODO: can we make this work
+def options_arch(max_size):
+    ms = max(MIN_SIZE + 1, max_size * 2 // 3)
+    return {"size": np.random.randint(MIN_SIZE, ms), "distance": 2 * np.random.randint(2, 5) + 1}
 
 
-def options_ellipsoid():
-    return {"size": np.random.randint(SMALL, LARGE, size=3)}
+def options_ellipsoid(max_size):
+    # these sizes are actually radiuses
+    min_r = MIN_SIZE // 2
+    max_r = max_size // 2
+    return {"size": np.random.randint(min_r, max_r + 1, size=3)}
 
 
-def options_tower():
-    return {"height": np.random.randint(3, 30), "base": np.random.randint(-4, 6)}
+def options_tower(max_size):
+    return {"height": np.random.randint(3, max_size + 1), "base": np.random.randint(-4, 6)}
 
 
-def options_empty():
+def options_empty(max_size):
     return {}
 
 
@@ -166,9 +190,12 @@ SHAPE_HELPERS = {
 
 ################################################################################
 ################################################################################
+def check_l1_dist(a, b, d):
+    return abs(b[0] - a[0]) <= d[0] and abs(b[1] - a[1]) <= d[1] and abs(b[2] - a[2]) <= d[2]
+
+
 def get_rectanguloid_subsegment(S, c, max_chunk=10):
-    bounds = shapes.get_bounds(S)
-    segment_sizes = get_side_lengths(bounds)
+    bounds, segment_sizes = su.get_bounds_and_sizes(S)
     max_dists = []
     for s in segment_sizes:
         max_side_len = min(s - 1, max_chunk)
@@ -219,34 +246,21 @@ def shift_vector_gen(side_length):
 
 
 # Returns three tensors: 32x32x32 context, 8x8x8 segment, 1 target
-class SegmentContextSeparateShapeData(torch.utils.data.Dataset):
-    def __init__(
-        self,
-        nexamples=100000,
-        context_side_length=32,
-        seg_side_length=8,
-        useid=False,
-        for_vis=False,
-    ):
-        self.context_side_length = context_side_length
-        self.seg_side_length = seg_side_length
+class SegmentContextShapeData(torch.utils.data.Dataset):
+    def __init__(self, nexamples=100000, context_side_length=32, seg_side_length=8, useid=False):
+        self.c_sl = context_side_length
+        self.s_sl = seg_side_length
         self.num_examples = nexamples
         self.useid = useid
         self.examples = []
-        self.for_vis = for_vis
 
     def _get_example(self):
-        context_sparse, seg = get_shape_segment(
-            max_chunk=self.seg_side_length - 1, side_length=self.context_side_length
-        )
-        seg_sparse = sparsify_segment(seg, context_sparse)
-        return convert_sparse_context_seg_to_example(
-            context_sparse,
-            seg_sparse,
-            self.context_side_length,
-            self.seg_side_length,
-            self.useid,
-            self.for_vis,
+        schem_sparse, seg = get_shape_segment(max_chunk=self.s_sl - 1, side_length=self.c_sl)
+        seg_inds = set([i for i, use in enumerate(seg) if use])
+        seg_sparse = [schem_sparse[i] for i in seg_inds]
+        context_sparse = [b for i, b in enumerate(schem_sparse) if i not in seg_inds]
+        return su.convert_sparse_context_seg_to_example(
+            context_sparse, seg_sparse, self.c_sl, self.s_sl, self.useid
         )
 
     def __getitem__(self, index):
@@ -256,27 +270,102 @@ class SegmentContextSeparateShapeData(torch.utils.data.Dataset):
         return self.num_examples
 
 
+def get_two_shape_sparse(c_sl, s_sl):
+    max_s_size = random.randint(MIN_SIZE, s_sl)
+    max_c_size = c_sl - 2 * max_s_size
+    c_shape_sparse, _, nc = get_shape("random", max_c_size)
+    s_shape_sparse, _, ns = get_shape("random", max_s_size)
+
+    # move segment to (0,0,0) and bound size
+    s_bounds, s_sizes = su.get_bounds_and_sizes(s_shape_sparse)
+    seg_sparse, _ = su.shift_sparse_voxel_to_origin(s_shape_sparse)
+    seg_sparse = [b for b in seg_sparse if all([i < 8 for i in b[0]])]
+    s_bounds, s_sizes = su.get_bounds_and_sizes(seg_sparse)
+
+    # ensure context isn't too big
+    c_bounds, c_sizes = su.get_bounds_and_sizes(c_shape_sparse)
+    total_sizes = [c + s * 2 for c, s in zip(c_sizes, s_sizes)]
+    for i, size in enumerate(total_sizes):
+        if size > 32:
+            remove = size - 32
+            remove_to = c_bounds[i * 2] + remove
+            c_shape_sparse = [b for b in c_shape_sparse if b[0][i] >= remove_to]
+    if len(c_shape_sparse) == 0:
+        raise Exception("There should be something in c_shape_sparse {}".format(c_shape_sparse))
+    c_bounds, c_sizes = su.get_bounds_and_sizes(c_shape_sparse)
+
+    # shift context center to space center
+    c_center = [sl // 2 for sl in c_sizes]
+    c_space_center = [c_sl // 2 for _ in range(3)]
+    sv = [sc - c for c, sc in zip(c_center, c_space_center)]
+    context_sparse = [
+        ((b[0][0] + sv[0], b[0][1] + sv[1], b[0][2] + sv[2]), b[1]) for b in c_shape_sparse
+    ]
+
+    return context_sparse, c_sizes, seg_sparse, s_sizes
+
+
+def get_shape_dir_target(viewer_pos, dir_vec, c_sizes, s_sizes, c_sl, max_shift=0):
+    c_space_center = [c_sl // 2 for _ in range(3)]
+    c_half = [cs // 2 for cs in c_sizes]
+    c_pos = [c_space_center[i] - c_half[i] for i in range(3)]
+    target_coord, dim, dr = du.get_rotated_context_to_seg_origin(
+        viewer_pos, dir_vec, c_pos, c_sizes, s_sizes
+    )
+    if any([t > c_sl - 1 or t < 0 for t in target_coord]):
+        raise Exception("target coord:", target_coord)
+
+    if max_shift > 0:
+        # Shift by some precalculated amount and turn into a target
+        shift_constraint = c_space_center[dim] - c_half[dim] - s_sizes[dim] - 2
+        shift_by = random.randint(0, min(max(shift_constraint, 0), max_shift))
+        target_coord[dim] += dr * shift_by
+    target = su.coord_to_index(target_coord.tolist(), c_sl)
+    return torch.tensor(target, dtype=torch.int)
+
+
+# Returns a 32x32x32 context, 8x8x8 segment, 6 viewer, 1 direction, 1 target
+class SegmentContextShapeDirData(torch.utils.data.Dataset):
+    def __init__(
+        self, nexamples=100000, context_side_length=32, seg_side_length=8, useid=False, max_shift=0
+    ):
+        self.c_sl = context_side_length
+        self.s_sl = seg_side_length
+        self.num_examples = nexamples
+        self.useid = useid
+        self.examples = []
+        self.max_shift = max_shift
+
+    def _get_example(self):
+        # note that seg_sparse is not in target location
+        context_sparse, c_sizes, seg_sparse, s_sizes = get_two_shape_sparse(self.c_sl, self.s_sl)
+        viewer_pos, viewer_look = du.get_random_viewer_info(self.c_sl)
+        dir_vec = du.random_dir_vec_tensor()
+        target = get_shape_dir_target(
+            viewer_pos, dir_vec, c_sizes, s_sizes, self.c_sl, self.max_shift
+        )
+        context = su.get_dense_array_from_sl(context_sparse, self.c_sl, self.useid)
+        seg = su.get_dense_array_from_sl(seg_sparse, self.s_sl, self.useid)
+        return {
+            "context": torch.from_numpy(context),
+            "seg": torch.from_numpy(seg),
+            "target": target,
+            "viewer_pos": viewer_pos,
+            "dir_vec": dir_vec,
+        }
+
+    def __getitem__(self, index):
+        return self._get_example()
+
+    def __len__(self):
+        return self.num_examples
+
+
 if __name__ == "__main__":
-    import os
-    import visdom
+    from visualization_utils import GeoscorerDatasetVisualizer
 
-    VOXEL_MODELS_DIR = os.path.join(GEOSCORER_DIR, "../../")
-    sys.path.append(VOXEL_MODELS_DIR)
-    import plot_voxels as pv
-    import argparse
+    dataset = SegmentContextShapeDirData(nexamples=3)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_type", type=str, default="separate", help="(separate)")
-    opts = parser.parse_args()
-
-    vis = visdom.Visdom(server="http://localhost")
-    sp = pv.SchematicPlotter(vis)
-
-    dataset = SegmentContextSeparateShapeData(nexamples=3, for_vis=True)
+    vis = GeoscorerDatasetVisualizer(dataset)
     for n in range(len(dataset)):
-        shape, seg, target = dataset[n]
-        sp.drawPlotly(shape)
-        sp.drawPlotly(seg)
-        target_coord = index_to_coord(target.item(), 32)
-        completed_shape = combine_seg_context(seg, shape, target_coord, seg_mult=3)
-        sp.drawPlotly(completed_shape)
+        vis.visualize()

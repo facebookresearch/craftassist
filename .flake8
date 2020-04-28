@@ -16,9 +16,9 @@ ignore =
     W3, # blank line
     W5, # line break
 exclude =
-    ./python/craftassist/ttad/generation_dialogues/
-    ./python/craftassist/ttad/ttad_model/
-    ./python/craftassist/ttad-annotate/flows.py
+    ./python/base_agent/ttad/generation_dialogues/
+    ./python/base_agent/ttad/ttad_model/
+    ./python/base_agent/ttad-annotate/flows.py
     ./python/craftassist/vision_training
     .git,
     __pycache__,

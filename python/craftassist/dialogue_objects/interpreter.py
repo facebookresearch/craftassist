@@ -8,6 +8,12 @@ import random
 from typing import Tuple, Dict, Any, Optional
 from word2number.w2n import word_to_num
 
+import sys
+import os
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "../..")
+sys.path.append(BASE_AGENT_ROOT)
+
 from base_agent.dialogue_objects import DialogueObject, ConfirmTask, Say
 from .interpreter_helper import (
     ErrorWithResponse,

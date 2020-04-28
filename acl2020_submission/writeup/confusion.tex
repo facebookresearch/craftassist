@@ -1,0 +1,243 @@
+\clearpage
+
+\section{Confusion Matrices}
+\label{sec:conf_mat}
+
+To compute confusion matrices for the internal node predictions, we look at the gold labels, and add:
+\begin{itemize}
+\item 1 to the gold label count when it is present in the predictions
+\item $\frac{1}{\# predictions}$ for each predicted internal node that does not match a gold label node when the gold label is not present.
+\end{itemize}
+% Confusion matrices for internal nodes for the independent prediction and SentenceRec models respectively are presented in Figures~\ref{fig:conf_int_ind} and \ref{fig:conf_int_senrec} respectively.
+
+To compute confusion matrices for the categorical node predictions, we look at the gold labels, and add:
+\begin{itemize}
+\item 1 to the predicted class count when the node is present in the predictions (whether it is the gold class or not)
+\item 1 to the NO-PARENT result when the node's parent is absent in the predicted set
+\item 1 to the ABSENT result when the node's parent is present in the predicted set but the categorical node is absent
+\end{itemize}
+
+To compute confusion matrices for the categorical node predictions, we look at the gold labels, and add:
+\begin{itemize}
+\item 1 to the MATCH-SPAN result count when the span node is present in the predictions with the right span
+\item 1 to the MIS-SPAN result count when the span node is present in the predictions with the wrong span
+\item 1 to the NO-PARENT result when the node's parent is absent in the predicted set
+\item 1 to the ABSENT result when the node's parent is present in the predicted set but the categorical node is absent
+\end{itemize}
+
+\begin{figure}[t]
+    \centering
+    \begin{verbatim}
+{'action': [('total', 817.0), ('action', 1.0)],
+ 'action_location': [('total', 73.0),
+                     ('action_location', 0.8219),
+                     ('ar_location', 0.1438),
+                     ('schematic', 0.0137),
+                     ('action_ref_object', 0.0137),
+                     ('arl_ref_object', 0.0068)],
+ 'action_ref_object': [('total', 125.0),
+                       ('action_ref_object', 0.64),
+                       ('schematic', 0.16),
+                       ('action_location', 0.0787),
+                       ('al_ref_object', 0.0707),
+                       ('stop_condition', 0.0347),
+                       ('s_repeat', 0.012),
+                       ('alr_repeat', 0.004)],
+ 'al_ref_object': [('total', 16.0),
+                   ('al_ref_object', 0.875),
+                   ('ar_location', 0.0938),
+                   ('arl_ref_object', 0.0312)],
+ 'ar_repeat': [('total', 5.0),
+               ('ar_repeat', 0.8),
+               ('schematic', 0.1),
+               ('s_repeat', 0.1)],
+ 's_repeat': [('total', 7.0),
+              ('s_repeat', 0.8571),
+              ('action_repeat', 0.0714),
+              ('action_ref_object', 0.0714)],
+ 'schematic': [('total', 279.0),
+               ('schematic', 0.9534),
+               ('action_ref_object', 0.0376),
+               ('ar_repeat', 0.0018),
+               ('action_location', 0.0018),
+               ('al_ref_object', 0.0018),
+               ('ar_location', 0.0018),
+               ('action_repeat', 0.0018)]}
+    \end{verbatim}
+    \caption{Confusion matrix for the internal node predictions by the SentenceRec model.}
+    \label{fig:conf_int_senrec}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \begin{verbatim}
+{'action:action_type': {'Answer': [('total', 52.0),
+                                   ('Noop', 0.6923),
+                                   ('Answer', 0.2308),
+                                   ('Build', 0.0192),
+                                   ('Dig', 0.0192),
+                                   ('Destroy', 0.0192),
+                                   ('Move', 0.0192)],
+                        'Build': [('total', 358.0),
+                                  ('Build', 0.8492),
+                                  ('Noop', 0.0782),
+                                  ('Spawn', 0.0559),
+                                  ('Dig', 0.0168)],
+                        'Destroy': [('total', 57.0),
+                                    ('Destroy', 0.8246),
+                                    ('Noop', 0.0702),
+                                    ('Spawn', 0.0526),
+                                    ('Move', 0.0175),
+                                    ('Dig', 0.0175),
+                                    ('Build', 0.0175)],
+                        'Dig': [('total', 37.0),
+                                ('Dig', 0.973),
+                                ('Resume', 0.027)],
+                        'Fill': [('total', 7.0),
+                                 ('Fill', 0.5714),
+                                 ('Build', 0.2857),
+                                 ('Dig', 0.1429)],
+                        'FreeBuild': [('total', 7.0),
+                                      ('Build', 0.7143),
+                                      ('Resume', 0.1429),
+                                      ('Noop', 0.1429)],
+                        'Move': [('total', 36.0),
+                                 ('Move', 0.8611),
+                                 ('Noop', 0.1389)],
+                        'Noop': [('total', 113.0),
+                                 ('Noop', 0.8053),
+                                 ('Build', 0.0973),
+                                 ('Move', 0.0265),
+                                 ('Dig', 0.0265),
+                                 ('Spawn', 0.0177),
+                                 ('Answer', 0.0177),
+                                 ('Fill', 0.0088)],
+                        'OtherAction': [('total', 112.0),
+                                        ('Noop', 0.5446),
+                                        ('Move', 0.1786),
+                                        ('Spawn', 0.0804),
+                                        ('Dig', 0.0625),
+                                        ('Destroy', 0.0536),
+                                        ('Build', 0.0268),
+                                        ('Fill', 0.0179),
+                                        ('Undo', 0.0089),
+                                        ('FreeBuild', 0.0089),
+                                        ('Answer', 0.0089),
+                                        ('Stop', 0.0089)],
+    \end{verbatim}
+    \caption{Confusion matrix for the categorical node predictions by the SentenceRec model part 1.}
+    \label{fig:conf_cat_senrec_1}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \begin{verbatim}
+                        'Resume': [('total', 3.0), ('Resume', 1.0)],
+                        'Spawn': [('total', 16.0),
+                                  ('Spawn', 0.875),
+                                  ('Build', 0.125)],
+                        'Stop': [('total', 10.0),
+                                 ('Stop', 0.8),
+                                 ('Move', 0.1),
+                                 ('Destroy', 0.1)],
+                        'Tag': [('total', 7.0),
+                                ('Answer', 0.4286),
+                                ('Build', 0.2857),
+                                ('Noop', 0.1429),
+                                ('Tag', 0.1429)],
+                        'Undo': [('total', 2.0), ('Undo', 1.0)]},
+ 'action_location:location_type': {'AgentPos': [('NO-PARENT', 1.0),
+                                                ('total', 1.0)],
+                                   'BlockObject': [('total', 31.0),
+                                                   ('NO-PARENT', 0.2903),
+                                                   ('Mob', 0.2581),
+                                                   ('AgentPos', 0.2581),
+                                                   ('BlockObject', 0.1935)],
+                                   'Other': [('total', 4.0),
+                                             ('AgentPos', 0.5),
+                                             ('SpeakerPos', 0.25),
+                                             ('NO-PARENT', 0.25)],
+                                   'SpeakerLook': [('total', 19.0),
+                                                   ('NO-PARENT', 0.5789),
+                                                   ('SpeakerLook', 0.4211)],
+                                   'SpeakerPos': [('total', 37.0),
+                                                  ('SpeakerPos', 0.7297),
+                                                  ('NO-PARENT', 0.2703)]},
+ 'action_location:relative_direction': {'AWAY': [('total', 2.0), ('AWAY', 1.0)],
+                                        'FRONT': [('total', 3.0),
+                                                  ('NO-PARENT', 0.6667),
+                                                  ('FRONT', 0.3333)],
+                                        'LEFT': [('total', 2.0), ('LEFT', 1.0)],
+                                        'UP': [('total', 2.0), ('UP', 1.0)]},
+ 'ar_repeat:repeat_key': {'FOR': [('total', 5.0),
+                                  ('FOR', 0.8),
+                                  ('NO-PARENT', 0.2)]},
+ 's_repeat:repeat_key': {'FOR': [('total', 7.0),
+                                 ('FOR', 0.8571),
+                                 ('NO-PARENT', 0.1429)]}}
+
+    \end{verbatim}
+    \caption{Confusion matrix for the categorical node predictions by the SentenceRec model part 2.}
+    \label{fig:conf_cat_senrec_2}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \begin{verbatim}
+{'action:has_depth_': [('total', 6.0),
+                       ('ABSENT', 0.6667),
+                       ('MIS-SPAN', 0.3333)],
+ 'action:has_size_': [('total', 9.0),
+                      ('MATCH-SPAN', 0.6667),
+                      ('ABSENT', 0.3333)],
+ 'action:has_width_': [('total', 2.0), ('MIS-SPAN', 1.0)],
+ 'action:tag': [('total', 7.0), ('ABSENT', 0.8571), ('MATCH-SPAN', 0.1429)],
+ 'action_ref_object:has_block_type_': [('total', 9.0), ('NO-PARENT', 1.0)],
+ 'action_ref_object:has_colour_': [('total', 2.0),
+                                   ('MATCH-SPAN', 0.5),
+                                   ('NO-PARENT', 0.5)],
+ 'action_ref_object:has_name_': [('total', 192.0),
+                                 ('NO-PARENT', 0.5833),
+                                 ('MATCH-SPAN', 0.3385),
+                                 ('ABSENT', 0.0781)],
+ 'action_ref_object:has_size_': [('ABSENT', 1.0), ('total', 1.0)],
+ 'al_ref_object:has_name_': [('total', 29.0),
+                             ('NO-PARENT', 0.5172),
+                             ('MATCH-SPAN', 0.3448),
+                             ('MIS-SPAN', 0.1379)],
+ 'ar_repeat:repeat_count': [('total', 5.0),
+                            ('MATCH-SPAN', 0.8),
+                            ('NO-PARENT', 0.2)],
+ 's_repeat:repeat_count': [('total', 7.0),
+                           ('MATCH-SPAN', 0.8571),
+                           ('NO-PARENT', 0.1429)],
+ 'schematic:has_block_type_': [('total', 37.0),
+                               ('MATCH-SPAN', 0.7838),
+                               ('ABSENT', 0.1351),
+                               ('MIS-SPAN', 0.0541),
+                               ('NO-PARENT', 0.027)],
+ 'schematic:has_colour_': [('total', 2.0), ('MATCH-SPAN', 1.0)],
+ 'schematic:has_height_': [('total', 7.0),
+                           ('ABSENT', 0.5714),
+                           ('MIS-SPAN', 0.2857),
+                           ('NO-PARENT', 0.1429)],
+ 'schematic:has_name_': [('total', 336.0),
+                         ('MATCH-SPAN', 0.7262),
+                         ('NO-PARENT', 0.2083),
+                         ('MIS-SPAN', 0.0625),
+                         ('ABSENT', 0.003)],
+ 'schematic:has_size_': [('total', 21.0),
+                         ('MATCH-SPAN', 0.5714),
+                         ('NO-PARENT', 0.1905),
+                         ('ABSENT', 0.1905),
+                         ('MIS-SPAN', 0.0476)],
+ 'schematic:has_width_': [('total', 7.0),
+                          ('ABSENT', 0.8571),
+                          ('NO-PARENT', 0.1429)]}
+
+    \end{verbatim}
+    \caption{Confusion matrix for the span node predictions by the SentenceRec model.}
+    \label{fig:conf_int_senrec}
+\end{figure}
