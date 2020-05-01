@@ -7,45 +7,49 @@ Reallocated global_strs (elt_size=20001) to 20 items from 10.
 Reallocated glb_str_end (elt_size=4) to 20 items from 10.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: refs.bib
+Warning--I'm ignoring wang2017naturalizing's extra "year" field
+--line 193 of file refs.bib
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
-You've used 45 entries,
+Warning--empty journal in wang2017naturalizing
+You've used 47 entries,
             3571 wiz_defined-function locations,
-            919 strings with 15344 characters,
-and the built_in function-call counts, 34357 in all, are:
-= -- 2837
-> -- 1967
-< -- 29
-+ -- 635
-- -- 573
-* -- 2314
-:= -- 5134
-add.period$ -- 182
-call.type$ -- 45
-change.case$ -- 448
-chr.to.int$ -- 46
-cite$ -- 45
-duplicate$ -- 2326
-empty$ -- 2304
-format.name$ -- 718
-if$ -- 7427
+            947 strings with 16449 characters,
+and the built_in function-call counts, 36647 in all, are:
+= -- 3038
+> -- 2067
+< -- 32
++ -- 667
+- -- 603
+* -- 2521
+:= -- 5467
+add.period$ -- 190
+call.type$ -- 47
+change.case$ -- 472
+chr.to.int$ -- 48
+cite$ -- 48
+duplicate$ -- 2469
+empty$ -- 2461
+format.name$ -- 754
+if$ -- 7934
 int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 485
-newline$ -- 229
-num.names$ -- 180
-pop$ -- 1136
+missing$ -- 512
+newline$ -- 239
+num.names$ -- 188
+pop$ -- 1205
 preamble$ -- 1
-purify$ -- 370
+purify$ -- 388
 quote$ -- 0
-skip$ -- 1583
+skip$ -- 1663
 stack$ -- 0
-substring$ -- 1042
-swap$ -- 1122
-text.length$ -- 18
+substring$ -- 1160
+swap$ -- 1231
+text.length$ -- 21
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 405
-warning$ -- 0
-while$ -- 181
+type$ -- 423
+warning$ -- 1
+while$ -- 196
 width$ -- 0
-write$ -- 572
+write$ -- 598
+(There were 2 warnings)
