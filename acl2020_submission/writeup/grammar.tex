@@ -4,7 +4,7 @@
 	\centering
      \includegraphics[width=.72\linewidth ]{figures/AS.png}
 
-    \caption{The basic structure of the \textsc{action\_sequence} branch of the assistant's grammar.   The gold octagon is an internal node whose children are ordered,  blue rectangles are regular internal nodes,  and green rectangles are categorical leaf nodes.   Not all combinations of children of \textsc{action} are possible, see the full list of possible productions (and the productions for \textsc{put\_memory} and \textsc{get\_memory})  in the Appendix.}
+    \caption{The basic structure of the \textsc{action\_sequence} branch of the assistant's grammar.   The gold octagon is an internal node whose children are ordered,  blue rectangles are regular internal nodes,  and green rectangles are categorical leaf nodes.   Not all combinations of children of \textsc{action} are possible, see the full list of possible productions (and the productions for \textsc{put\_memory} and \textsc{get\_memory})  in the Appendix \ref{sec:action_tree}.}
     \label{fig:AS}
     
 \end{figure}
@@ -38,13 +38,13 @@ The assistant's basic functions include moving, and placing and destroying block
 \begin{figure*}
 \center
  \includegraphics[width=\linewidth, height=6 cm  ]{figures/tools_diagram2.png}
- \caption{A representation of the annotation process using the web-based annotation tool described in Section \ref{sec:annotation}.  The colors of the boxes correspond to annotation tasks.  The highlighting on the text in the header of the later tasks is provided by a previous annotator.  We show more detailed screenshots of how the tool works in Appendix \ref{sec:anntn}}.
+ \caption{A representation of the annotation process using the web-based annotation tool described in Section \ref{sec:annotation}.  The colors of the boxes correspond to annotation tasks.  The highlighting on the text in the header of the later tasks is provided by a previous annotator.  We show more detailed screenshots of how the tool works in  Appendix \ref{sec:anntn}}.
 \label{fig:tool}
 \end{figure*}
 
 \subsection{Logical Forms}
 The focus of this paper is an intermediate representation that allows natural language to be interpreted into programs over the basic actions from the previous section. 
-The logical forms (represented as trees) making up this representation consist of three basic types of nodes: ``internal nodes'' that can have children, ``categorical'' (leaf) nodes that belong to a fixed set of possibilities, and ``span'' nodes that point to a region of text in the natural language utterance.   The full grammar is shown in the Appendix; and a partial schematic representation is shown in Figures \ref{fig:AS} and \ref{fig:NOT_AS}.  In the paragraphs below, we give more detail about some of the kinds of nodes in the grammar.     
+The logical forms (represented as trees) making up this representation consist of three basic types of nodes: ``internal nodes'' that can have children, ``categorical'' (leaf) nodes that belong to a fixed set of possibilities, and ``span'' nodes that point to a region of text in the natural language utterance.   The full grammar is shown in the Appendix \ref{sec:action_tree}; and a partial schematic representation is shown in Figures \ref{fig:AS} and \ref{fig:NOT_AS}.  In the paragraphs below, we give more detail about some of the kinds of nodes in the grammar.     
 
 We emphasize that this is an {\it intermediate} representation.   The logical forms do not come with any mechanism for generating language, and nodes do not correspond in any simple way with words.  On the other hand, the logical forms do not encode all of the information necessary for execution without the use of an interpreter that can access the assistant's memory and the Minecraft world state.   
 
@@ -66,7 +66,7 @@ We emphasize that this is an {\it intermediate} representation.   The logical fo
 
 \smallskip
 
-\noindent{\bf Leaf nodes: } Eventually, arguments have to be specified in terms of values which correspond to (fixed) agent primitives. We call these nodes categorical leaves (green rectangles in Figures \ref{fig:AS} and \ref{fig:NOT_AS}).  As mentioned above, an ``action'' internal node has a categorical leaf child which specifies the \textbf{action type}. There are also \textbf{repeat type} nodes similarly specifying a kind of loop  for example in  the \textsc{repeat} sub-tree corresponding to "make three houses" the \textbf{repeat type} \textbf{for} specifies a ``for'' loop).   There are also \textbf{location type} nodes specifying if a location is determined by a reference object, a set of coordinates, etc.;  \textbf{relative direction} nodes that have values like ``left'' or ``right''. The complete list of categorical nodes is given in the Appendix.
+\noindent{\bf Leaf nodes: } Eventually, arguments have to be specified in terms of values which correspond to (fixed) agent primitives. We call these nodes categorical leaves (green rectangles in Figures \ref{fig:AS} and \ref{fig:NOT_AS}).  As mentioned above, an ``action'' internal node has a categorical leaf child which specifies the \textbf{action type}. There are also \textbf{repeat type} nodes similarly specifying a kind of loop  for example in  the \textsc{repeat} sub-tree corresponding to "make three houses" the \textbf{repeat type} \textbf{for} specifies a ``for'' loop).   There are also \textbf{location type} nodes specifying if a location is determined by a reference object, a set of coordinates, etc.;  \textbf{relative direction} nodes that have values like ``left'' or ``right''. The complete list of categorical nodes is given in the Appendix \ref{sec:action_tree}.
 
 However, there are limits to what we can represent with a pre-specified set of hard-coded primitives, especially if we want our agent to be able to learn new concepts or new values. Additionally, even when there is a pre-specified agent primitive, mapping some parts of the command to a specific value might be better left to an external module (e.g. mapping a number string to an integer value). For these reasons, we also have span leaves (red ovals in Figure~\ref{fig:NOT_AS}). %This way, a model can learn to generalize to e.g. colors or size descriptions that it has never seen before.   
 For example, in the parse for the command  \textit{``Make three oak wood houses to the left of the dark grey church.''}, %starting from the ``action'' internal node, is {action: action_type: ``BUILD''
