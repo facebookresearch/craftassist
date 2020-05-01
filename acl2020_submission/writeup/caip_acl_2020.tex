@@ -72,7 +72,7 @@
 
 \maketitle
 \begin{abstract}
-We propose a semantic parsing dataset focused on instruction-driven communication with an agent in the game Minecraft.  
+We propose a semantic parsing dataset focused on instruction-driven communication with an agent in the game Minecraft\footnote{Minecraft features: \textcopyright Mojang Synergies AB included courtesy of Mojang AB}.  
 %The dataset consists of 32K human generated instructions with their parses, derived from a large collection of templates.   
 The dataset consists of 
 %several thousand templates that can synthesize surface forms and their parses, and
@@ -91,8 +91,8 @@ We report the performance of baseline models, and analyze their successes and fa
 
 \section{Conclusion}
 In this work, we have described a grammar over a mid-level interface for a Minecraft assistant. We then discussed the creation of a dataset of natural language utterances with associated logical forms over this grammar that can be executed in-game. Finally, we showed the results of using this new dataset to train several neural models for parsing natural language instructions.  %We find that the models we trained were able to fit the templated data nearly perfectly, but were less accurate on human-generated data.  v
-Consistently with recent works, we find that BERT pre-trained models do better than models trained from scratch, but there is much space for improvement.
-We believe this data will be useful to researchers studying semantic parsing, especially interactive semantic parsing, human-robot interaction, and even imitation and reinforcement learning.  
+Consistent with recent works, we find that BERT pre-trained models do better than models trained from scratch, but there is much space for improvement.
+We believe this data will be useful to researchers studying semantic parsing, especially interactive semantic parsing, human-robot interaction, and even imitation and reinforcement learning. The code, dataset and annotation tools described in the paper have been open-sourced \footnote{\url{https://github.com/facebookresearch/craftassist/tree/master/acl2020_submission}}. 
 
 
 
