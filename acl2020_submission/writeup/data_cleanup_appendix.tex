@@ -2,7 +2,7 @@
 \label{sec:data_cleanup}
 We threw away all duplicate commands in the dataset and only got annotations for unique commands from each data source.
 
-We performed post-processing on the text by first inserting spaces between any special character (brackets, ``,'', ``x'') followed by alphanumeric character. For example ``make a 5x5 hole'' was post-processed to ``make a 5 x 5 hole'' and ``go to (1,2,3)'' to ``go to ( 1 , 2 , 3 )''. We then used the tokenizer from spaCy \url{https://spacy.io/}  to tokenize every word in the sentence.
+We performed post-processing on the text by first inserting spaces between any special character (brackets, ``,'', ``x'') followed by alphanumeric character. For example ``make a 5x5 hole'' was post-processed to ``make a 5 x 5 hole'' and ``go to (1,2,3)'' to ``go to ( 1 , 2 , 3 )''. We then used the tokenizer from spaCy \footnote{\url{https://spacy.io/}}  to tokenize every word in the sentence.
 
 When constructing logical forms: we threw away any keys with values : `None' , `Other' or `Not Specified' . Our tool allows workers to select these options when annotating. We skipped stopwords and articles like `a' , `an' etc when constructing spans of children. We reordered the indices of words in spans to always be from left to right (regardless of which order the words were selected in the sentence when annotating).
 
