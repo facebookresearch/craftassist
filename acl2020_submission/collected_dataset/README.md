@@ -1,4 +1,4 @@
-Download the dataset from our S3 bucket :
+If you haven't yet, download the annotated dataset from our S3 bucket :
 
 ```
 curl -OL http://craftassist.s3-us-west-2.amazonaws.com/pubr/collected_dataset.tar.gz -o collected_dataset.tar.gz
