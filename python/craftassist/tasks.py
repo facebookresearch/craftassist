@@ -3,6 +3,8 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 
 import logging
+import os
+import sys
 import numpy as np
 import time
 
@@ -17,6 +19,10 @@ from entities import MOBS_BY_ID
 import search
 from heuristic_perception import ground_height
 import util
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
 from base_agent.task import Task
 from mc_memory_nodes import MobNode
 

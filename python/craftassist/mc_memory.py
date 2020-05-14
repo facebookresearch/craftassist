@@ -3,11 +3,17 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 import os
 import random
+import sys
 from typing import Optional, List, Tuple
 
 from build_utils import npy_to_blocks_list
 import minecraft_specs
 import dance
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
+
 from base_agent.util import XYZ, Block
 
 from base_agent.sql_memory import AgentMemory

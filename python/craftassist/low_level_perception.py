@@ -1,8 +1,15 @@
 # FIXME fix util imports
+import os
+import sys
+
 import util
 from util import XYZ, IDM, to_block_pos, pos_to_np
 from typing import Tuple, List
 from block_data import BORING_BLOCKS
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
 from base_agent.memory_nodes import PlayerNode
 from mc_memory_nodes import BlockObjectNode
 
