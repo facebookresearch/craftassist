@@ -287,7 +287,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ground_truth_file_path",
-        default="ground_truth.txt",
+        default="ground_truth_data.txt",
         help="path to cheat sheet of common commands",
     )
     parser.add_argument(

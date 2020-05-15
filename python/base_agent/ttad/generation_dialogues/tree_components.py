@@ -402,6 +402,17 @@ class ComponentNode:
             self._mob_2._action_description = self._action_description
             d["reference_object_2"] = self._mob_2.to_dict()
 
+        # fix reference object filters
+        for key in ["reference_object", "reference_object_1", "reference_object_2"]:
+            if key in d:
+                val = d[key]
+                if "repeat" in val:
+                    d[key] = {"repeat": val["repeat"]}
+                    val.pop("repeat")
+                    d[key]["filters"] = val
+                else:
+                    d[key] = {"filters": val}
+
         if getattr(self, "_memory_data", None) is not None:
             self._memory_data._action_description = self._action_description
             d["memory_data"] = self._memory_data.to_dict()
@@ -421,6 +432,26 @@ class ComponentNode:
                 ):
                     span = find_span(self._action_description, val)
                     d[attr] = span
+
+        # fix location type now
+        if "location_type" in d:
+            value = d["location_type"]
+            if value in ["SPEAKER_LOOK", "AGENT_POS", "SPEAKER_POS", "COORDINATES"]:
+                updated_value = value  # same for coordinates and speaker_look
+                if value == "AGENT_POS":
+                    updated_value = "AGENT"
+                elif value == "SPEAKER_POS":
+                    updated_value = "SPEAKER"
+                elif value == "COORDINATES":
+                    updated_value = {"coordinates_span": d["coordinates"]}
+
+                # add to reference object instead
+                if "reference_object" in d:
+                    d["reference_object"]["special_reference"] = updated_value
+                else:
+                    d["reference_object"] = {"special_reference": updated_value}
+            d.pop("location_type")
+            d.pop("coordinates", None)
 
         return d
 

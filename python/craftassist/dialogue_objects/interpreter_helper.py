@@ -370,6 +370,23 @@ def interpret_point_target(interpreter, speaker, d):
         return (loc[0], loc[1] + 1, loc[2], loc[0], loc[1] + 1, loc[2])
 
 
+def number_from_span(span):
+    # this will fail in many cases....
+    words = span.split()
+    degrees = None
+    for w in words:
+        try:
+            degrees = int(w)
+        except:
+            pass
+    if not degrees:
+        try:
+            degrees = word_to_num(span)
+        except:
+            pass
+    return degrees
+
+
 def interpret_facing(interpreter, speaker, d):
     current_pitch = interpreter.agent.get_player().look.pitch
     current_yaw = interpreter.agent.get_player().look.yaw
@@ -390,12 +407,30 @@ def interpret_facing(interpreter, speaker, d):
         # TODO in the task use turn angle
         if d["relative_yaw"].get("angle"):
             return {"relative_yaw": int(d["relative_yaw"]["angle"])}
+        elif d["relative_yaw"].get("yaw_span"):
+            span = d["relative_yaw"].get("yaw_span")
+            left = "left" in span or "leave" in span  # lemmatizer :)
+            degrees = number_from_span(span) or 90
+            if degrees > 0 and left:
+                print(-degrees)
+                return {"relative_yaw": -degrees}
+            else:
+                print(degrees)
+                return {"relative_yaw": degrees}
         else:
             pass
     elif d.get("relative_pitch"):
         if d["relative_pitch"].get("angle"):
             # TODO in the task make this relative!
             return {"relative_pitch": int(d["relative_pitch"]["angle"])}
+        elif d["relative_pitch"].get("pitch_span"):
+            span = d["relative_pitch"].get("pitch_span")
+            down = "down" in span
+            degrees = number_from_span(span) or 90
+            if degrees > 0 and down:
+                return {"relative_pitch": -degrees}
+            else:
+                return {"relative_pitch": degrees}
         else:
             pass
     elif d.get("location"):

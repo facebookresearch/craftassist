@@ -25,7 +25,8 @@ jobs:
           command: |
             echo 'export DOCKER_BUILD_ARGS="--build-arg current_branch=${CIRCLE_BRANCH}"' >> $BASH_ENV
 
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Deploy Github key
           command: |

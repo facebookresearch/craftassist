@@ -213,22 +213,26 @@ Also has support for Point / Turn / Look.
 ```
 
 #### Get ####
-This command represents getting or picking up something. This might involve first going to that thing and then picking it up in bot’s hand.
+The GET action_type covers the intents: bring, get and give.
+
+The Get intent represents getting or picking up something. This might involve first going to that thing and then picking it up in bot’s hand. The receiver here can either be the agent or the speaker (or another player).
+The Give intent represents giving something, in Minecraft this would mean removing something from the inventory of the bot and adding it to the inventory of the speaker / other player.
+The Bring intent represents bringing a reference_object to the speaker or to a specified location.
 
 ```
 {
     "action_type" : 'GET',
-    <ReferenceObject>
+    <ReferenceObject>,
+    "receiver" : <ReferenceObject> / <Location>
 }
 ```
 
-#### Give ####
-This command represents giving something, in Minecraft this would mean removing something from the inventory of the bot and adding it to the inventory of the speaker / other player ? Support from one player to another ? Support for Show?
-
+#### Scout ####
+This command expresses the intent to look for / find or scout something.
 ```
 {
-    "action_type" : 'GIVE',
-    <ReferenceObject>
+    "action_type" : 'SCOUT',
+    <ReferenceObject>,
 }
 ```
 
@@ -237,12 +241,11 @@ This command represents giving something, in Minecraft this would mean removing 
 #### Location ####
 ```
 "location" : {
-          "location_type" : COORDINATES / REFERENCE_OBJECT / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK,
           "steps" : span,
+          "has_measure" : span,
           "coref_resolve" : span,
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/ 'AWAY'
                                   / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
-          "coordinates" : span,
           <ReferenceObject>,
           }
  ```
@@ -250,7 +253,9 @@ This command represents giving something, in Minecraft this would mean removing 
 #### Reference Object ####
 ```
 "reference_object" : {
-              <Repeat>, 
+      <Repeat>,
+      "filters" : {
+              "special_reference" : 'SPEAKER' / 'AGENT' / 'SPEAKER_LOOK' / {'coordinates_span' : span},
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
@@ -258,12 +263,11 @@ This command represents giving something, in Minecraft this would mean removing 
               "location" : {
                   "contains_coreference" : "yes",
                   "steps" : span,
-                  "location_type" : COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK / REFERENCE_OBJECT,
                   "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/ 'AWAY' / 'NEAR',
-                  "coordinates" : span,
-                  <ReferenceObject> (with only: "has_name", "has_size", "has_color" and "contains_coreference" fields)
+                  <ReferenceObject> (with only: "special_reference", "has_name", "has_size", "has_color" and "contains_coreference" fields)
                } 
-           } 
+      }
+  } 
 ```
 #### Stop Condition ####
 ```
@@ -326,5 +330,4 @@ This command represents giving something, in Minecraft this would mean removing 
   "body_turn": <FACING>
 }
 ```
-
 

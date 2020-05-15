@@ -39,6 +39,7 @@ class AgentMemory:
         if db_log_path:
             self._db_log_file = gzip.open(db_log_path + ".gz", "w")
             self._db_log_idx = 0
+        self.sql_queries = []
         self.db = sqlite3.connect(db_file)
         self.task_db = {}
         self.time = Time(mode="clock")
@@ -115,7 +116,7 @@ class AgentMemory:
     ###############
 
     def get_memid_table(self, memid: str) -> str:
-        r, = self._db_read_one("SELECT tabl FROM Memories WHERE uuid=?", memid)
+        (r,) = self._db_read_one("SELECT tabl FROM Memories WHERE uuid=?", memid)
         return r
 
     def get_mem_by_id(self, memid: str, table: str = None) -> "MemoryNode":
@@ -385,7 +386,7 @@ class AgentMemory:
     ) -> Optional["TaskNode"]:
         """Find and return the lowest item in the stack of the given class(es)"""
         names = [cls_names] if type(cls_names) == str else cls_names
-        memid, = self._db_read_one(
+        (memid,) = self._db_read_one(
             "SELECT uuid FROM Tasks WHERE {} ORDER BY created_at LIMIT 1".format(
                 " OR ".join(["action_name=?" for _ in names])
             ),
@@ -464,6 +465,9 @@ class AgentMemory:
         try:
             c = self.db.cursor()
             c.execute(query, args)
+            query = query.replace("?", "{}").format(*args)
+            if query not in self.sql_queries:
+                self.sql_queries.append(query)
             r = c.fetchall()
             c.close()
             return r
@@ -476,6 +480,9 @@ class AgentMemory:
         try:
             c = self.db.cursor()
             c.execute(query, args)
+            query = query.replace("?", "{}").format(*args)
+            if query not in self.sql_queries:
+                self.sql_queries.append(query)
             r = c.fetchone()
             c.close()
             return r
@@ -489,6 +496,9 @@ class AgentMemory:
         try:
             c = self.db.cursor()
             c.execute(query, args)
+            query = query.replace("?", "{}").format(*args)
+            if query not in self.sql_queries:
+                self.sql_queries.append(query)
             self.db.commit()
             c.close()
             self._write_to_db_log(query, *args)
