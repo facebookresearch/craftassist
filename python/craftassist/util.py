@@ -1,6 +1,8 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
+import os
+import sys
 
 from collections import defaultdict
 from math import sin, cos, pi
@@ -12,6 +14,9 @@ import time
 import traceback
 from typing import cast, Tuple, List, TypeVar, Sequence
 import uuid
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
 
 import base_agent.rotation as rotation
 

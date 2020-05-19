@@ -20,14 +20,13 @@ from multiprocessing import set_start_method
 
 import mc_memory
 from dialogue_objects import GetMemoryHandler, PutMemoryHandler, Interpreter
-from base_agent.loco_mc_agent import LocoMCAgent
-from base_agent.util import hash_user
 
-# python/ dir, for agent.so
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(BASE_AGENT_ROOT)
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from base_agent.loco_mc_agent import LocoMCAgent
+from base_agent.util import hash_user
+
 
 from agent import Agent as MCAgent
 
@@ -288,7 +287,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ground_truth_file_path",
-        default="ground_truth.txt",
+        default="ground_truth_data.txt",
         help="path to cheat sheet of common commands",
     )
     parser.add_argument(

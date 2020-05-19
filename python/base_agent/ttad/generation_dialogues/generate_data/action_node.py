@@ -137,11 +137,20 @@ class ActionNode:
             # move location inside reference_object for Fill action
             if action_name == "Fill":
                 if "location" in action_dict:
-                    if "reference_object" in action_dict:
-                        action_dict["reference_object"]["location"] = action_dict["location"]
-                    else:
-                        action_dict["reference_object"]["location"] = action_dict["location"]
+                    if "reference_object" not in action_dict:
+                        action_dict["reference_object"] = {}
+                    action_dict["reference_object"]["location"] = action_dict["location"]
                     action_dict.pop("location")
+
+            # fix reference object at action level
+            if "reference_object" in action_dict:
+                val = action_dict["reference_object"]
+                if "repeat" in val:
+                    action_dict["reference_object"] = {"repeat": val["repeat"]}
+                    val.pop("repeat")
+                    action_dict["reference_object"]["filters"] = val
+                else:
+                    action_dict["reference_object"] = {"filters": val}
 
             if "action_sequence" in self._d:
                 self._d["action_sequence"].append(action_dict)

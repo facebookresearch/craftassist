@@ -1,15 +1,21 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
-
 import logging
+import os
+import sys
+
 import numpy as np
 import random
-
 import shape_helpers as sh
 import tasks
 
 from util import pos_to_np
+
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
 from base_agent.dialogue_objects import Say
 from ttad.generation_dialogues.generate_utils import prepend_a_an
 

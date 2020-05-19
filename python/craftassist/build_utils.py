@@ -64,7 +64,7 @@ def blocks_list_to_npy(blocks, xyz=False):
     mx, my, mz = np.min(xyzbm[:, :3], axis=0)
     Mx, My, Mz = np.max(xyzbm[:, :3], axis=0)
 
-    npy = np.zeros((My - my + 1, Mz - mz + 1, Mx - mx + 1, 2), dtype="uint8")
+    npy = np.zeros((My - my + 1, Mz - mz + 1, Mx - mx + 1, 2), dtype="int32")
 
     for x, y, z, b, m in xyzbm:
         npy[y - my, z - mz, x - mx] = (b, m)

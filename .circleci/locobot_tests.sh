@@ -18,6 +18,20 @@ python -m Pyro4.naming -n $LOCOBOT_IP &
 sleep 10
 
 python python/locobot/remote_locobot.py --ip $LOCOBOT_IP --backend habitat &
-sleep 15
+BGPID=$!
+sleep 30
 
 python python/locobot/test/smoke_test.py
+
+kill -9 $BGPID
+
+sleep 5
+
+python python/locobot/remote_locobot.py --ip $LOCOBOT_IP --backend habitat &
+BGPID=$!
+sleep 30
+
+pushd python/locobot/test
+python test_habitat.py
+popd
+kill -9 $BGPID

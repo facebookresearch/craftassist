@@ -408,10 +408,7 @@ class Interpreter(DialogueObject):
                     tasks_to_do.append(t)
             # MC bot does not control body turn separate from head
             elif dance_type.get("look_turn") or dance_type.get("body_turn"):
-                try:
-                    lt = dance_type.get("look_turn")
-                except:
-                    lt = dance_type.get("body_turn")
+                lt = dance_type.get("look_turn") or dance_type.get("body_turn")
                 f = interpret_facing(self, speaker, lt)
                 for i in range(repeat):
                     t = tasks.DanceMove(self.agent, f)

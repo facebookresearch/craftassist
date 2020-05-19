@@ -3,11 +3,17 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 import os
 import random
+import sys
 from typing import Optional, List, Tuple
 
 from build_utils import npy_to_blocks_list
 import minecraft_specs
 import dance
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
+
 from base_agent.util import XYZ, Block
 
 from base_agent.sql_memory import AgentMemory
@@ -67,7 +73,6 @@ class MCAgentMemory(AgentMemory):
         super(MCAgentMemory, self).__init__(
             db_file=db_file, schema_paths=schema_paths, db_log_path=db_log_path, nodelist=NODELIST
         )
-
         self.banned_default_behaviors = []  # FIXME: move into triple store?
         self._safe_pickle_saved_attrs = {}
         self._load_schematics(load_minecraft_specs)
@@ -437,7 +442,7 @@ class MCAgentMemory(AgentMemory):
                 mob.pos.z,
                 mob.entityId,
             )
-            memid, = r
+            (memid,) = r
         else:
             memid = MobNode.create(self, mob)
         return self.get_mob_by_id(memid)

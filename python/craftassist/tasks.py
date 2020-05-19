@@ -3,6 +3,8 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 
 import logging
+import os
+import sys
 import numpy as np
 import time
 
@@ -17,6 +19,10 @@ from entities import MOBS_BY_ID
 import search
 from heuristic_perception import ground_height
 import util
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
+
 from base_agent.task import Task
 from mc_memory_nodes import MobNode
 
@@ -286,12 +292,18 @@ class Build(Task):
             & (self.attempts > 0)
             & np.isin(current[:, :, :, 0], BUILD_IGNORE_BLOCKS, invert=True)
         )
+
+        # ignore negative blocks if there is already air there
+        diff &= (self.schematic[:, :, :, 0] + current[:, :, :, 0]) >= 0
+
         if self.embed:
-            diff &= self.schematic[:, :, :, 0] != 0  # don't delete blocks
+            diff &= self.schematic[:, :, :, 0] != 0  # don't delete blocks if self.embed
+
         for pair in BUILD_INTERCHANGEABLE_PAIRS:
             diff &= np.isin(current[:, :, :, 0], pair, invert=True) | np.isin(
                 self.schematic[:, :, :, 0], pair, invert=True
             )
+
         if not np.any(diff):
             self.finish(agent)
             return
@@ -299,7 +311,8 @@ class Build(Task):
         # blocks that would need to be removed
         remove_mask = diff & (current[:, :, :, 0] != 0)
 
-        # destroy any blocks in the way first
+        # destroy any blocks in the way (or any that are slated to be destroyed in schematic)
+        # first
         rel_yzxs = np.argwhere(remove_mask)
         xyzs = set(
             [
@@ -361,7 +374,7 @@ class Build(Task):
                     "removing block {} @ {} from {}".format(current_idm, target, agent.pos)
                 )
                 agent.dig(*target)
-            if idm[0] != 0:
+            if idm[0] > 0:
                 agent.set_held_item(idm)
                 logging.debug("placing block {} @ {} from {}".format(idm, target, agent.pos))
                 x, y, z = target
@@ -596,6 +609,7 @@ class Destroy(Task):
             Returns:
             - a block list of ((x,y,z), (-1, 0))
             """
+
             destroy_schm = [((x, y, z), (-1, 0)) for ((x, y, z), (b, m)) in block_list]
             return destroy_schm
 

@@ -1,3 +1,6 @@
+import os
+import sys
+
 import numpy as np
 import logging
 from collections import Counter
@@ -6,6 +9,9 @@ from typing import cast, List, Sequence
 # FIXME fix util imports
 from util import XYZ, POINT_AT_TARGET, IDM, Block, get_bounds
 from entities import MOBS_BY_ID
+
+BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(BASE_AGENT_ROOT)
 
 from base_agent.memory_nodes import link_archive_to_mem, ReferenceObjectNode, MemoryNode, NODELIST
 

@@ -11,3 +11,4 @@ python/craftassist/ttad/data/*
 !python/craftassist/models/.gitignore
 !python/craftassist/ttad/data/.gitignore
 *.gz
+*.vscode
