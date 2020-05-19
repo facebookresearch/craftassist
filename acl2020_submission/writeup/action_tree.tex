@@ -25,10 +25,12 @@ A lot of the actions use  ``location'' and ``reference\_object'' as children in 
     \begin{verbatim}
 REF_OBJECT :
 The recursion depth of REF_OBJECT in LOCATION 
-was never greater than 1 in the data. So a REF_OBJECT
-can have a LOCATION that has a REF_OBJECT that has a 
-LOCATION (and the final location will be one of : 
-COORDINATES / AGENT_POS / SPEAKER_POS / SPEAKER_LOOK).
+was never greater than 1 in the data. So a 
+REF_OBJECT can have a LOCATION that 
+has a REF_OBJECT that has a LOCATION 
+(and the final location will be one of : 
+COORDINATES / AGENT_POS / SPEAKER_POS / 
+SPEAKER_LOOK).
 
 "reference_object" : {
  "repeat" : {
@@ -67,8 +69,8 @@ LOCATION:
  "relative_direction" : 'LEFT' / 'RIGHT' / 'UP'/ 
       'DOWN' / 'FRONT' / 'BACK' / 'AWAY' / 'INSIDE'
       / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
- "coordinates" : span, (present if "location_type" is
-   'COORDINATES),
+ "coordinates" : span, (present if "location_type"
+  is 'COORDINATES),
   REF_OBJECT (present if "location_type" is 
    'REFERENCE_OBJECT')
  }
@@ -95,20 +97,20 @@ left of the dark grey church."
 {"dialogue_type" : "HUMAN_GIVE_COMMAND",
  "action_sequence" : [
    {
-    "action_type" : "BUILD",
-    "schematic": {
-      "has_block_type": [0, [2, 3]],
-      "has_name": [0, [4, 4]],
-      "repeat": {
-        "repeat_key": "FOR",
-        "repeat_count": [1, 1]
+   "action_type" : "BUILD",
+   "schematic": {
+     "has_block_type": [0, [2, 3]],
+     "has_name": [0, [4, 4]],
+     "repeat": {
+       "repeat_key": "FOR",
+       "repeat_count": [1, 1]
       }},
-     "location": {
-       "relative_direction": "LEFT",
-       "location_type": "REFERENCE_OBJECT",
-       "reference_object": {
-         "has_colour_": [0, [10, 11]],
-         "has_name_": [0, [12, 12]] }
+   "location": {
+    "relative_direction": "LEFT",
+    "location_type": "REFERENCE_OBJECT",
+    "reference_object": {
+      "has_colour_": [0, [10, 11]],
+      "has_name_": [0, [12, 12]] }
 }}]}
     \end{verbatim}
     \vspace{-20pt}
@@ -134,8 +136,9 @@ This is the action to Build a schematic at an optional location. The Build logic
       "repeat" : {
        "repeat_key" : 'FOR' / 'ALL',
        "repeat_count" : span,
-       "repeat_dir" : 'LEFT' / 'RIGHT' / 'UP'/ 
-          'DOWN' / 'FRONT' / 'BACK' / 'AROUND'}
+       "repeat_dir" : 'LEFT' / 'RIGHT' / 
+         'UP'/ 'DOWN' / 'FRONT' / 
+         'BACK' / 'AROUND'}
       "has_name" : span,
       "has_block_type" : span,
       "has_size" : span,
@@ -153,8 +156,9 @@ This is the action to Build a schematic at an optional location. The Build logic
     "repeat" : {
       "repeat_key" : 'FOR' / 'ALL',
        "repeat_count" : span,
-       "repeat_dir" : 'LEFT' / 'RIGHT' / 'UP'/ 
-          'DOWN' / 'FRONT' / 'BACK' / 'AROUND'}
+       "repeat_dir" : 'LEFT' / 'RIGHT' /
+          'UP'/ 'DOWN' / 'FRONT' / 
+          'BACK' / 'AROUND'}
      } ] }
     \end{verbatim}
     \vspace{-20pt}
@@ -180,8 +184,9 @@ This is the action to copy a block object to an optional location. The copy acti
     "repeat" : {
       "repeat_key" : 'FOR' / 'ALL',
        "repeat_count" : span,
-       "repeat_dir" : 'LEFT' / 'RIGHT' / 'UP'/ 
-          'DOWN' / 'FRONT' / 'BACK' / 'AROUND'}
+       "repeat_dir" : 'LEFT' / 'RIGHT' / 
+         'UP'/ 'DOWN' / 'FRONT' / 
+         'BACK' / 'AROUND'}
      } ] }
     \end{verbatim}
     \vspace{-20pt}
@@ -281,15 +286,17 @@ Move action can have one of the following as its child:
    {"action_type" :  'MOVE',
     LOCATION,
     "stop_condition" : {
-     "condition_type": 'ADJACENT_TO_BLOCK_TYPE' /
-           'NEVER',
+     "condition_type": 
+       'ADJACENT_TO_BLOCK_TYPE' /
+       'NEVER',
      "block_type": span,
      "condition_span" :  span },
     "repeat" : {
       "repeat_key" : 'FOR' / 'ALL',
        "repeat_count" : span,
-       "repeat_dir" : 'LEFT' / 'RIGHT' / 'UP'/ 
-          'DOWN' / 'FRONT' / 'BACK' / 'AROUND'}
+       "repeat_dir" : 'LEFT' / 'RIGHT' / 
+         'UP'/ 'DOWN' / 'FRONT' /
+          'BACK' / 'AROUND'}
      } ] }
 
     \end{verbatim}
@@ -311,19 +318,21 @@ This action represents the intent to dig a hole / negative shape of optional dim
    {"action_type" :  'DIG',
     LOCATION,
     "schematic" : {
-       "repeat" : {
-         "repeat_key" : 'FOR' / 'ALL',
-         "repeat_count" : span,
-         "repeat_dir" : 'LEFT' / 'RIGHT' / 'UP'/ 
-          'DOWN' / 'FRONT' / 'BACK' / 'AROUND'}
+      "repeat" : {
+       "repeat_key" : 'FOR' / 'ALL',
+       "repeat_count" : span,
+       "repeat_dir" : 'LEFT' / 'RIGHT' /
+           'UP'/ 'DOWN' / 'FRONT' / 
+           'BACK' / 'AROUND'}
       "has_size" : span,
       "has_length": span,
       "has_depth" :  span,
       "has_width" :  span
        },
     "stop_condition" : {
-      "condition_type" : 'ADJACENT_TO_BLOCK_TYPE' /
-           'NEVER',
+      "condition_type" : 
+        'ADJACENT_TO_BLOCK_TYPE' /s
+        'NEVER',
       "block_type": span }
      } ] }
     \end{verbatim}
@@ -462,9 +471,10 @@ This dialogue type represents the type of expected answer : counting, querying a
 { "dialogue_type": "GET_MEMORY",
   "filters": {
     "temporal": CURRENT,
-    "type": "ACTION" / "AGENT" / "REFERENCE_OBJECT",
-    "action_type": BUILD / DESTROY / DIG / FILL / 
-         SPAWN / MOVE
+    "type": "ACTION" / "AGENT" / 
+         "REFERENCE_OBJECT",
+    "action_type": BUILD / DESTROY / DIG / 
+       FILL / SPAWN / MOVE
     "reference_object" : {
       LOCATION,
       "has_size" : span,
@@ -474,9 +484,10 @@ This dialogue type represents the type of expected answer : counting, querying a
       },
     },
   "answer_type": "TAG" / "EXISTS" ,
-  "tag_name" : 'has_name' / 'has_size' /'has_colour' / 
-        'action_name' / 'action_reference_object_name' / 
-        'move_target' / 'location' ,
+  "tag_name" : 'has_name' / 'has_size' /
+      'has_colour' / 'action_name' / 
+      'action_reference_object_name' / 
+      'move_target' / 'location' ,
   "replace": true
 }
     \end{verbatim}

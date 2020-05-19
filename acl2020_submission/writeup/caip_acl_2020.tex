@@ -17,19 +17,23 @@
 \usepackage{multirow}
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage[a4paper,margin=1in,footskip=0.25in]{geometry}
+
 
 \usepackage{url}
 \makeatletter
+
 
 \newcommand{\printfnsymbol}[1]{%
   \textsuperscript{\@fnsymbol{#1}}%
 }
 
+
 \makeatother
 
 \aclfinalcopy % Uncomment this line for the final submission
 
-%\setlength\titlebox{5cm}
+%\setlength\titlebox{6cm}
 % You can expand the titlebox if you need extra space
 % to show all the authors. Please do not make the titlebox
 % smaller than 5cm (the original size); we will check this
@@ -40,31 +44,21 @@
 
 \title{CraftAssist Instruction Parsing: Semantic Parsing for a Voxel-World Assistant}
 
-%{Kavya Srinet  \\
-%  Facebook AI Research / Address line 1 \\
-%  Affiliation / Address line 2 \\
-%  Affiliation / Address line 3 \\
-%  {\tt ksrinet@fb.com} \\\And
-%  Yacine Jernite \\
-%  Affiliation / Address line 1 \\
-%  Affiliation / Address line 2 \\
-%  Affiliation / Address line 3 \\
-%  {\tt email@domain} \\}
 
 \author{Kavya Srinet\Thanks{ Equal contribution} \\
-  Facebook AI Research  \\
-  {\texttt{ksrinet@fb.com} }\\\And
+             {\normalsize{Facebook AI Research}}  \\
+             \texttt{ksrinet@fb.com}  \\\And
   Yacine Jernite\printfnsymbol{1}\Thanks{ Work done while at Facebook AI Research} \\
-  HuggingFace  \\ 
-  {\texttt{yacine@}}\\
-  {\texttt{ huggingface.co} }\\\And
+  {\normalsize{HuggingFace}}  \\ 
+  \tt{yacine@}\\
+  \tt{ huggingface.co} \\\And
   Jonathan Gray \\
-  Facebook AI Research  \\
-  {\texttt{jsgray@fb.com}} \\\And
+  {\normalsize{Facebook AI Research}}  \\
+  \tt{jsgray@fb.com} \\\And
   Arthur Szlam \\
-  Facebook AI Research  \\
-  {\texttt{aszlam@fb.com} }\\}
-  
+  {\normalsize{Facebook AI Research}} \\
+  \tt{aszlam@fb.com} \\}
+
 
 \date{}
 
