@@ -4,6 +4,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 
 import numpy as np
 import torch
+import pickle
 import torch.nn as nn
 from data_loaders import make_example_from_raw
 
@@ -11,11 +12,17 @@ from data_loaders import make_example_from_raw
 class SemSegNet(nn.Module):
     def __init__(self, opts, classes=None):
         super(SemSegNet, self).__init__()
+
         if opts.load:
             if opts.load_model != "":
                 self.load(opts.load_model)
             else:
                 raise ("loading from file specified but no load_filepath specified")
+
+            if opts.vocab_path != "":
+                self.load_vocab(opts.vocab_path)
+            else:
+                raise ("loading from file specified but no vocab_path specified")
         else:
             self.opts = opts
             self._build()
@@ -86,6 +93,11 @@ class SemSegNet(nn.Module):
         if self.opts.cuda:
             self.cuda()
 
+    def load_vocab(self, vocab_path):
+        with open(vocab_path, "rb") as file:
+            self.vocab = pickle.load(file)
+        print("Loaded vocab")
+
     def load(self, filepath):
         sds = torch.load(filepath)
         self.opts = sds["opts"]
@@ -102,11 +114,12 @@ class Opt:
 
 
 class SemSegWrapper:
-    def __init__(self, model, threshold=-1.0, blocks_only=True, cuda=False):
+    def __init__(self, model, vocab_path, threshold=-1.0, blocks_only=True, cuda=False):
         if type(model) is str:
             opts = Opt()
             opts.load = True
             opts.load_model = model
+            opts.vocab_path = vocab_path
             model = SemSegNet(opts)
         self.model = model
         self.cuda = cuda
@@ -127,7 +140,32 @@ class SemSegWrapper:
     @torch.no_grad()
     def segment_object(self, blocks):
         self.model.eval()
-        blocks = torch.from_numpy(blocks)[:, :, :, 0]
+
+        if self.model.vocab:
+
+            vocab = self.model.vocab
+            vocab_blocks = np.zeros(blocks.shape[:-1])
+            for x in range(blocks.shape[0]):
+                for y in range(blocks.shape[1]):
+                    for z in range(blocks.shape[2]):
+                        block_id = blocks[x,y,z,0]
+                        meta_id = blocks[x,y,z,1]
+                        id_tuple = (block_id, meta_id)
+                        # First see if that specific block-meta pair is in the vocab.
+                        if id_tuple in vocab:
+                            id_ = vocab[id_tuple]
+                        # Else, check if the same general material (block-id) exists.
+                        elif (block_id, 0) in vocab:
+                            id_ = vocab[(block_id, 0)]
+                        # If not, the network has no clue what it is, ignore it (treat as air).
+                        else:
+                            id_ = vocab[(0,0)]
+                        
+                        vocab_blocks[x,y,z] = id_
+        else:
+            vocab_blocks = blocks[:, :, :, 0]
+
+        blocks = torch.from_numpy(vocab_blocks)
         blocks, _, o = make_example_from_raw(blocks)
         blocks = blocks.unsqueeze(0)
         if self.cuda:

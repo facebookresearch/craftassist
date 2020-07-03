@@ -128,6 +128,9 @@ def swallow_classes(classes, predator, prey_classes, class_map):
         class_map[prey] = apex
         new_classes["name2count"][predator] += new_classes["name2count"][prey]
         del new_classes["name2count"][prey]
+        # if prey in new_classes["name2count"]:
+        #     new_classes["name2count"][predator] += new_classes["name2count"][prey]
+        #     del new_classes["name2count"][prey]
     for prey in prey_classes:
         for s, t in class_map.items():
             if t == prey:
@@ -160,13 +163,31 @@ def organize_classes(classes, min_occurence):
     return new_classes, class_map
 
 
+def reconcile_classes(classes, to_match):
+    new_to_match = deepcopy(to_match)
+    new_classes = deepcopy(classes)
+
+    class_map = {}
+
+    existing_class_names = set(new_to_match["name2idx"].keys())
+    new_class_names = set(new_classes["name2count"].keys())
+
+    to_merge = [n for n in new_class_names if n not in existing_class_names]
+    new_classes, class_map = swallow_classes(new_classes, "none", to_merge, class_map)
+    
+    for key in ["name2idx", "idx2name"]:
+        new_classes[key] = new_to_match[key]
+
+    return new_classes, class_map
+
+
 class SemSegData(tds.Dataset):
     def __init__(
         self,
         data_path,
         nexamples=-1,
         sidelength=32,
-        classes=None,
+        classes_to_match=None,
         augment={},
         min_class_occurence=250,
         useid=True,
@@ -181,17 +202,23 @@ class SemSegData(tds.Dataset):
             self.nexamples = len(self.inst_data)
         else:
             self.nexamples = min(len(self.inst_data), self.nexamples)
-        if classes is None:
-            classes = {"name2idx": {}, "idx2name": [], "name2count": {}}
-            for i in range(len(self.inst_data)):
-                for cname in self.inst_data[i][2]:
-                    if classes["name2count"].get(cname) is None:
-                        classes["name2count"][cname] = 1
-                    else:
-                        classes["name2count"][cname] += 1
+       
+        classes = {"name2idx": {}, "idx2name": [], "name2count": {}}
+        for i in range(len(self.inst_data)):
+            for cname in self.inst_data[i][2]:
+                if classes["name2count"].get(cname) is None:
+                    classes["name2count"][cname] = 1
+                else:
+                    classes["name2count"][cname] += 1
+        
         if classes["name2count"].get("none") is None:
             classes["name2count"]["none"] = 1
-        merged_classes, class_map = organize_classes(classes, min_class_occurence)
+
+        if classes_to_match is None:
+            merged_classes, class_map = organize_classes(classes, min_class_occurence)
+        else:
+            merged_classes, class_map = reconcile_classes(classes, classes_to_match)
+
         for cname in merged_classes["name2idx"]:
             class_map[cname] = cname
         self.classes = merged_classes
@@ -205,6 +232,7 @@ class SemSegData(tds.Dataset):
             x[0] = torch.from_numpy(x[0]).long()
             x[1] = torch.from_numpy(x[1]).long()
             x[1].apply_(lambda z: c[class_map[x[2][z]]] if z > 0 else self.nothing_id)
+
 
     def get_classes(self):
         return self.classes

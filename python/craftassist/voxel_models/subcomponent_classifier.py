@@ -22,12 +22,12 @@ from semseg_models import SemSegWrapper
 
 # TODO all "subcomponent" operations are replaced with InstSeg
 class SubcomponentClassifierWrapper:
-    def __init__(self, agent, model_path, perceive_freq=0):
+    def __init__(self, agent, model_path, vocab_path, perceive_freq=0):
         self.agent = agent
         self.memory = self.agent.memory
         self.perceive_freq = perceive_freq
         if model_path is not None:
-            self.subcomponent_classifier = SubComponentClassifier(voxel_model_path=model_path)
+            self.subcomponent_classifier = SubComponentClassifier(voxel_model_path=model_path, vocab_path=vocab_path)
             self.subcomponent_classifier.start()
         else:
             self.subcomponent_classifier = None
@@ -84,14 +84,14 @@ class SubComponentClassifier(Process):
     A classifier class that calls a voxel model to output object tags.
     """
 
-    def __init__(self, voxel_model_path=None):
+    def __init__(self, voxel_model_path=None, vocab_path=None):
         super().__init__()
 
         if voxel_model_path is not None:
             logging.info(
                 "SubComponentClassifier using voxel_model_path={}".format(voxel_model_path)
             )
-            self.model = SemSegWrapper(voxel_model_path)
+            self.model = SemSegWrapper(voxel_model_path, vocab_path)
         else:
             raise Exception("specify a segmentation model")
 

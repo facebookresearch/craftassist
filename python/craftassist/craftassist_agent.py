@@ -73,7 +73,7 @@ class CraftAssistAgent(LocoMCAgent):
         # set up the SubComponentClassifier model
         if self.opts.semseg_model_path:
             self.perception_modules["semseg"] = SubcomponentClassifierWrapper(
-                self, self.opts.semseg_model_path
+                self, self.opts.semseg_model_path, self.opts.semseg_vocab_path
             )
 
         # set up the Geoscorer model
@@ -291,7 +291,10 @@ if __name__ == "__main__":
         help="path to cheat sheet of common commands",
     )
     parser.add_argument(
-        "--semseg_model_path", default="", help="path to semantic segmentation  model"
+        "--semseg_model_path", default="", help="path to semantic segmentation model"
+    )
+    parser.add_argument(
+        "--semseg_vocab_path", default="", help="path to block-id vocab map for segmentation model"
     )
     parser.add_argument("--geoscorer_model_path", default="", help="path to geoscorer model")
     parser.add_argument("--port", type=int, default=25565)
