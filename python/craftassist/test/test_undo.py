@@ -7,6 +7,7 @@ import time
 import shapes
 from base_agent.dialogue_objects import AwaitResponse
 from base_craftassist_test_case import BaseCraftassistTestCase
+from all_test_commands import *
 
 
 class UndoTest(BaseCraftassistTestCase):
@@ -18,27 +19,17 @@ class UndoTest(BaseCraftassistTestCase):
         self.set_looking_at(list(obj.blocks.keys())[0])
 
         # Tag it
-        d = {
-            "dialogue_type": "PUT_MEMORY",
-            "filters": {"reference_object": {"coref_resolve": "that"}},
-            "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": "fluffy"}},
-        }
+        d = PUT_MEMORY_COMMANDS["that is fluffy"]
         self.handle_logical_form(d)
         self.assertIn(tag, obj.get_tags())
 
         # Destroy it
-        d = {
-            "dialogue_type": "HUMAN_GIVE_COMMAND",
-            "action": {
-                "action_type": "DESTROY",
-                "reference_object": {"location": {"location_type": "SPEAKER_LOOK"}},
-            },
-        }
+        d = DESTROY_COMMANDS["destroy where I am looking"]
         self.handle_logical_form(d)
         self.assertIsNone(self.agent.memory.get_block_object_by_xyz(list(obj.blocks.keys())[0]))
 
         # Undo destroy (will ask confirmation)
-        d = {"dialogue_type": "HUMAN_GIVE_COMMAND", "action": {"action_type": "UNDO"}}
+        d = OTHER_COMMANDS["undo"]
         self.handle_logical_form(d)
         self.assertIsInstance(self.agent.dialogue_manager.dialogue_stack.peek(), AwaitResponse)
 

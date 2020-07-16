@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Sequence, Dict
 from util import Block, XYZ, IDM
+from utils import Pos, Look
 from rotation import look_vec
 from entities import MOBS_BY_ID
 
@@ -8,16 +9,18 @@ FLAT_GROUND_DEPTH = 8
 FALL_SPEED = 1
 # TODO make these prettier
 MOB_COLORS = {
+    "rabbit": (0.3, 0.3, 0.3),
     "cow": (0.9, 0.9, 0.9),
     "pig": (0.9, 0.5, 0.5),
     "chicken": (0.9, 0.9, 0.0),
     "sheep": (0.6, 0.6, 0.6),
 }
-MOB_SPEED = {"cow": 0.3, "pig": 0.5, "chicken": 1, "sheep": 0.3}
-MOB_LOITER_PROB = {"cow": 0.5, "pig": 0.3, "chicken": 0.1, "sheep": 0.5}
-MOB_LOITER_TIME = {"cow": 2, "pig": 2, "chicken": 1, "sheep": 2}
-MOB_STEP_HEIGHT = {"cow": 1, "pig": 1, "chicken": 2, "sheep": 2}
-MOB_DIRECTION_CHANGE_PROB = {"cow": 0.1, "pig": 0.2, "chicken": 0.3, "sheep": 0.2}
+MOB_META = {101: "rabbit", 92: "cow", 90: "pig", 93: "chicken", 91: "sheep"}
+MOB_SPEED = {"rabbit": 1, "cow": 0.3, "pig": 0.5, "chicken": 1, "sheep": 0.3}
+MOB_LOITER_PROB = {"rabbit": 0.3, "cow": 0.5, "pig": 0.3, "chicken": 0.1, "sheep": 0.5}
+MOB_LOITER_TIME = {"rabbit": 2, "cow": 2, "pig": 2, "chicken": 1, "sheep": 2}
+MOB_STEP_HEIGHT = {"rabbit": 1, "cow": 1, "pig": 1, "chicken": 2, "sheep": 2}
+MOB_DIRECTION_CHANGE_PROB = {"rabbit": 0.1, "cow": 0.1, "pig": 0.2, "chicken": 0.3, "sheep": 0.2}
 
 
 class Opt:
@@ -28,16 +31,20 @@ class MobInfo:
     pass
 
 
-def flat_ground_generator(world):
-    sl = world.sl
-    r = world.sl // 2
-    for i in range(sl):
-        for j in range(sl):
-            for k in range(FLAT_GROUND_DEPTH):
-                world.place_block(((i - r, 62 - k, j - r), (3, 0)))
-        for i in range(sl):
-            for j in range(sl):
-                world.place_block(((i - r, 62 - FLAT_GROUND_DEPTH, j - r), (7, 0)))
+def flat_ground_generator_with_grass(world):
+    flat_ground_generator(world, grass=True)
+
+
+def flat_ground_generator(world, grass=False):
+    r = world.to_world_coords((0, 62, 0))[1]
+    # r = world.sl // 2
+    world.blocks[:] = 0
+    world.blocks[:, 0:r, :, 0] = 7
+    world.blocks[:, r - FLAT_GROUND_DEPTH : r, :, 0] = 3
+    if grass:
+        world.blocks[:, r, :, 0] = 2
+    else:
+        world.blocks[:, r, :, 0] = 3
 
 
 def make_mob_opts(mobname):
@@ -60,19 +67,21 @@ def check_bounds(p, sl):
 
 
 class SimpleMob:
-    def __init__(self, opts, start_pos=None):
+    def __init__(self, opts, start_pos=None, start_look=(0.0, 0.0)):
+        self.mobname = opts.mobname
         self.color = opts.color
-        self.mobType = opts.mobType
         self.direction_change_prob = opts.direction_change_prob
         self.loiter_prob = opts.loiter_prob
         self.loiter_time = opts.loiter_time
         self.speed = opts.speed
         self.step_height = opts.step_height
         self.pos = start_pos
+        self.look = start_look
         self.loitering = -1
         self.new_direction()
         self.entityId = str(np.random.randint(0, 100000))
         self.mobType = opts.mobType
+        self.agent_built = False
 
     def add_to_world(self, world):
         self.world = world
@@ -93,12 +102,11 @@ class SimpleMob:
     def get_info(self):
         info = MobInfo()
         info.entityId = self.entityId
-        info.pos = Opt()
-        info.pos.x = self.pos[0]
-        info.pos.y = self.pos[1]
-        info.pos.z = self.pos[2]
+        info.pos = Pos(*self.pos)
+        info.look = Look(*self.look)
         info.mobType = self.mobType
         info.color = self.color
+        info.mobname = self.mobname
         return info
 
     def new_direction(self):
@@ -197,11 +205,20 @@ class World:
         self.mobs = []
         for m in spec["mobs"]:
             m.add_to_world(self)
+        self.item_stacks = []
+        for i in spec["item_stacks"]:
+            i.add_to_world(self)
         self.players = []
         for p in spec["players"]:
             self.players.append(p)
         self.agent_data = spec["agent"]
         self.chat_log = []
+
+        # FIXME
+        self.mob_opt_maker = make_mob_opts
+        self.mob_maker = SimpleMob
+
+        # TODO: Add item stack maker?
 
     def step(self):
         for m in self.mobs:
@@ -248,6 +265,17 @@ class World:
 
     def place_block(self, block: Block, force=False):
         loc, idm = block
+        if idm[0] == 383:
+            # its a mob...
+            try:
+                # FIXME handle unknown mobs/mobs not in list
+                m = SimpleMob(make_mob_opts(MOB_META[idm[1]]), start_pos=loc)
+                m.agent_built = True
+                m.add_to_world(self)
+                return True
+            except:
+                return False
+        # mobs keep loc in real coords, block objects we convert to the numpy index
         loc = tuple(self.to_world_coords(loc))
         if idm[0] == 0:
             try:
@@ -290,7 +318,10 @@ class World:
     def get_mobs(self):
         return [m.get_info() for m in self.mobs]
 
-    def get_blocks(self, xa, xb, ya, yb, za, zb):
+    def get_item_stacks(self):
+        return [i.get_info() for i in self.item_stacks]
+
+    def get_blocks(self, xa, xb, ya, yb, za, zb, transpose=True):
         xa, ya, za = self.to_world_coords((xa, ya, za))
         xb, yb, zb = self.to_world_coords((xb, yb, zb))
         M = np.array((xb, yb, zb))
@@ -300,6 +331,10 @@ class World:
         B[:, :, :, 0] = 7
         xs, ys, zs = [0, 0, 0]
         xS, yS, zS = szs
+        if xb < 0 or yb < 0 or zb < 0:
+            return B
+        if xa > self.sl - 1 or ya > self.sl - 1 or za > self.sl - 1:
+            return B
         if xb > self.sl - 1:
             xS = self.sl - xa
             xb = self.sl - 1
@@ -321,7 +356,10 @@ class World:
         pre_B = self.blocks[xa : xb + 1, ya : yb + 1, za : zb + 1, :]
         # pre_B = self.blocks[ya : yb + 1, za : zb + 1, xa : xb + 1, :]
         B[ys:yS, zs:zS, xs:xS, :] = pre_B.transpose(1, 2, 0, 3)
-        return B
+        if transpose:
+            return B
+        else:
+            return pre_B
 
     def get_line_of_sight(self, pos, yaw, pitch):
         # it is assumed lv is unit normalized

@@ -12,6 +12,10 @@ from tasks import Build
 from ttad.generation_dialogues.generate_utils import prepend_a_an
 
 
+######FIXME TEMPORARY:
+from base_agent import post_process_logical_form
+
+
 class GetMemoryHandler(DialogueObject):
     def __init__(self, speaker_name: str, action_dict: Dict, **kwargs):
         super().__init__(**kwargs)
@@ -37,11 +41,13 @@ class GetMemoryHandler(DialogueObject):
         else:
             raise ValueError("Unknown filter_type={}".format(filter_type))
 
-    def handle_reference_object(
-        self, ignore_mobs=False, ignore_objects=False
-    ) -> Tuple[Optional[str], Any]:
+    def handle_reference_object(self, voxels_only=False) -> Tuple[Optional[str], Any]:
+        ####FIXME TEMPORARY!!!!
+        r = post_process_logical_form.fix_reference_object_with_filters(
+            self.action_dict["filters"]
+        )
         objs = interpret_reference_object(
-            self, self.speaker_name, self.action_dict["filters"]["reference_object"]
+            self, self.speaker_name, r["reference_object"], not_location=True
         )
         return self.do_answer(objs)
 
@@ -78,20 +84,19 @@ class GetMemoryHandler(DialogueObject):
         if len(mems) == 0:
             raise ErrorWithResponse("I don't know what you're referring to")
         mem = mems[0]
-
         tag_name = self.action_dict["tag_name"]
         if tag_name.startswith("has_"):
-            triples = self.memory.get_triples(subj=mem.memid, pred=tag_name)
+            triples = self.memory.get_triples(subj=mem.memid, pred_text=tag_name)
+            # TODO backoff to other memories, search etc.
             if len(triples) == 0:
                 # first backoff to tags
-                triples = self.memory.get_triples(subj=mem.memid, pred="has_tag")
+                triples = self.memory.get_triples(subj=mem.memid, pred_text="has_tag")
                 if len(triples) == 0:
                     return "I don't know", None
                 else:
                     tag_name = "has_tag"
-            all_tags = [t[2] for t in triples]
+            all_tags = [t[2] for t in triples if t[2][0] != "_"]
             _, _, val = triples[0]
-
             if tag_name == "has_name":
                 if "_in_progress" in self.memory.get_tags_by_memid(mem.memid):
                     return "It will be a %r" % (val), None

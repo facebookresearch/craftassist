@@ -78,6 +78,9 @@ class Client {
   // Return a list of all mobs in the map, with their *absolute* positions
   std::vector<Mob> getMobs();
 
+  // Return a list of all item stacks in the map, with their *absolute* positions
+  std::vector<ItemStack> getItemStacks();
+
   // Return the Player struct for the named player
   std::optional<Player> getOtherPlayerByName(const std::string& name);
 
@@ -119,6 +122,12 @@ class Client {
   bool dig(BlockPos pos);
   bool digFace();
   bool digFeet();
+
+  // Drop the selected item (stacks)
+  // dropItemStack() drops the entire stack, while
+  // dropItem() only drops the currently selected item
+  void dropItemStack();
+  void dropItem();
 
   // Turn counter-clockwise by `angle` degrees
   void turnAngle(float angle);

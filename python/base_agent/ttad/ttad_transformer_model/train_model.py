@@ -5,12 +5,11 @@ import logging
 import logging.handlers
 import os
 import pickle
+from time import time
 
 from os.path import isfile
 from os.path import join as pjoin
-from glob import glob
 from tqdm import tqdm
-from time import time
 
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import AutoModel, AutoTokenizer, BertConfig
@@ -18,130 +17,264 @@ from transformers import AutoModel, AutoTokenizer, BertConfig
 from utils_parsing import *
 from utils_caip import *
 
+# Wrapper Class around model and data loader
+class ModelTrainer:
+    def __init__(self, args):
+        self.args = args
 
-# training loop (all epochs at once)
-def train(model, dataset, tokenizer, args):
-    # make data sampler
-    train_sampler = RandomSampler(dataset)
-    model_collate_fn = functools.partial(caip_collate, tokenizer=tokenizer)
-    train_dataloader = DataLoader(
-        dataset, sampler=train_sampler, batch_size=args.batch_size, collate_fn=model_collate_fn
-    )
-    epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=True)
-    # make optimizer
-    optimizer = OptimWarmupEncoderDecoder(model, args)
-    # training loop
-    for e in range(args.num_epochs):
-        loc_steps = 0
-        loc_loss = 0.0
-        loc_int_acc = 0.0
-        loc_span_acc = 0.0
-        loc_full_acc = 0.0
+    # training loop (all epochs at once)
+    def train(self, model, dataset, tokenizer, model_identifier, full_tree_voc):
+        # make data sampler
+        train_sampler = RandomSampler(dataset)
+        logging.info("Initializing train data sampler: {}".format(train_sampler))
+        model_collate_fn = functools.partial(
+            caip_collate, tokenizer=tokenizer, tree_to_text=self.args.tree_to_text
+        )
+        train_dataloader = DataLoader(
+            dataset,
+            sampler=train_sampler,
+            batch_size=self.args.batch_size,
+            collate_fn=model_collate_fn,
+        )
+        epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=True)
+        # make optimizer
+        optimizer = OptimWarmupEncoderDecoder(model, self.args)
+        text_span_optimizer = Adam(
+            [
+                {"params": model.decoder.text_span_start_head.parameters()},
+                {"params": model.decoder.text_span_end_head.parameters()},
+            ],
+            lr=0.001,
+        )
+        text_span_loss_attenuation_factor = self.args.alpha
+        # training loop
+        logging.info("Beginning training loop")
+        for e in range(self.args.num_epochs):
+            logging.info("Epoch: {}".format(e))
+            loc_steps = 0
+            loc_loss = 0.0
+            loc_int_acc = 0.0
+            loc_span_acc = 0.0
+            loc_full_acc = 0.0
+            text_span_accuracy = 0.0
+            tot_steps = 0
+            tot_loss = 0.0
+            text_span_tot_loss = 0.0
+            text_span_loc_loss = 0.0
+            tot_accuracy = 0.0
+            st_time = time()
+            for step, batch in enumerate(epoch_iterator):
+                batch_examples = batch[-1]
+                batch_tensors = [
+                    t.to(model.decoder.lm_head.predictions.decoder.weight.device)
+                    for t in batch[:4]
+                ]
+                x, x_mask, y, y_mask = batch_tensors
+                if self.args.tree_to_text:
+                    outputs = model(y, y_mask, x, x_mask)
+                else:
+                    outputs = model(x, x_mask, y, y_mask)
+                loss = outputs["loss"]
+                text_span_loss = outputs["text_span_loss"]
+                model.zero_grad()
+                # backprop
+                text_span_loss.backward()
+                text_span_optimizer.step()
+
+                loss.backward()
+                model.decoder.bert_final_layer_out.grad = model.decoder.bert_final_layer_out.grad.add(
+                    text_span_loss_attenuation_factor
+                    * (
+                        model.decoder.text_span_start_hidden_z.grad
+                        + model.decoder.text_span_end_hidden_z.grad
+                    )
+                )
+                if step % self.args.param_update_freq == 0:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                    # text_span_optimizer.step()
+                    optimizer.step()
+                # compute accuracy and add hard examples
+                if self.args.tree_to_text:
+                    full_acc = compute_accuracy(outputs, x)
+                    # hacky
+                    lm_acc = full_acc
+                else:
+                    lm_acc, sp_acc, text_span_acc, full_acc = compute_accuracy(outputs, y)
+                if "hard" in dataset.dtypes:
+                    if e > 0 or tot_steps > 2 * args.decoder_warmup_steps:
+                        for acc, exple in zip(lm_acc, batch_examples):
+                            if not acc.item():
+                                if step % 200 == 100:
+                                    print("ADDING HE:", step, exple[0])
+                                dataset.add_hard_example(exple)
+                # book-keeping
+                loc_int_acc += lm_acc.sum().item() / lm_acc.shape[0]
+                loc_full_acc += full_acc.sum().item() / full_acc.shape[0]
+                tot_accuracy += full_acc.sum().item() / full_acc.shape[0]
+                text_span_accuracy += text_span_acc.sum().item() / text_span_acc.shape[0]
+                if not self.args.tree_to_text:
+                    loc_span_acc += sp_acc.sum().item() / sp_acc.shape[0]
+                loc_loss += loss.item()
+                loc_steps += 1
+                tot_loss += loss.item()
+                tot_steps += 1
+                text_span_tot_loss += text_span_loss.item()
+                text_span_loc_loss += text_span_loss.item()
+                if step % 400 == 0:
+                    print(
+                        "{:2d} - {:5d} \t L: {:.3f} A: {:.3f} \t {:.2f}".format(
+                            e,
+                            step,
+                            loc_loss / loc_steps,
+                            loc_full_acc / loc_steps,
+                            time() - st_time,
+                        )
+                    )
+                    logging.info(
+                        "{:2d} - {:5d} \t L: {:.3f} A: {:.3f} \t {:.2f}".format(
+                            e,
+                            step,
+                            loc_loss / loc_steps,
+                            loc_full_acc / loc_steps,
+                            time() - st_time,
+                        )
+                    )
+                    logging.info("text span acc: {:.3f}".format(text_span_accuracy / loc_steps))
+                    logging.info("text span loss: {:.3f}".format(text_span_loc_loss / loc_steps))
+                    loc_loss = 0
+                    loc_steps = 0
+                    loc_int_acc = 0.0
+                    loc_span_acc = 0.0
+                    loc_full_acc = 0.0
+                    text_span_accuracy = 0.0
+                    text_span_loc_loss = 0.0
+            torch.save(
+                model.state_dict(),
+                pjoin(self.args.output_dir, "{}(ep=={}).pth".format(model_identifier, e)),
+            )
+            # Evaluating model
+            model.eval()
+            logging.info("evaluating model")
+            for dtype_spec in json.loads(self.args.dtype_samples):
+                dtype, ratio = dtype_spec
+                self.eval_model_on_dataset(model, dtype, full_tree_voc, tokenizer)
+
+        return (tot_loss / tot_steps, tot_accuracy / tot_steps)
+
+    # same as training loop without back-propagation
+    def validate(self, model, dataset, tokenizer, args):
+        # make data sampler
+        train_sampler = SequentialSampler(dataset)
+        model_collate_fn = functools.partial(
+            caip_collate, tokenizer=tokenizer, tree_to_text=args.tree_to_text
+        )
+        train_dataloader = DataLoader(
+            dataset, sampler=train_sampler, batch_size=args.batch_size, collate_fn=model_collate_fn
+        )
+        epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=True)
+        # training loop
         tot_steps = 0
         tot_loss = 0.0
-        tot_accuracy = 0.0
-        st_time = time()
-        for step, batch in enumerate(epoch_iterator):
-            batch_examples = batch[-1]
-            batch_tensors = [
-                t.to(model.decoder.lm_head.predictions.decoder.weight.device) for t in batch[:4]
-            ]
-            x, x_mask, y, y_mask = batch_tensors
-            outputs = model(x, x_mask, y, y_mask)
-            loss = outputs["loss"]
-            # backprop
-            loss.backward()
-            if step % args.param_update_freq == 0:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
-                model.zero_grad()
-            # compute accuracy and add hard examples
-            lm_acc, sp_acc, full_acc = compute_accuracy(outputs, y)
-            if "hard" in dataset.dtypes:
-                if e > 0 or tot_steps > 2 * args.decoder_warmup_steps:
-                    for acc, exple in zip(lm_acc, batch_examples):
-                        if not acc.item():
-                            if step % 200 == 100:
-                                print("ADDING HE:", step, exple[0])
-                            dataset.add_hard_example(exple)
-            # book-keeping
-            loc_int_acc += lm_acc.sum().item() / lm_acc.shape[0]
-            loc_span_acc += sp_acc.sum().item() / sp_acc.shape[0]
-            loc_full_acc += full_acc.sum().item() / full_acc.shape[0]
-            tot_accuracy += full_acc.sum().item() / full_acc.shape[0]
-            loc_loss += loss.item()
-            loc_steps += 1
-            tot_loss += loss.item()
-            tot_steps += 1
-            if step % 400 == 0:
-                print(
-                    "{:2d} - {:5d} \t L: {:.3f} A: {:.3f} \t {:.2f}".format(
-                        e, step, loc_loss / loc_steps, loc_full_acc / loc_steps, time() - st_time
-                    )
-                )
-                logging.info(
-                    "{:2d} - {:5d} \t L: {:.3f} A: {:.3f} \t {:.2f}".format(
-                        e, step, loc_loss / loc_steps, loc_full_acc / loc_steps, time() - st_time
-                    )
-                )
-                loc_loss = 0
-                loc_steps = 0
-                loc_int_acc = 0.0
-                loc_span_acc = 0.0
-                loc_full_acc = 0.0
-    return (tot_loss / tot_steps, tot_accuracy / tot_steps)
+        tot_int_acc = 0.0
+        tot_span_acc = 0.0
+        tot_accu = 0.0
+        text_span_tot_acc = 0.0
+        text_span_tot_loss = 0.0
+        # disable autograd to reduce memory usage
+        with torch.no_grad():
+            for step, batch in enumerate(epoch_iterator):
+                batch_tensors = [
+                    t.to(model.decoder.lm_head.predictions.decoder.weight.device)
+                    for t in batch[:4]
+                ]
+                x, x_mask, y, y_mask = batch_tensors
+                outputs = model(x, x_mask, y, y_mask)
+                loss = outputs["loss"]
+                text_span_loss = outputs["text_span_loss"]
+                # compute accuracy and add hard examples
+                lm_acc, sp_acc, text_span_acc, full_acc = compute_accuracy(outputs, y)
+                # book-keeping
+                tot_int_acc += lm_acc.sum().item() / lm_acc.shape[0]
+                tot_span_acc += sp_acc.sum().item() / sp_acc.shape[0]
+                tot_accu += full_acc.sum().item() / full_acc.shape[0]
+                tot_loss += loss.item()
+                tot_steps += 1
+                # text span stats
+                text_span_tot_acc += text_span_acc.sum().item() / text_span_acc.shape[0]
+                text_span_tot_loss += text_span_loss.item()
+        return (
+            tot_loss / tot_steps,
+            tot_int_acc / tot_steps,
+            tot_span_acc / tot_steps,
+            tot_accu / tot_steps,
+            text_span_tot_acc / tot_steps,
+            text_span_tot_loss / tot_steps,
+        )
+
+    # Evaluate model on a given validation dataset:
+    def eval_model_on_dataset(self, encoder_decoder, dtype, full_tree_voc, tokenizer):
+        valid_dataset = CAIPDataset(
+            tokenizer, self.args, prefix="valid", dtype=dtype, full_tree_voc=full_tree_voc
+        )
+        l, _, _, a, text_span_acc, text_span_loss = self.validate(
+            encoder_decoder, valid_dataset, tokenizer, self.args
+        )
+        print("evaluating on {} valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(dtype, l, a))
+        logging.info(
+            "evaluating on {} valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(dtype, l, a)
+        )
+        logging.info(
+            "text span Loss: {:.4f} \t Accuracy: {:.4f}".format(text_span_loss, text_span_acc)
+        )
 
 
-# same as training loop without back-propagation
-def validate(model, dataset, tokenizer, args):
-    # make data sampler
-    train_sampler = SequentialSampler(dataset)
-    model_collate_fn = functools.partial(caip_collate, tokenizer=tokenizer)
-    train_dataloader = DataLoader(
-        dataset, sampler=train_sampler, batch_size=args.batch_size, collate_fn=model_collate_fn
-    )
-    epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=True)
-    # training loop
-    tot_steps = 0
-    tot_loss = 0.0
-    tot_int_acc = 0.0
-    tot_span_acc = 0.0
-    tot_accu = 0.0
-    for step, batch in enumerate(epoch_iterator):
-        batch_tensors = [
-            t.to(model.decoder.lm_head.predictions.decoder.weight.device) for t in batch[:4]
-        ]
-        x, x_mask, y, y_mask = batch_tensors
-        outputs = model(x, x_mask, y, y_mask)
-        loss = outputs["loss"]
-        # compute accuracy and add hard examples
-        lm_acc, sp_acc, full_acc = compute_accuracy(outputs, y)
-        # book-keeping
-        tot_int_acc += lm_acc.sum().item() / lm_acc.shape[0]
-        tot_span_acc += sp_acc.sum().item() / sp_acc.shape[0]
-        tot_accu += full_acc.sum().item() / full_acc.shape[0]
-        tot_loss += loss.item()
-        tot_steps += 1
-    return (
-        tot_loss / tot_steps,
-        tot_int_acc / tot_steps,
-        tot_span_acc / tot_steps,
-        tot_accu / tot_steps,
-    )
+def generate_model_name(args, optional_identifier=""):
+    name = ""
+    # unix time in seconds, used as a unique identifier
+    time_now = round(time())
+
+    args_keys = {
+        "batch_size": "batch",
+        "decoder_learning_rate": "dec_lr",
+        "decoder_warmup_steps": "dec_ws",
+        "dtype_samples": "spl",
+        "encoder_learning_rate": "enc_lr",
+        "encoder_warmup_steps": "enc_ws",
+        "model_name": "name",
+        "node_label_smoothing": "n_ls",
+        "num_epochs": "ep",
+        "num_highway": "hw",
+        "param_update_freq": "upd_frq",
+        "word_dropout": "word_drp",
+        "alpha": "a",
+    }
+    for k, v in vars(args).items():
+        if k in args_keys:
+            name += "{param}={value}|".format(param=args_keys[k], value=v)
+    # In case we want additional identification for the model, eg. test run
+    name += "{time}|".format(time=time_now)
+    name += optional_identifier
+    return name
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_dir", default="reformatted_ttad_data", type=str, help="train/valid/test data"
+        "--data_dir",
+        default="python/craftassist/models/ttad_bert_updated/annotated_data/",
+        type=str,
+        help="train/valid/test data",
     )
     parser.add_argument(
-        "--output_dir", default="caip_model_dir", type=str, help="Where we save the model"
+        "--output_dir",
+        default="python/craftassist/models/ttad_bert_updated/model/",
+        type=str,
+        help="Where we save the model",
     )
     parser.add_argument("--model_name", default="caip_parser", type=str, help="Model name")
     parser.add_argument(
         "--tree_voc_file",
-        default="caip_tree_voc_final.json",
+        default="python/craftassist/models/ttad_bert_updated/model/caip_test_model_tree.json",
         type=str,
         help="Pre-computed grammar and output vocabulary",
     )
@@ -160,15 +293,15 @@ def main():
         help="Number of transformer layers in the decoder",
     )
     parser.add_argument(
-        "--num_highway", default=1, type=int, help="Number of highway layers in the mapping model"
+        "--num_highway", default=2, type=int, help="Number of highway layers in the mapping model"
     )
     # optimization arguments
     parser.add_argument(
         "--optimizer", default="adam", type=str, help="Optimizer in [adam|adagrad]"
     )
-    parser.add_argument("--batch_size", default=64, type=int, help="Batch size")
+    parser.add_argument("--batch_size", default=56, type=int, help="Batch size")
     parser.add_argument("--param_update_freq", default=1, type=int, help="Group N batch updates")
-    parser.add_argument("--num_epochs", default=2, type=int, help="Number of training epochs")
+    parser.add_argument("--num_epochs", default=8, type=int, help="Number of training epochs")
     parser.add_argument(
         "--examples_per_epoch", default=-1, type=int, help="Number of training examples per epoch"
     )
@@ -191,7 +324,7 @@ def main():
         help="Learning rate warmup steps for the decoder",
     )
     parser.add_argument(
-        "--decoder_learning_rate", default=1e-4, type=float, help="Learning rate for the decoder"
+        "--decoder_learning_rate", default=1e-5, type=float, help="Learning rate for the decoder"
     )
     parser.add_argument(
         "--lambda_span_loss",
@@ -213,7 +346,7 @@ def main():
     )
     parser.add_argument(
         "--dtype_samples",
-        default='[["templated", 1.0]]',
+        default='[["templated", 0.55], ["templated_modify", 0.05], ["annotated", 0.4]]',
         type=str,
         help="Sampling probabilities for handling different data types",
     )
@@ -229,34 +362,49 @@ def main():
     parser.add_argument(
         "--encoder_dropout", default=0.0, type=float, help="Apply dropout to encoder output"
     )
+    parser.add_argument("--tree_to_text", action="store_true", help="Back translation flag")
+    parser.add_argument(
+        "--optional_identifier", default="", type=str, help="Optional run info eg. debug or test"
+    )
+    parser.add_argument(
+        "--alpha",
+        default=0.8,
+        type=float,
+        help="Attenuation factor for text span loss gradient affecting shared layers for tree structure prediction",
+    )
     args = parser.parse_args()
     # HACK: allows us to give rephrase proba only instead of full dictionary
     if args.rephrase_proba > 0:
         args.dtype_samples = json.dumps(
             [["templated", 1.0 - args.rephrase_proba], ["rephrases", args.rephrase_proba]]
         )
+    model_identifier = generate_model_name(args, args.optional_identifier)
     # set up logging
     l_handler = logging.handlers.WatchedFileHandler(
-        os.environ.get("LOGFILE", "logs/%s.log" % args.model_name.split("/")[-1])
+        "{}/{}.log".format(args.output_dir, model_identifier)
     )
     l_format = logging.Formatter(fmt="%(asctime)s - %(message)s", datefmt="%d-%b-%y %H:%M:%S")
     l_handler.setFormatter(l_format)
     l_root = logging.getLogger()
     l_root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
     l_root.addHandler(l_handler)
-    # make dataset
+    logging.info("****** Args ******")
+    logging.info(vars(args))
+    logging.info("model identifier: {}".format(model_identifier))
     if isfile(args.tree_voc_file):
-        print("loading grammar")
-        logging.info("loading grammar")
+        logging.info("====== Loading Grammar ======")
         full_tree, tree_i2w = json.load(open(args.tree_voc_file))
     else:
-        print("making grammar")
-        logging.info("making grammar")
+        logging.info("====== Making Grammar ======")
         data = {"train": {}, "valid": {}, "test": {}}
+        dtype_samples_unpacked = json.loads(args.dtype_samples)
+        dtypes = [t for t, p in dtype_samples_unpacked]
         for spl in data:
-            for fname in glob(pjoin(args.data_dir, "{}/*.json".format(spl))):
-                print(fname)
-                data[spl][fname.split("/")[-1][:-5]] = json.load(open(fname))
+            for dt in dtypes:
+                fname = pjoin(args.data_dir, "{}/{}.txt".format(spl, dt))
+                logging.info("loading file {}".format(fname))
+                if isfile(fname):
+                    data[spl][fname.split("/")[-1][:-4]] = process_txt_data(filepath=fname)
         full_tree, tree_i2w = make_full_tree(
             [
                 (d_list, 1.0)
@@ -266,7 +414,7 @@ def main():
         )
         json.dump((full_tree, tree_i2w), open(args.tree_voc_file, "w"))
     tokenizer = AutoTokenizer.from_pretrained(args.pretrained_encoder_name)
-    logging.info("loading data")
+    logging.info("====== Loading Dataset ======")
     train_dataset = CAIPDataset(
         tokenizer,
         args,
@@ -275,53 +423,35 @@ def main():
         word_noise=args.word_dropout,
         full_tree_voc=(full_tree, tree_i2w),
     )
+    logging.info("====== Setting up Model ======")
+
     # make model
     logging.info("making model")
     enc_model = AutoModel.from_pretrained(args.pretrained_encoder_name)
     bert_config = BertConfig.from_pretrained("bert-base-uncased")
     bert_config.is_decoder = True
-    bert_config.vocab_size = len(tree_i2w) + 8  # special tokens
+    if args.tree_to_text:
+        tokenizer.add_tokens(tree_i2w)
+    else:
+        bert_config.vocab_size = len(tree_i2w) + 8
+    logging.info("vocab size {}".format(bert_config.vocab_size))
     bert_config.num_hidden_layers = args.num_decoder_layers
     dec_with_loss = DecoderWithLoss(bert_config, args, tokenizer)
     encoder_decoder = EncoderDecoderWithLoss(enc_model, dec_with_loss, args)
+    # save configs
+    json.dump(
+        (full_tree, tree_i2w), open(pjoin(args.output_dir, model_identifier + "_tree.json"), "w")
+    )
+    pickle.dump(args, open(pjoin(args.output_dir, model_identifier + "_args.pk"), "wb"))
     # train_model
-    logging.info("training model")
+    logging.info("====== Training Model ======")
     encoder_decoder = encoder_decoder.cuda()
     encoder_decoder.train()
-    loss, accu = train(encoder_decoder, train_dataset, tokenizer, args)
-    # save model
-    json.dump(
-        (full_tree, tree_i2w), open(pjoin(args.output_dir, args.model_name + "_tree.json"), "w")
+    full_tree_voc = (full_tree, tree_i2w)
+    model_trainer = ModelTrainer(args)
+    loss, accu = model_trainer.train(
+        encoder_decoder, train_dataset, tokenizer, model_identifier, full_tree_voc
     )
-    pickle.dump(args, open(pjoin(args.output_dir, args.model_name + "_args.pk"), "wb"))
-    torch.save(encoder_decoder.state_dict(), pjoin(args.output_dir, args.model_name + ".pth"))
-    # evaluate model
-    _ = encoder_decoder.eval()
-    logging.info("evaluating model")
-    valid_template = CAIPDataset(
-        tokenizer, args, prefix="valid", dtype="templated", full_tree_voc=(full_tree, tree_i2w)
-    )
-    l, _, _, a = validate(encoder_decoder, valid_template, tokenizer, args)
-    print("evaluating on templated valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    logging.info("evaluating on templated valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    valid_rephrase = CAIPDataset(
-        tokenizer, args, prefix="valid", dtype="rephrases", full_tree_voc=(full_tree, tree_i2w)
-    )
-    l, _, _, a = validate(encoder_decoder, valid_rephrase, tokenizer, args)
-    print("evaluating on rephrases valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    logging.info("evaluating on rephrases valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    valid_prompts = CAIPDataset(
-        tokenizer, args, prefix="valid", dtype="prompts", full_tree_voc=(full_tree, tree_i2w)
-    )
-    l, _, _, a = validate(encoder_decoder, valid_prompts, tokenizer, args)
-    print("evaluating on prompts valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    logging.info("evaluating on prompts valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    valid_humanbot = CAIPDataset(
-        tokenizer, args, prefix="valid", dtype="humanbot", full_tree_voc=(full_tree, tree_i2w)
-    )
-    l, _, _, a = validate(encoder_decoder, valid_humanbot, tokenizer, args)
-    print("evaluating on humanbot valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
-    logging.info("evaluating on humanbot valid: \t Loss: {:.4f} \t Accuracy: {:.4f}".format(l, a))
 
 
 if __name__ == "__main__":

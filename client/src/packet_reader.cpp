@@ -47,6 +47,9 @@ thread PacketReader::startThread() {
         } else {
           // play state: most stuff happens here
           switch (pid) {
+            case 0x00:
+              spawnObject();
+              break;
             case 0x03:
               spawnMob();
               break;
@@ -104,6 +107,9 @@ thread PacketReader::startThread() {
             case 0x36:
               entityHeadLook();
               break;
+            case 0x3c:
+              entityMetadata();
+              break;
             case 0x3f:
               entityEquipment();
               break;
@@ -115,6 +121,9 @@ thread PacketReader::startThread() {
               break;
             case 0x41:
               updateHealth();
+              break;
+            case 0x4b:
+              collectItem();
               break;
             default:
               if (ignoredPids_.count(pid) == 0) {
@@ -226,6 +235,13 @@ uint64_t PacketReader::readBigEndian(int n) {
 
 ////////////////
 // Decode Types
+
+int PacketReader::readInt() {
+  uint32_t bytes = readBigEndian(4);
+  int f;
+  memcpy(&f, &bytes, 4);
+  return f;
+}
 
 long PacketReader::readVarint() {
   long read = 0;
@@ -482,6 +498,55 @@ void PacketReader::entityHeadLook() {
   eventHandler_->handle(e);
 }
 
+// TODO: fix hacky
+void PacketReader::entityMetadata() {
+  unsigned long entityId = readVarint();
+  uint8_t index = readByte();
+  while (index != 0xff) {
+    readVarint();
+    switch (index) {
+      case 0: {
+        readByte();
+        break;
+      }
+      case 1:{
+        readVarint();
+        break;
+      }
+      case 2: {
+        readFloat();
+        break;
+      }
+      case 3: {
+        readString();
+        break;
+      }
+      case 4: {
+        readChat();
+        break;
+      }
+      case 5: {
+        bool val5 = readBool();
+        if (val5) {
+          readChat();
+        }
+        break;
+      }
+      case 6: {
+        Slot item = readSlot();
+        SpawnItemStackEvent e = {entityId, item};
+        eventHandler_->handle(e);
+        break;
+      }
+      default: {
+        skipRest();
+        return;
+      }
+    }
+    index = readByte();
+  }
+}
+
 void PacketReader::entityTeleport() {
   unsigned long entityId = readVarint();
   double x = readDouble();
@@ -612,6 +677,23 @@ void PacketReader::setSlot() {
   eventHandler_->handle(e);
 }
 
+void PacketReader::spawnObject() {
+  uint64_t entityId = readVarint();
+  string uuid = readUuid();
+  uint8_t objectType = readByte();
+  double x = readDouble();
+  double y = readDouble();
+  double z = readDouble();
+
+  skipRest(); // look, head angle, velocity
+
+  if (objectType == 2) { // rn only put item stacks into object map
+    Pos pos = {x, y, z};
+    SpawnObjectEvent e = {entityId, uuid, objectType, pos};
+    eventHandler_->handle(e);
+  }
+}
+
 void PacketReader::spawnMob() {
   uint64_t entityId = readVarint();
   string uuid = readUuid();
@@ -619,10 +701,14 @@ void PacketReader::spawnMob() {
   double x = readDouble();
   double y = readDouble();
   double z = readDouble();
-  skipRest();  // look, head angle, velocity, metadata
+  float yaw = readAngle();
+  float pitch = readAngle();
+
+  skipRest();  // head angle, velocity, metadata
 
   Pos pos = {x, y, z};
-  SpawnMobEvent e = {entityId, uuid, mobType, pos};
+  Look look = {yaw, pitch};
+  SpawnMobEvent e = {entityId, uuid, mobType, pos, look};
   eventHandler_->handle(e);
 }
 
@@ -632,6 +718,15 @@ void PacketReader::updateHealth() {
   skipRest();  // skip food saturation level from the packet
 
   UpdateHealthEvent e = {health, foodLevel};
+  eventHandler_->handle(e);
+}
+
+void PacketReader::collectItem() {
+  uint32_t collectedEntityId = readVarint();
+  uint32_t collectorEntityId = readVarint();
+  uint8_t pickedItemCount = readVarint();
+  skipRest();
+  CollectItemEvent e = {collectedEntityId, collectorEntityId, pickedItemCount};
   eventHandler_->handle(e);
 }
 

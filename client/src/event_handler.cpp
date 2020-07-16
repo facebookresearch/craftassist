@@ -1,6 +1,5 @@
 // Copyright (c) Facebook, Inc. and its affiliates.
 
-
 #include "event_handler.h"
 #include <glog/logging.h>
 #include "encoder.h"
@@ -69,7 +68,6 @@ void EventHandler::handle(PlayerPositionAndLookEvent e) {
 void EventHandler::handle(BlockChangeEvent e) {
   gameState_->getBlockMap().setBlock(e.pos, e.block);
   gameState_->getChangedBlocks().push({e.pos, e.block});
-
   if (blockChangeCondition_ && *blockChangeCondition_ == e.pos) {
     triggerCondition();
   }
@@ -114,6 +112,7 @@ void EventHandler::handle(EntityLookAndRelativeMoveEvent e) {
   optional<Mob> mob = gameState_->getMob(e.entityId);
   if (mob) {
     mob->pos = mob->pos + e.deltaPos;
+    mob->look = e.look;
     gameState_->setMob(*mob);
   } else {
     gameState_->setPlayerDeltaPos(e.entityId, e.deltaPos);
@@ -173,13 +172,32 @@ void EventHandler::handle(ServerDifficultyEvent e) {
 }
 
 void EventHandler::handle(SpawnMobEvent e) {
-  Mob mob = {e.uuid, e.entityId, e.mobType, e.pos};
+  Mob mob = {e.uuid, e.entityId, e.mobType, e.pos, e.look};
   gameState_->setMob(mob);
+}
+
+void EventHandler::handle(SpawnObjectEvent e) {
+  Object object = {e.uuid, e.entityId, e.objectType, e.pos};
+  gameState_->setObject(object);
+}
+
+// ItemStack is a special type of Object
+void EventHandler::handle(SpawnItemStackEvent e) {
+  optional<Object> object = gameState_->getObject(e.entityId);
+  if (object) {
+    ItemStack itemStack = {object->uuid, e.entityId, e.item, object->pos};
+    gameState_->setItemStack(itemStack);
+  }
 }
 
 void EventHandler::handle(UpdateHealthEvent e) {
   gameState_->setHealth(e.health);
   gameState_->setFoodLevel(e.foodLevel);
+}
+
+void EventHandler::handle(CollectItemEvent e) {
+  // count delta is negative
+  gameState_->setItemStackDeltaCount(e.collectedEntityId, -e.count);
 }
 
 void EventHandler::handle(OpenWindowEvent e) {

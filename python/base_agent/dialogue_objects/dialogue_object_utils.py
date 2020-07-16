@@ -1,3 +1,17 @@
+SPEAKERLOOK = {"reference_object": {"special_reference": "SPEAKER_LOOK"}}
+SPEAKERPOS = {"reference_object": {"special_reference": "SPEAKER"}}
+AGENTPOS = {"reference_object": {"special_reference": "AGENT"}}
+
+
+def is_loc_speakerlook(d):
+    # checks a location dict to see if it is SPEAKER_LOOK
+    r = d.get("reference_object")
+    if r and r.get("special_reference"):
+        if r["special_reference"] == "SPEAKER_LOOK":
+            return True
+    return False
+
+
 def process_spans(d, original_words, lemmatized_words):
     if type(d) is not dict:
         return
@@ -33,7 +47,7 @@ def coref_resolve(memory, d, chat):
     """Walk logical form "d" and replace coref_resolve values
 
     Possible substitutions:
-    - a keyword like "SPEAKER_POS"
+    - a subdict lik SPEAKERPOS
     - a MemoryNode object
     - "NULL"
 
@@ -48,25 +62,21 @@ def coref_resolve(memory, d, chat):
             # v is a location dict
             for k_ in v:
                 if k_ == "contains_coreference":
-                    val = "SPEAKER_POS" if "here" in c else "SPEAKER_LOOK"
-                    v["location_type"] = val
+                    val = SPEAKERPOS if "here" in c else SPEAKERLOOK
+                    v["reference_object"] = val["reference_object"]
                     del v["contains_coreference"]
-        elif k == "reference_object":
+        elif k == "filters":
             # v is a reference object dict
             for k_ in v:
                 if k_ == "contains_coreference":
                     if "this" in c or "that" in c:
-                        if "location" in v:
-                            v["location"]["location_type"] = "SPEAKER_LOOK"
-                        else:
-                            # no location dict -- create one
-                            v["location"] = {"location_type": "SPEAKER_LOOK"}
+                        v["location"] = SPEAKERLOOK
                         del v["contains_coreference"]
                     else:
-                        mems = memory.get_recent_entities("BlockObjects")
+                        mems = memory.get_recent_entities("BlockObject")
                         if len(mems) == 0:
                             mems = memory.get_recent_entities(
-                                "Mobs"
+                                "Mob"
                             )  # if its a follow, this should be first, FIXME
                             if len(mems) == 0:
                                 v[k_] = "NULL"

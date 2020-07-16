@@ -111,6 +111,25 @@ struct SpawnMobEvent {
   std::string uuid;
   uint8_t mobType;
   Pos pos;
+  Look look;
+};
+
+struct SpawnObjectEvent {
+  uint64_t entityId;
+  std::string uuid;
+  uint8_t objectType;
+  Pos pos;
+};
+
+struct SpawnItemStackEvent {
+  uint64_t entityId;
+  Slot item;
+};
+
+struct CollectItemEvent {
+  uint64_t collectedEntityId;
+  uint64_t collectorEntityId;
+  uint8_t count;
 };
 
 struct UpdateHealthEvent {

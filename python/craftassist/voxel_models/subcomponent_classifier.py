@@ -6,7 +6,7 @@ import logging
 from multiprocessing import Queue, Process
 import sys
 import os
-from mc_memory_nodes import ComponentObjectNode
+from mc_memory_nodes import InstSegNode
 from heuristic_perception import all_nearby_objects
 from shapes import get_bounds
 
@@ -41,10 +41,14 @@ class SubcomponentClassifierWrapper:
             return
         # TODO don't all_nearby_objects again, search in memory instead
         to_label = []
-        for obj in all_nearby_objects(self.agent.get_blocks, self.agent.pos):
-            # If any xyz of obj is has not been labeled
-            if any([(not self.memory.get_component_object_ids_by_xyz(xyz)) for xyz, _ in obj]):
+        # add all blocks in marked areas
+        for pos, radius in self.agent.areas_to_perceive:
+            for obj in all_nearby_objects(self.agent.get_blocks, pos, radius):
                 to_label.append(obj)
+        # add all blocks near the agent
+        for obj in all_nearby_objects(self.agent.get_blocks, self.agent.pos):
+            to_label.append(obj)
+
         for obj in to_label:
             self.subcomponent_classifier.block_objs_q.put(obj)
 
@@ -76,7 +80,8 @@ class SubcomponentClassifierWrapper:
             for l, blocks in label2blocks.items():
                 ## if the blocks are contaminated we just ignore
                 if not contaminated(blocks):
-                    ComponentObjectNode.create(self.memory, blocks, [l])
+                    locs = [loc for loc, idm in blocks]
+                    InstSegNode.create(self.memory, locs, [l])
 
 
 class SubComponentClassifier(Process):

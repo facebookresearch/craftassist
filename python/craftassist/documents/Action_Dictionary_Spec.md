@@ -95,6 +95,7 @@ Spawn only has a name in the reference object.
 ```
 { "action_type" : 'SPAWN',
   "reference_object" : {
+      "text_span" : span,
       <Repeat>(repeat_key= 'FOR'),
       "has_name" : span,
     },
@@ -119,6 +120,7 @@ This action states that a hole / negative shape needs to be filled up.
 { "action_type" : 'FILL',
   "has_block_type" : span,
   <ReferenceObject>,
+  <Repeat>,
   "replace": True
 }
 ```
@@ -129,6 +131,7 @@ This action indicates the intent to destroy a block object.
 ```
 { "action_type" : 'DESTROY',
   <ReferenceObject>,
+  <Repeat>,
   "replace": True
 }
 ```
@@ -171,6 +174,7 @@ The `Schematic` child in this only has a subset of properties.
 { "action_type" : 'DIG',
   <Location>,
   "schematic" : {
+    "text_span" : span,
     <Repeat>(repeat_key = 'FOR'),
      "has_size" : span,
      "has_length" : span,
@@ -178,6 +182,7 @@ The `Schematic` child in this only has a subset of properties.
      "has_width" : span
      },
   <StopCondition>,
+  <Repeat>,
   "replace": True  
 }
 ```
@@ -189,6 +194,7 @@ This action represents that the agent should complete an already existing half-f
 { "action_type" : 'FREEBUILD',
   <ReferenceObject>,
   <Location>,
+  <Repeat>,
   "replace": True
 }
 ```
@@ -223,6 +229,7 @@ The Bring intent represents bringing a reference_object to the speaker or to a s
 {
     "action_type" : 'GET',
     <ReferenceObject>,
+    <Repeat>,
     "receiver" : <ReferenceObject> / <Location>
 }
 ```
@@ -232,30 +239,70 @@ This command expresses the intent to look for / find or scout something.
 ```
 {
     "action_type" : 'SCOUT',
-    <ReferenceObject>,
+    <ReferenceObject>
 }
 ```
+
+#### Modify action ####
+Note that: This section is a temporary heristic based fix until we have a generative model that can handle "modify".
+
+This command represents making a change or modifying a block object in a certain way.
+
+[Examples](https://docs.google.com/document/d/1nLEMRvUO9VNV_HYVRB7c9kDkUl0dACzwjY0h_APDcVU/edit?ts=5e050a45#bookmark=id.o3lwuh3fj1lt)
+
+Grammar proposal:
+```
+{ "dialogue_type": "HUMAN_GIVE_COMMAND",
+  "action_sequence" : [
+    { "action_type" : 'MODIFY',
+      "reference_object" : REFERENCE_OBJECT,
+      "modify_dict" :  THICKEN/SCALE/RIGIDMOTION/REPLACE/FILL
+    }]
+}
+```
+Where
+```
+THICKEN = {"modify_type": "THICKER"/"THINNER", "num_blocks": span}
+SCALE = {"modify_type": "SCALE", "text_scale_factor": span, "categorical_scale_factor": "WIDER"/"NARROWER"/"TALLER"/"SHORTER"/"SKINNIER"/"FATTER"/"BIGGER"/"SMALLER"}
+RIGIDMOTION = {"modify_type": "RIGIDMOTION", "categorical_angle": "LEFT"/"RIGHT"/"AROUND", "MIRROR"=True/False, "location": LOCATION}
+REPLACE={"modify_type": "REPLACE", "old_block": BLOCK, "new_block": BLOCK, "replace_geometry": REPLACE_GEOMETRY}
+FILL={"modify_type": "FILL"/"HOLLOW", "new_block": BLOCK}
+```
+And
+```
+BLOCK = {"has_x": span}
+REPLACE_GEOMETRY = {"relative_direction": "LEFT"/"RIGHT"/"TOP"/"BOTTOM", "amount": "QUARTER"/"HALF"}
+```
+Note w2n doesn't handle fractions :(
+
+If "location" is given in RIGIDMOTION, the modify is to move the reference object from its current location to the given location
+
 
 ### Subcomponents of action dict ###
 
 #### Location ####
 ```
 "location" : {
+          "text_span" : span,
           "steps" : span,
           "has_measure" : span,
-          "coref_resolve" : span,
+          "contains_coreference" : "yes",
           "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/ 'AWAY'
                                   / 'INSIDE' / 'NEAR' / 'OUTSIDE' / 'BETWEEN',
           <ReferenceObject>,
           }
  ```
 
+Note: for "relative_direction" == 'BETWEEN' the location dict will have two children: 'reference_object_1' : <ReferenceObject>['reference_object'] and 
+'reference_object_2' : <ReferenceObject>['reference_object'] in the sub-dictionary to represent the two distinct reference objects.
+
 #### Reference Object ####
 ```
 "reference_object" : {
+      "text_span" : span,
       <Repeat>,
+      "special_reference" : 'SPEAKER' / 'AGENT' / 'SPEAKER_LOOK' / {'coordinates_span' : span},
       "filters" : {
-              "special_reference" : 'SPEAKER' / 'AGENT' / 'SPEAKER_LOOK' / {'coordinates_span' : span},
               "has_name" : span,
               "has_size" : span,
               "has_colour" : span,
@@ -280,6 +327,7 @@ This command expresses the intent to look for / find or scout something.
 
 ```
 "schematic" : {
+          "text_span" : span,
           <Repeat> (with repeat_key: 'FOR' and additional 'SURROUND' repeat_dir), 
           "has_block_type" : span,
           "has_name": span,
@@ -309,6 +357,7 @@ This command expresses the intent to look for / find or scout something.
 #### FACING ####
 ```
 {
+  "text_span" : span,
   "yaw_pitch": span,
   "yaw": span,
   "pitch": span,

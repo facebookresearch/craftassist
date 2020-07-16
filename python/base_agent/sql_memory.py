@@ -11,9 +11,10 @@ import pickle
 import sqlite3
 import uuid
 from itertools import zip_longest
-from typing import cast, Optional, List, Tuple, Dict, Sequence, Union
+from typing import cast, Optional, List, Tuple, Sequence, Union
 from base_agent.util import XYZ, Time
 from base_agent.task import Task
+from base_agent.memory_filters import ReferenceObjectSearcher
 
 from base_agent.memory_nodes import (  # noqa
     TaskNode,
@@ -23,6 +24,7 @@ from base_agent.memory_nodes import (  # noqa
     TimeNode,
     LocationNode,
     ReferenceObjectNode,
+    NamedAbstractionNode,
     NODELIST,
 )
 
@@ -54,21 +56,17 @@ class AgentMemory:
         ]
         self.nodes = {}
         for node in nodelist:
-            self.nodes[node.TABLE] = node
+            self.nodes[node.NODE_TYPE] = node
 
         # create a "self" memory to reference in Triples
         self.self_memid = "0" * len(uuid.uuid4().hex)
         self._db_write(
-            "INSERT INTO Memories VALUES (?,?,?,?,?,?)",
-            self.self_memid,
-            "Memories",
-            0,
-            0,
-            -1,
-            False,
+            "INSERT INTO Memories VALUES (?,?,?,?,?,?)", self.self_memid, "Self", 0, 0, -1, False
         )
         self.tag(self.self_memid, "_agent")
         self.tag(self.self_memid, "_self")
+
+        self.ref_searcher = ReferenceObjectSearcher(self_memid=self.self_memid)
 
     def __del__(self):
         if getattr(self, "_db_log_file", None):
@@ -104,7 +102,7 @@ class AgentMemory:
         r = self._db_read(
             """SELECT uuid
             FROM Memories
-            WHERE tabl=? AND attended_time >= ? and is_snapshot=0
+            WHERE node_type=? AND attended_time >= ? and is_snapshot=0
             ORDER BY attended_time DESC""",
             memtype,
             self.get_time() - time_window,
@@ -115,18 +113,18 @@ class AgentMemory:
     ### General ###
     ###############
 
-    def get_memid_table(self, memid: str) -> str:
-        (r,) = self._db_read_one("SELECT tabl FROM Memories WHERE uuid=?", memid)
+    def get_node_from_memid(self, memid: str) -> str:
+        (r,) = self._db_read_one("SELECT node_type FROM Memories WHERE uuid=?", memid)
         return r
 
-    def get_mem_by_id(self, memid: str, table: str = None) -> "MemoryNode":
-        if table is None:
-            table = self.get_memid_table(memid)
+    def get_mem_by_id(self, memid: str, node_type: str = None) -> "MemoryNode":
+        if node_type is None:
+            node_type = self.get_node_from_memid(memid)
 
-        if table is None:
-            return
+        if node_type is None:
+            return MemoryNode(self, memid)
 
-        return self.nodes.get(table, MemoryNode)(self, memid)
+        return self.nodes.get(node_type, MemoryNode)(self, memid)
 
     # does not search archived mems for now
     def get_all_tagged_mems(self, tag: str) -> List["MemoryNode"]:
@@ -138,85 +136,154 @@ class AgentMemory:
 
     # TODO forget should be a method of the memory object
     def forget(self, memid: str, hard=True):
-        T = self.get_memid_table(memid)
         if not hard:
-            self.add_triple(memid, "has_tag", "_forgotten")
+            self.add_triple(subj=memid, pred_text="has_tag", obj_text="_forgotten")
         else:
-            if T is not None:
-                self._db_write("DELETE FROM {} WHERE uuid=?".format(T), memid)
-                # TODO this less brutally.  might want to remember some
-                # triples where the subject or object has been removed
-                # eventually we might have second-order relations etc, this could set
-                # off a chain reaction
-                self.remove_memid_triple(memid, role="both")
+            self._db_write("DELETE FROM Memories WHERE uuid=?", memid)
+            # TODO this less brutally.  might want to remember some
+            # triples where the subject or object has been removed
+            # eventually we might have second-order relations etc, this could set
+            # off a chain reaction
+            self.remove_memid_triple(memid, role="both")
+
+    ##########################
+    ###  ReferenceObjects  ###
+    ##########################
+
+    def get_reference_objects(self, filter_dict):
+        return self.ref_searcher.search(self, filter_dict)
 
     #################
     ###  Triples  ###
     #################
 
-    def add_triple(self, subj: str, pred: str, obj: str, confidence=1.0):
+    # TODO should add a MemoryNode and a .create()
+    def add_triple(
+        self,
+        subj: str = "",  # this is a memid if given
+        obj: str = "",  # this is a memid if given
+        subj_text: str = "",
+        pred_text: str = "has_tag",
+        obj_text: str = "",
+        confidence: float = 1.0,
+    ):
+        """ adds (subj, pred, obj) triple to the triplestore.
+            *_text is the name field of a NamedAbstraction; if 
+            such a NamedAbstraction does not exist, this builds it as a side effect.
+            subj and obj can be memids or text, but pred_text is required """
+
+        assert subj or subj_text
+        assert obj or obj_text
+        assert not (subj and subj_text)
+        assert not (obj and obj_text)
         memid = uuid.uuid4().hex
+        pred = NamedAbstractionNode.create(self, pred_text)
+        if not obj:
+            obj = NamedAbstractionNode.create(self, obj_text)
+        if not subj:
+            subj = NamedAbstractionNode.create(self, subj_text)
+        if not subj_text:
+            subj_text = None  # noqa T484
+        if not obj_text:
+            obj_text = None  # noqa T484
         self._db_write(
-            "INSERT INTO Triples VALUES (?, ?, ?, ?, ?)", memid, subj, pred, obj, confidence
+            "INSERT INTO Triples VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            memid,
+            subj,
+            subj_text,
+            pred,
+            pred_text,
+            obj,
+            obj_text,
+            confidence,
         )
 
-    def tag(self, subj_memid: str, tag: str):
-        self.add_triple(subj_memid, "has_tag", tag)
+    def tag(self, subj_memid: str, tag_text: str):
+        self.add_triple(subj=subj_memid, pred_text="has_tag", obj_text=tag_text)
 
-    def untag(self, subj_memid: str, tag: str):
+    def untag(self, subj_memid: str, tag_text: str):
         self._db_write(
-            'DELETE FROM Triples WHERE subj=? AND pred="has_tag" AND obj=?', subj_memid, tag
+            'DELETE FROM Triples WHERE subj=? AND pred_text="has_tag" AND obj_text=?',
+            subj_memid,
+            tag_text,
         )
 
     # does not search archived mems for now
+    # assumes tag is tag text
     def get_memids_by_tag(self, tag: str) -> List[str]:
         r = self._db_read(
-            'SELECT DISTINCT(Memories.uuid) FROM Memories INNER JOIN Triples as T ON T.subj=Memories.uuid WHERE T.pred="has_tag" AND T.obj=? AND Memories.is_snapshot=0',
+            'SELECT DISTINCT(Memories.uuid) FROM Memories INNER JOIN Triples as T ON T.subj=Memories.uuid WHERE T.pred_text="has_tag" AND T.obj_text=? AND Memories.is_snapshot=0',
             tag,
         )
-        #        r = self._db_read('SELECT DISTINCT(subj) FROM Triples WHERE pred="has_tag" AND obj=?', tag)
         return [x for (x,) in r]
 
-    # TODO rename me get_tags_by_subj
-    def get_tags_by_memid(self, subj_memid: str) -> List[str]:
-        r = self._db_read(
-            'SELECT DISTINCT(obj) FROM Triples WHERE pred="has_tag" AND subj=?', subj_memid
+    def get_tags_by_memid(self, subj_memid: str, return_text: bool = True) -> List[str]:
+        if return_text:
+            return_clause = "obj_text"
+        else:
+            return_clause = "obj"
+        q = (
+            "SELECT DISTINCT("
+            + return_clause
+            + ') FROM Triples WHERE pred_text="has_tag" AND subj=?'
         )
+        r = self._db_read(q, subj_memid)
         return [x for (x,) in r]
 
     # does not search archived mems for now
-    # TODO rename me get_triple_memids
+    # TODO clean up input?
     def get_triples(
-        self, subj: str = None, pred: str = None, obj: str = None
+        self,
+        subj: str = None,
+        obj: str = None,
+        subj_text: str = None,
+        pred_text: str = None,
+        obj_text: str = None,
+        return_obj_text: str = "if_exists",
     ) -> List[Tuple[str, str, str]]:
-        # subj should be a memid,
-        # and at least one of the three should not be Null
-        assert any([subj, obj, pred])
-        pairs = [("subj", subj), ("pred", pred), ("obj", obj)]
+        """ gets triples from the triplestore.  
+        if return_obj_text == "if_exists", will return the obj_text 
+            if it exists, and the memid otherwise
+        if return_obj_text == "always", returns the obj_text even if it is None
+        if return_obj_text == "never", returns the obj memid
+        subj is always returned as a memid even when searched as text. 
+        need at least one non-None part of the triple, and 
+        text should not not be input for a part of a triple where a memid is set
+        """
+        assert any([subj or subj_text, pred_text, obj or obj_text])
+        # search by memid or by text, but not both
+        assert not (subj and subj_text)
+        assert not (obj and obj_text)
+        pairs = [
+            ("subj", subj),
+            ("subj_text", subj_text),
+            ("pred_text", pred_text),
+            ("obj", obj),
+            ("obj_text", obj_text),
+        ]
         args = [x[1] for x in pairs if x[1] is not None]
         where = [x[0] + "=?" for x in pairs if x[1] is not None]
         if len(where) == 1:
             where_clause = where[0]
         else:
             where_clause = " AND ".join(where)
-        r = self._db_read(
-            "SELECT subj, pred, obj FROM Triples INNER JOIN Memories as M ON Triples.subj=M.uuid WHERE M.is_snapshot=0 AND "
-            + where_clause,
-            *args,
+        return_clause = "subj, pred_text, obj, obj_text "
+        sql = (
+            "SELECT "
+            + return_clause
+            + "FROM Triples INNER JOIN Memories as M ON Triples.subj=M.uuid WHERE M.is_snapshot=0 AND "
+            + where_clause
         )
-        #        r = self._db_read("SELECT subj, pred, obj FROM Triples WHERE " + where_clause, *args)
-        return cast(List[Tuple[str, str, str]], r)
-
-    def get_all_has_relations(self, memid: str) -> Dict[str, str]:
-        all_triples = self.get_triples(subj=memid)
-        relation_values = {}
-        for _, pred, obj in all_triples:
-            if pred.startswith("has_"):
-                start = pred.find("has_") + 4
-                end = pred.find("-", start)  # FIXME: is this working or a typo??
-                name = pred[start:end]
-                relation_values[name] = obj
-        return relation_values
+        r = self._db_read(sql, *args)
+        # subj is always returned as memid, even if pred and obj are returned as text
+        # pred is always returned as text
+        if return_obj_text == "if_exists":
+            l = [(s, pt, ot) if ot else (s, pt, o) for (s, pt, o, ot) in r]
+        elif return_obj_text == "always":
+            l = [(s, pt, ot) for (s, pt, o, ot) in r]
+        else:
+            l = [(s, pt, o) for (s, pt, o, ot) in r]
+        return cast(List[Tuple[str, str, str]], l)
 
     def remove_memid_triple(self, memid: str, role="subj"):
         if role == "subj" or role == "both":
@@ -260,12 +327,9 @@ class AgentMemory:
     ###  Players  ###
     #################
 
+    # TODO consolidate anything using eid
     def get_player_by_eid(self, eid) -> Optional["PlayerNode"]:
-        r = self._db_read_one(
-            "SELECT Players.uuid FROM Players INNER JOIN Memories as M ON Players.uuid=M.uuid WHERE M.is_snapshot=0 AND eid=?",
-            eid,
-        )
-        #        r = self._db_read_one("SELECT uuid FROM Players WHERE name=?", name)
+        r = self._db_read_one("SELECT uuid FROM ReferenceObjects WHERE eid=?", eid)
         if r:
             return PlayerNode(self, r[0])
         else:
@@ -273,8 +337,7 @@ class AgentMemory:
 
     def get_player_by_name(self, name) -> Optional["PlayerNode"]:
         r = self._db_read_one(
-            "SELECT Players.uuid FROM Players INNER JOIN Memories as M ON Players.uuid=M.uuid WHERE M.is_snapshot=0 AND name=?",
-            name,
+            'SELECT uuid FROM ReferenceObjects WHERE ref_type="player" AND name=?', name
         )
         #        r = self._db_read_one("SELECT uuid FROM Players WHERE name=?", name)
         if r:
@@ -335,11 +398,11 @@ class AgentMemory:
 
         # Relations
         if parent_memid:
-            self.add_triple(memid, "_has_parent_task", parent_memid)
+            self.add_triple(subj=memid, pred_text="_has_parent_task", obj=parent_memid)
         if chat_effect:
             chat = self.get_most_recent_incoming_chat()
             assert chat is not None, "chat_effect=True with no incoming chats"
-            self.add_triple(chat.memid, "chat_effect_", memid)
+            self.add_triple(subj=chat.memid, pred_text="chat_effect_", obj=memid)
 
         # Return newly created object
         return TaskNode(self, memid)
@@ -426,7 +489,7 @@ class AgentMemory:
         memids = [r[0] for r in self._db_read(q, *args)]
         for memid in memids:
             if self._db_read_one(
-                "SELECT uuid FROM Triples WHERE pred='_has_parent_task' AND subj=?", memid
+                "SELECT uuid FROM Triples WHERE pred_text='_has_parent_task' AND subj=?", memid
             ):
                 # not a root task
                 continue

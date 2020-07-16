@@ -43,8 +43,8 @@ class Dance(Task):
     def step(self, agent):
         self.interrupted = False
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        #        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #            pass
         mv = self.movement.get_move()
         if mv is None:
             self.finished = True
@@ -76,8 +76,8 @@ class DanceMove(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
         if self.relative_yaw:
             agent.turn_angle(self.relative_yaw)
         if self.relative_pitch:
@@ -108,8 +108,8 @@ class Point(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
         if self.target is not None:
             agent.point_at(self.target)
             self.target = None
@@ -138,8 +138,8 @@ class Move(Task):
     def step(self, agent):
         self.interrupted = False
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         # replace blocks if possible
         R = self.replace.copy()
@@ -163,13 +163,15 @@ class Move(Task):
                 locmemid = agent.memory.add_location(self.target)
                 locmem = agent.memory.get_location_by_id(locmemid)
                 agent.memory.update_recent_entities(mems=[locmem])
-                agent.memory.add_triple(self.memid, "task_effect_", locmemid)
+                agent.memory.add_triple(subj=self.memid, pred_text="task_effect_", obj=locmemid)
                 chat_mem_triples = agent.memory.get_triples(
-                    subj=None, pred="chat_effect_", obj=self.memid
+                    subj=None, pred_text="chat_effect_", obj=self.memid
                 )
                 if len(chat_mem_triples) > 0:
                     chat_memid = chat_mem_triples[0][0]
-                    agent.memory.add_triple(chat_memid, "chat_effect_", locmemid)
+                    agent.memory.add_triple(
+                        subj=chat_memid, pred_text="chat_effect_", obj=locmemid
+                    )
             return
 
         # get path
@@ -244,7 +246,7 @@ class Build(Task):
             if mem and all(xyz in xyzs for xyz in mem.blocks.keys()):
                 for pred in ["has_tag", "has_name", "has_colour"]:
                     self.destroyed_block_object_triples.extend(
-                        agent.memory.get_triples(subj=mem.memid, pred=pred)
+                        agent.memory.get_triples(subj=mem.memid, pred_text=pred)
                     )
                 logging.info(
                     "Destroying block object {} tags={}".format(
@@ -276,8 +278,8 @@ class Build(Task):
         self.interrupted = False
 
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         # get blocks occupying build area
         ox, oy, oz = self.origin
@@ -332,6 +334,7 @@ class Build(Task):
             if util.manhat_dist(agent.pos, target) <= self.DIG_REACH:
                 success = agent.dig(*target)
                 if success:
+                    agent.perception_modules["low_level"].maybe_remove_inst_seg(target)
                     if self.is_destroy_schm:
                         agent.perception_modules["low_level"].maybe_remove_block_from_memory(
                             target, (0, 0)
@@ -435,8 +438,9 @@ class Build(Task):
             agent.memory.tag_block_object_from_schematic(memid, self.schematic_memid)
         if self.schematic_tags:
             for pred, obj in self.schematic_tags:
-                agent.memory.add_triple(memid, pred, obj)
-                if pred == "has_name":
+                agent.memory.add_triple(subj=memid, pred_text=pred, obj_text=obj)
+                # sooooorrry  FIXME? when we handle triples better in interpreter_helper
+                if "has_" in pred:
                     agent.memory.tag(self.blockobj_memid, obj)
 
         agent.memory.tag(memid, "_in_progress")
@@ -556,8 +560,8 @@ class Fill(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         origin = np.min(self.schematic, axis=0)
         blocks_list = np.array([((x, y, z), self.block_idm) for (x, y, z) in self.schematic])
@@ -592,8 +596,8 @@ class Destroy(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         origin = np.min([(x, y, z) for ((x, y, z), (b, m)) in self.schematic], axis=0)
 
@@ -643,8 +647,8 @@ class Undo(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         old_task_mem = agent.memory.get_task_by_id(self.to_undo_memid)
         old_task_mem.task.undo(agent)
@@ -674,15 +678,15 @@ class Spawn(Task):
                 # hope this doesn;t take so long mob gets away...
                 if dist < mindist:
                     #                    print(MOBS_BY_ID[mob.mobType], dist)
-                    if not agent.memory.get_mob_by_eid(mob.entityId):
+                    if not agent.memory.get_entity_by_eid(mob.entityId):
                         mindist = dist
                         near_new_mob = mob
         return mindist, near_new_mob
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         if util.manhat_dist(agent.pos, self.pos) > self.PLACE_REACH:
             task = Move(agent, {"target": self.pos, "approx": self.PLACE_REACH})
@@ -698,18 +702,22 @@ class Spawn(Task):
             mindist, placed_mob = self.find_nearby_new_mob(agent)
             if mindist < 3:
                 memid = MobNode.create(agent.memory, placed_mob, agent_placed=True)
-                mobmem = agent.memory.get_mob_by_id(memid)
+                mobmem = agent.memory.get_mem_by_id(memid)
                 agent.memory.update_recent_entities(mems=[mobmem])
                 if self.memid is not None:
-                    agent.memory.add_triple(self.memid, "task_effect_", mobmem.memid)
+                    agent.memory.add_triple(
+                        subj=self.memid, pred_text="task_effect_", obj=mobmem.memid
+                    )
                     # the chat_effect_ triple was already made when the task is added if there was a chat...
                     # but it points to the task memory.  link the chat to the mob memory:
                     chat_mem_triples = agent.memory.get_triples(
-                        subj=None, pred="chat_effect_", obj=self.memid
+                        subj=None, pred_text="chat_effect_", obj=self.memid
                     )
                     if len(chat_mem_triples) > 0:
                         chat_memid = chat_mem_triples[0][0]
-                        agent.memory.add_triple(chat_memid, "chat_effect_", mobmem.memid)
+                        agent.memory.add_triple(
+                            subj=chat_memid, pred_text="chat_effect_", obj=mobmem.memid
+                        )
             self.finished = True
 
 
@@ -729,8 +737,8 @@ class Dig(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
 
         mx, My, mz = self.origin
         Mx = mx + (self.width - 1)
@@ -766,8 +774,8 @@ class Loop(Task):
 
     def step(self, agent):
         # wait certain amount of ticks until issuing next step
-        while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
-            pass
+        # while not (agent.memory.get_time() - self.last_stepped_time) > self.throttling_tick:
+        #    pass
         if self.stop_condition.check():
             self.finished = True
             agent.interpreter.loop_data = None

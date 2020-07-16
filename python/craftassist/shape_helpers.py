@@ -8,7 +8,7 @@ import numpy as np
 
 import shapes
 
-FORCE_SMALL = 5  # for debug
+FORCE_SMALL = 10  # for debug
 
 # Map shape name to function in shapes.py
 SHAPE_FNS = {
@@ -27,6 +27,9 @@ SHAPE_FNS = {
     "DOME": shapes.dome,
     "ARCH": shapes.arch,
     "ELLIPSOID": shapes.ellipsoid,
+    "HOLLOW_TRIANGLE": shapes.hollow_triangle,
+    "HOLLOW_RECTANGLE": shapes.hollow_rectangle,
+    "RECTANGULOID_FRAME": shapes.rectanguloid_frame,
 }
 
 # list of shape names
@@ -46,6 +49,9 @@ SHAPE_NAMES = [
     "DOME",
     "ARCH",
     "ELLIPSOID",
+    "HOLLOW_TRIANGLE",
+    "HOLLOW_RECTANGLE",
+    "RECTANGULOID_FRAME",
 ]
 
 
@@ -78,6 +84,10 @@ def bid():
     b = random.choice(list(allowed_blocks))
     m = random.choice(allowed_blocks[b])
     return (b, m)
+
+
+def bernoulli(p=0.5):
+    return np.random.rand() > p
 
 
 def slope(ranges=10):
@@ -180,6 +190,18 @@ def options_arch():
     return {"size": sizes1(), "distance": 2 * sizes1(ranges=(2, 5)) + 1}
 
 
+def options_hollow_triangle():
+    return {"size": sizes1() + 1, "orient": orientation3()}
+
+
+def options_hollow_rectangle():
+    return {"size": sizes1() + 1, "orient": orientation3()}
+
+
+def options_rectanguloid_frame():
+    return {"size": sizes3(), "only_corners": bernoulli()}
+
+
 def shape_to_dicts(S):
     blocks = [
         {"x": s[0][0], "y": s[0][1], "z": s[0][2], "id": s[1][0], "meta": s[1][1]} for s in S
@@ -232,4 +254,7 @@ SHAPE_HELPERS = {
     "DOME": options_dome,
     "ARCH": options_arch,
     "ELLIPSOID": options_ellipsoid,
+    "HOLLOW_TRIANGLE": options_hollow_triangle,
+    "HOLLOW_RECTANGLE": options_hollow_rectangle,
+    "RECTANGULOID_FRAME": options_rectanguloid_frame,
 }

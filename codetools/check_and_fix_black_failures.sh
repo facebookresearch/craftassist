@@ -15,8 +15,8 @@ echo '==== Black ====='
 black ./python/
 
 if [ -n "$(git status --porcelain)" ]; then
-  git config --global user.email "yuxuans@fb.com"
-  git config --global user.name "Yuxuan Sun"
+  git config user.name >/dev/null || git config --global user.name "Yuxuan Sun"
+  git config user.email >/dev/null || git config --global user.email "yuxuans@fb.com"
   git add ./python/ && git commit -m "[skip ci] Automatic style fix" && git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)
   echo "Auto fix style."
 else

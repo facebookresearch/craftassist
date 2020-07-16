@@ -439,6 +439,6 @@ if __name__ == "__main__":
         )
     ):
         for sentence in text:
-            print(json.dumps(sentence))
+            print(sentence)
         print(json.dumps(d))
         print()

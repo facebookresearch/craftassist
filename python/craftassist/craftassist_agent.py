@@ -33,6 +33,7 @@ from agent import Agent as MCAgent
 from low_level_perception import LowLevelMCPerception
 import heuristic_perception
 
+from util import cluster_areas
 from voxel_models.subcomponent_classifier import SubcomponentClassifierWrapper
 from voxel_models.geoscorer import Geoscorer
 from base_agent.nsp_dialogue_manager import NSPDialogueManager
@@ -58,6 +59,10 @@ class CraftAssistAgent(LocoMCAgent):
         self.no_default_behavior = opts.no_default_behavior
         self.point_targets = []
         self.last_chat_time = 0
+        # areas must be perceived at each step
+        # List of tuple (XYZ, radius), each defines a cube
+        self.areas_to_perceive = []
+        self.add_self_memory_node()
 
     def init_memory(self):
         self.memory = mc_memory.MCAgentMemory(
@@ -89,6 +94,12 @@ class CraftAssistAgent(LocoMCAgent):
         dialogue_object_classes["get_memory"] = GetMemoryHandler
         dialogue_object_classes["put_memory"] = PutMemoryHandler
         self.dialogue_manager = NSPDialogueManager(self, dialogue_object_classes, self.opts)
+
+    def perceive(self, force=False):
+        self.areas_to_perceive = cluster_areas(self.areas_to_perceive)
+        for v in self.perception_modules.values():
+            v.perceive(force=force)
+        self.areas_to_perceive = []
 
     def controller_step(self):
         """Process incoming chats and modify task stack"""
@@ -219,6 +230,8 @@ class CraftAssistAgent(LocoMCAgent):
         self.cagent = MCAgent("localhost", self.opts.port, self.name)
         logging.info("Logged in to server")
         self.dig = self.cagent.dig
+        self.drop_item_stack = self.cagent.drop_item_stack
+        self.drop_item = self.cagent.drop_item
         # defined above...
         # self.send_chat = self.cagent.send_chat
         self.set_held_item = self.cagent.set_held_item
@@ -250,6 +263,27 @@ class CraftAssistAgent(LocoMCAgent):
         self.get_line_of_sight = self.cagent.get_line_of_sight
         self.get_player_line_of_sight = self.cagent.get_player_line_of_sight
         self.get_changed_blocks = self.cagent.get_changed_blocks
+        self.get_item_stacks = self.cagent.get_item_stacks
+
+    def add_self_memory_node(self):
+        # clean this up!  FIXME!!!!! put in base_agent_memory?
+        # how/when to, memory is initialized before physical interfaces...
+        try:
+            p = self.get_player()
+        except:  # this is for test/test_agent :(
+            return
+        self.memory._db_write(
+            "INSERT INTO ReferenceObjects(uuid, eid, name, ref_type, x, y, z, pitch, yaw) VALUES (?,?,?,?,?,?,?,?,?)",
+            self.memory.self_memid,
+            p.entityId,
+            p.name,
+            "player",
+            p.pos.x,
+            p.pos.y,
+            p.pos.z,
+            p.look.pitch,
+            p.look.yaw,
+        )
 
 
 if __name__ == "__main__":
@@ -286,10 +320,15 @@ if __name__ == "__main__":
         help="path to annotated data",
     )
     parser.add_argument(
-        "--ground_truth_file_path",
-        default="ground_truth_data.txt",
-        help="path to cheat sheet of common commands",
+        "--ground_truth_data_dir",
+        default="models/ttad_bert_updated/ground_truth/",
+        help="path to folder of common short and templated commands",
     )
+    # parser.add_argument(
+    #     "--greetings_path",
+    #     default="models/ttad_bert_updated/ground_truth/greetings.txt",
+    #     help="path to greetings",
+    # )
     parser.add_argument(
         "--semseg_model_path", default="", help="path to semantic segmentation model"
     )
@@ -299,6 +338,7 @@ if __name__ == "__main__":
     parser.add_argument("--geoscorer_model_path", default="", help="path to geoscorer model")
     parser.add_argument("--port", type=int, default=25565)
     parser.add_argument("--verbose", "-v", action="store_true", help="Debug logging")
+    parser.add_argument("--web_app", action="store_true", help="use web app, send action dict")
     parser.add_argument(
         "--no_default_behavior",
         action="store_true",

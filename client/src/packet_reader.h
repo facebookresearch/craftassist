@@ -40,6 +40,7 @@ class PacketReader {
   int32_t readInt32() { return readBigEndian(4); }
   uint64_t readUint64() { return readBigEndian(8); }
   int64_t readInt64() { return readBigEndian(8); }
+  int readInt();
   float readFloat();
   double readDouble();
   float readAngle() { return (float)readByte() * 360 / 256; }
@@ -63,6 +64,7 @@ class PacketReader {
   void chatMessage();
   void playerListItem();
   void spawnPlayer();
+  void entityMetadata();
   void entityRelativeMove();
   void entityLookAndRelativeMove();
   void entityTeleport();
@@ -72,8 +74,10 @@ class PacketReader {
   void entityLook();
   void entityHeadLook();
   void serverDifficulty();
+  void spawnObject();
   void spawnMob();
   void updateHealth();
+  void collectItem();
   void confirmTransaction();
   void entityEquipment();
 

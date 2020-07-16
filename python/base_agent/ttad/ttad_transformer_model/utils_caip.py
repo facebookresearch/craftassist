@@ -1,6 +1,8 @@
 import json
 import numpy as np
 import random
+import re
+import ast
 
 from os.path import isfile, isdir
 from os.path import join as pjoin
@@ -73,6 +75,12 @@ def add_tree(full_tree, new_tree, vocounts, nw=1):
             for c in v:
                 add_tree(full_tree[k]["children"], c, vocounts, nw)
         elif is_span(v) or is_span_list(v):
+            # Treating text spans differently because of separate head predicting text spans
+            if k == "text_span":
+                w = "TS:" + k
+                ws = "TBE:" + k
+                vocounts[w] = vocounts.get(w, 0) + nw
+                vocounts[ws] = vocounts.get(ws, 0) + nw
             w = "S:" + k
             ws = "BE:" + k
             vocounts[w] = vocounts.get(w, 0) + nw
@@ -84,18 +92,32 @@ def make_full_tree(trees_weight_ls):
     res = {}
     vocounts = {}
     for trees, weight in trees_weight_ls:
-        for dlg, tr in trees:
-            add_tree(res, tr, vocounts, weight)
+        try:
+            for tree in trees:
+                dlg, tr = tree
+                add_tree(res, tr, vocounts, weight)
+        except ValueError as e:
+            print(e)
+            print(tree)
     tree_i2w = [k for k, v in sorted(vocounts.items(), key=lambda x: x[1], reverse=True)] + [
         "BE:span"
     ]
     return res, tree_i2w
 
 
+# Converts a txt file format to the tree format needed to construct grammar
+def process_txt_data(filepath: str):
+    samples = open(filepath, "r").readlines()
+    split_lines = [line.split("|") for line in samples]
+    # Format of each sample is [text, action_dict]
+    formatted_data = [[text, ast.literal_eval(action_dict)] for text, action_dict in split_lines]
+    return formatted_data
+
+
 #########
 # Linearize and de-linearize trees
 #########
-# transforms tree into sequence of (token, start_span, end_span)
+# transforms tree into sequence of (token, span_start, span_end, text_span_start, text_span_end)
 # idx_map maps the span ids before and after tokenization
 def tree_to_seq(full_tree, tree, idx_map=None):
     res = []
@@ -106,25 +128,29 @@ def tree_to_seq(full_tree, tree, idx_map=None):
     ) + sorted([k for k, v in tree.items() if k not in full_tree])
     for k in sorted_keys:
         if is_cat(tree[k]):
-            res += [("C:" + k + "|" + str(tree[k]), -1, -1)]
+            res += [("C:" + k + "|" + str(tree[k]), -1, -1, -1, -1)]
         elif is_span(tree[k]):
-            a, (b, c) = tree[k]
-            # res         += [('S:' + k, idx_map[a][b][0], idx_map[a][c][1])]
-            res += [("S:" + k, -1, -1)]
-            res += [("BE:" + k, idx_map[a][b][0], idx_map[a][c][1])]
+            if k == "text_span":
+                a, (b, c) = tree[k]
+                res += [("TS:" + k, -1, -1, -1, -1)]
+                res += [("TBE:" + k, -1, -1, idx_map[a][b][0], idx_map[a][c][1])]
+            else:
+                a, (b, c) = tree[k]
+                res += [("S:" + k, -1, -1, -1, -1)]
+                res += [("BE:" + k, idx_map[a][b][0], idx_map[a][c][1], -1, -1)]
         elif is_int(tree[k]):
             res += (
-                [("IB:" + k, -1, -1)]
+                [("IB:" + k, -1, -1, -1, -1)]
                 + tree_to_seq(full_tree.get(k, {"children": {}})["children"], tree[k], idx_map)
-                + [("IE:" + k, -1, -1)]
+                + [("IE:" + k, -1, -1, -1, -1)]
             )
         elif is_int_list(tree[k]):
-            res += [("ILB:" + k, -1, -1)]
+            res += [("ILB:" + k, -1, -1, -1, -1)]
             for c in tree[k]:
                 res += tree_to_seq(full_tree.get(k, {"children": {}})["children"], c, idx_map) + [
-                    ("IL&:" + k, -1, -1)
+                    ("IL&:" + k, -1, -1, -1, -1)
                 ]
-            res = res[:-1] + [("ILE:" + k, -1, -1)]
+            res = res[:-1] + [("ILE:" + k, -1, -1, -1, -1)]
         else:
             raise NotImplementedError
     return res
@@ -135,7 +161,7 @@ def select_spans(seq):
     spans = [-1 for _ in seq]
     active = {}
     unopened = False
-    for i, (w, b_id, e_id) in enumerate(seq):
+    for i, (w, b_id, e_id, text_span_b_id, text_span_e_id) in enumerate(seq):
         if w.startswith("IB:") or w.startswith("ILB:"):
             active[w] = active.get(w, {})
             active[w][i] = 0
@@ -199,6 +225,16 @@ def seq_to_tree(full_tree, seq, idx_rev_map=None, span_dct=None, start_id=0):
             else:
                 res[w] = [-1, [-1, -1]]
             # idx     += 1
+            idx += 2
+        elif t == "TS":
+            if idx + 1 < len(seq):
+                text_span_start = seq[idx + 1][3]
+                text_span_end = seq[idx + 1][4]
+                list_idx, start_idx = idx_rev_map[text_span_start]
+                _, end_idx = idx_rev_map[text_span_end]
+                res[w] = [list_idx, [start_idx, end_idx]]
+            else:
+                res[w] = [-1, [-1, -1]]
             idx += 2
         # internal node
         elif t == "IB":
@@ -349,6 +385,7 @@ class CAIPDataset(Dataset):
     ):
         assert isdir(args.data_dir)
         self.tokenizer = tokenizer
+        self.tree_to_text = args.tree_to_text
 
         # We load the (input, tree) pairs for all data types and
         # initialize the hard examples buffer
@@ -362,20 +399,19 @@ class CAIPDataset(Dataset):
         self.sample_probas /= self.sample_probas.sum()
         if prefix == "train":
             for k in self.dtypes:
-                fname = pjoin(args.data_dir, prefix, k + ".json")
-                if isfile(fname):
-                    print("loading", fname)
-                    self.data[k] = json.load(open(fname))
-                else:
-                    self.data[k] = []
+                fname = pjoin(args.data_dir, prefix, k + ".txt")
+                assert isfile(fname)
+                print("loading {}".format(fname))
+                self.data[k] = process_txt_data(fname)
             self.hard_buffer_size = 1024
             self.hard_buffer_counter = 0
         else:
-            fname = pjoin(args.data_dir, prefix, dtype + ".json")
+            fname = pjoin(args.data_dir, prefix, dtype + ".txt")
             if isfile(fname):
-                print("loading", fname)
-                self.data[dtype] = json.load(open(fname))
+                print("loading {}".format(fname))
+                self.data[dtype] = process_txt_data(fname)
             else:
+                print("could not find dataset {}".format(fname))
                 self.data[dtype] = []
 
         # load meta-tree and tree vocabulary
@@ -400,6 +436,9 @@ class CAIPDataset(Dataset):
         if args.examples_per_epoch > 0:
             self.dataset_length = min(self.dataset_length, args.examples_per_epoch)
 
+    def _contains_span_indices(self, token_idx_list: list):
+        return token_idx_list[1] >= 0 and token_idx_list[2] >= 0
+
     def __len__(self):
         return self.dataset_length
 
@@ -411,15 +450,31 @@ class CAIPDataset(Dataset):
                 dtype = self.dtype
         else:
             dtype = self.dtype
-        p_text, p_tree = self.data[dtype][idx % len(self.data[dtype])]
+        try:
+            t = self.data[dtype][idx % len(self.data[dtype])]
+            p_text, p_tree = t
+        except ValueError as e:
+            print(e)
         text, tree = tokenize_linearize(
             p_text, p_tree, self.tokenizer, self.full_tree, self.word_noise
         )
         text_idx_ls = [self.tokenizer._convert_token_to_id(w) for w in text.split()]
         tree_idx_ls = [
-            [self.tree_idxs[w], bi, ei]
-            for w, bi, ei in [("<S>", -1, -1)] + tree + [("</S>", -1, -1)]
+            [self.tree_idxs[w], bi, ei, text_span_start, text_span_end]
+            for w, bi, ei, text_span_start, text_span_end in [("<S>", -1, -1, -1, -1)]
+            + tree
+            + [("</S>", -1, -1, -1, -1)]
         ]
+        if self.tree_to_text:
+            stripped_tree_tokens = []
+            for w, bi, ei in tree:
+                tree_node = w.lower()
+                tree_node_processed = re.sub("[^0-9a-zA-Z]+", " ", tree_node)
+                tree_tokens = tree_node_processed.split(" ")
+                stripped_tree_tokens += [x for x in tree_tokens if x != ""]
+
+            extended_tree = ["[CLS]"] + stripped_tree_tokens + ["[SEP]"]
+            tree_idx_ls = [self.tokenizer._convert_token_to_id(w) for w in extended_tree]
         return (text_idx_ls, tree_idx_ls, (text, p_text, p_tree))
 
     def add_hard_example(self, exple):
@@ -431,7 +486,7 @@ class CAIPDataset(Dataset):
 
 
 # applies padding and makes batch tensors
-def caip_collate(batch, tokenizer):
+def caip_collate(batch, tokenizer, tree_to_text=False):
     # keep track of examples
     pre_examples = [(p_text, p_tree) for x, y, (_, p_text, p_tree) in batch]
     # input: text
@@ -443,7 +498,14 @@ def caip_collate(batch, tokenizer):
     batch_y_ls = [y for x, y, _ in batch]
     y_len = max([len(y) for y in batch_y_ls])
     y_mask_ls = [[1] * len(y) + [0] * (y_len - len(y)) for y in batch_y_ls]
-    batch_y_pad_ls = [y + [[0, -1, -1]] * (y_len - len(y)) for y in batch_y_ls]  # 0 as padding idx
+    if tree_to_text:
+        batch_y_pad_ls = [
+            y + [tokenizer.pad_token_id] * (y_len - len(y)) for y in batch_y_ls
+        ]  # 0 as padding idx
+    else:
+        batch_y_pad_ls = [
+            y + [[0, -1, -1, -1, -1]] * (y_len - len(y)) for y in batch_y_ls
+        ]  # 0 as padding idx
     # tensorize
     x = torch.tensor(batch_x_pad_ls)
     x_mask = torch.tensor(x_mask_ls)

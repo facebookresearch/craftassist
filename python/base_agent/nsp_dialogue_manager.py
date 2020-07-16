@@ -1,16 +1,20 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
+import copy
 import json
 import logging
 import os
 import re
 import spacy
 from typing import Tuple, Dict, Optional
+from glob import glob
 
 import sentry_sdk
 
 import preprocess
+
+from base_agent.memory_nodes import ProgramNode
 from base_agent.dialogue_manager import DialogueManager
 from base_agent.dialogue_objects import (
     BotCapabilities,
@@ -20,11 +24,13 @@ from base_agent.dialogue_objects import (
     coref_resolve,
     process_spans,
 )
+from post_process_logical_form import post_process_logical_form
 
 
 ###TODO wrap these, clean up
 # For QA  model
-
+dirname = os.path.dirname(__file__)
+web_app_filename = os.path.join(dirname, "../craftassist/webapp_data.json")
 
 from util import hash_user
 
@@ -53,7 +59,13 @@ class NSPDialogueManager(DialogueManager):
             "help",
             "do something",
         ]
-        self.botGreetings = ["hi", "hello", "hey"]
+        # Load bot greetings
+        greetings_path = opts.ground_truth_data_dir + "greetings.txt"
+        if os.path.isfile(greetings_path):
+            with open(greetings_path) as f:
+                self.botGreetings = [cmd.rstrip() for cmd in f]
+        else:
+            self.botGreetings = ["hi", "hello", "hey"]
         logging.info("using QA_model_path={}".format(opts.QA_nsp_model_path))
         logging.info("using model_dir={}".format(opts.nsp_model_dir))
 
@@ -74,21 +86,38 @@ class NSPDialogueManager(DialogueManager):
             self.model = Model(model_dir=opts.nsp_model_dir, data_dir=opts.nsp_data_dir)
         self.debug_mode = False
 
+        # if web_app option is enabled
+        self.webapp_dict = {}
+        self.web_app = opts.web_app
+        if self.web_app:
+            logging.info("web_app flag has been enabled")
+            logging.info("writing to file: %r " % (web_app_filename))
+            # os.system("python ./python/craftassist/web_app_socket.py &")
+
         # ground_truth_data is the ground truth action dict from templated
         # generations and will be queried first if checked in.
         self.ground_truth_actions = {}
         if not no_ground_truth_actions:
-            if os.path.isfile(opts.ground_truth_file_path):
-                with open(opts.ground_truth_file_path) as f:
-                    for line in f.readlines():
-                        text, logical_form = line.strip().split("\t")
-                        self.ground_truth_actions[text] = json.loads(logical_form)
+            if os.path.isdir(opts.ground_truth_data_dir):
+                files = glob(opts.ground_truth_data_dir + "datasets/*.txt")
+                for dataset in files:
+                    with open(dataset) as f:
+                        for line in f.readlines():
+                            text, logical_form = line.strip().split("|")
+                            clean_text = text.strip('"')
+                            self.ground_truth_actions[clean_text] = json.loads(logical_form)
 
         self.dialogue_object_parameters = {
             "agent": self.agent,
             "memory": self.agent.memory,
             "dialogue_stack": self.dialogue_stack,
         }
+
+    def add_to_dict(self, chat_message, action_dict):  # , text):
+        print("adding %r dict for message : %r" % (action_dict, chat_message))
+        self.webapp_dict[chat_message] = {"action_dict": action_dict}  # , "text": text}
+        with open(web_app_filename, "w") as f:
+            json.dump(self.webapp_dict, f)
 
     def maybe_get_dialogue_obj(self, chat: Tuple[str, str]) -> Optional[DialogueObject]:
         """Process a chat and maybe modify the dialogue stack"""
@@ -107,8 +136,8 @@ class NSPDialogueManager(DialogueManager):
         if any([chat in self.botGreetings for chat in preprocessed_chatstrs]):
             return BotGreet(**self.dialogue_object_parameters)
 
-        # don't use preprocess for models, done in the model code
-        logical_form = self.get_logical_form(s=chatstr, model=self.model)
+        # NOTE: preprocessing in model code is different, this shouldn't break anything
+        logical_form = self.get_logical_form(s=preprocessed_chatstrs[0], model=self.model)
         return self.handle_logical_form(speaker, logical_form, preprocessed_chatstrs[0])
 
     def handle_logical_form(self, speaker: str, d: Dict, chatstr: str) -> Optional[DialogueObject]:
@@ -119,6 +148,7 @@ class NSPDialogueManager(DialogueManager):
         """
         coref_resolve(self.agent.memory, d, chatstr)
         logging.info('logical form post-coref "{}" -> {}'.format(hash_user(speaker), d))
+        ProgramNode.create(self.agent.memory, d)
 
         if d["dialogue_type"] == "NOOP":
             return Say("I don't know how to answer that.", **self.dialogue_object_parameters)
@@ -160,6 +190,7 @@ class NSPDialogueManager(DialogueManager):
             d = self.ground_truth_actions[s]
             logging.info('Found gt action for "{}"'.format(s))
         else:
+            logging.info("Querying the semantic parsing model")
             if chat_as_list:
                 d = model.parse([s])
             else:
@@ -175,6 +206,16 @@ class NSPDialogueManager(DialogueManager):
         process_spans(d, re.split(r" +", s), re.split(r" +", chat))
         logging.info('ttad pre-coref "{}" -> {}'.format(chat, d))
 
+        # web app
+        if self.web_app:
+            # get adtt output
+            # t = ""
+            # try:
+            #     t = adtt.adtt(d)
+            # except:
+            #     t = ""
+            self.add_to_dict(chat_message=s, action_dict=d)
+
         # log to sentry
         sentry_sdk.capture_message(
             json.dumps({"type": "ttad_pre_coref", "in_original": s, "out": d})
@@ -182,4 +223,9 @@ class NSPDialogueManager(DialogueManager):
         sentry_sdk.capture_message(
             json.dumps({"type": "ttad_pre_coref", "in_lemmatized": chat, "out": d})
         )
+
+        logging.info('logical form before grammar update "{}'.format(d))
+        d = post_process_logical_form(copy.deepcopy(d))
+        logging.info('logical form after grammar fix "{}"'.format(d))
+
         return d

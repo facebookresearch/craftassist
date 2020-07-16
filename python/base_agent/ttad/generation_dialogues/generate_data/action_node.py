@@ -144,13 +144,16 @@ class ActionNode:
 
             # fix reference object at action level
             if "reference_object" in action_dict:
+                new_dict = {}
                 val = action_dict["reference_object"]
                 if "repeat" in val:
-                    action_dict["reference_object"] = {"repeat": val["repeat"]}
+                    new_dict["repeat"] = val["repeat"]
                     val.pop("repeat")
-                    action_dict["reference_object"]["filters"] = val
-                else:
-                    action_dict["reference_object"] = {"filters": val}
+                if "special_reference" in val:
+                    new_dict["special_reference"] = val["special_reference"]
+                    val.pop("special_reference")
+                new_dict["filters"] = val
+                action_dict["reference_object"] = new_dict
 
             if "action_sequence" in self._d:
                 self._d["action_sequence"].append(action_dict)

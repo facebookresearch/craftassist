@@ -40,7 +40,7 @@ def in_hull(points, x):
     return lp.success
 
 
-def all_nearby_objects(get_blocks, pos):
+def all_nearby_objects(get_blocks, pos, max_radius=MAX_RADIUS):
     """Return a list of connected components near pos.
 
     Each component is a list of ((x, y, z), (id, meta))
@@ -48,7 +48,7 @@ def all_nearby_objects(get_blocks, pos):
     i.e. this function returns list[list[((x, y, z), (id, meta))]]
     """
     pos = np.round(pos).astype("int32")
-    mask, off, blocks = all_close_interesting_blocks(get_blocks, pos)
+    mask, off, blocks = all_close_interesting_blocks(get_blocks, pos, max_radius)
     components = connected_components(mask)
     logging.debug("all_nearby_objects found {} objects near {}".format(len(components), pos))
     xyzbms = [
@@ -129,7 +129,6 @@ def connected_components(X, unique_idm=False):
 
     Returns a list of lists of indices of connected components
     """
-
     visited = np.zeros((X.shape[0], X.shape[1], X.shape[2]), dtype="bool")
     components = []
     current_component = set()
@@ -209,11 +208,11 @@ def check_between(entities, fat_scale=0.2):
                 f = np.zeros(3)
                 f[i] = fat
                 bl.append(np.array(l[idx[i]]) - fat)
-            bounding_locs.append(np.concatenate(bl))
+            bounding_locs.append(np.vstack(bl))
         else:
             bounding_locs.append(np.array(l))
     x = np.mean(bounding_locs[0], axis=0)
-    points = np.concatenate(bounding_locs[1], bounding_locs[2])
+    points = np.vstack([bounding_locs[1], bounding_locs[2]])
     return in_hull(points, x)
 
 
@@ -277,7 +276,7 @@ def find_inside(entity):
             return [util.to_block_pos(m)]
     l = util.get_locs_from_entity(entity)
     if l is None:
-        return None
+        return []
     m = np.round(np.mean(l, axis=0))
     maxes = np.max(l, axis=0)
     mins = np.min(l, axis=0)
@@ -387,6 +386,7 @@ def get_nearby_airtouching_blocks(agent, location, radius=15):
         if tags:
             shifted_c = [(l[0] + x - radius, l[1] + ymin, l[2] + z - radius) for l in c]
             if len(shifted_c) > 0:
+
                 InstSegNode.create(agent.memory, shifted_c, tags=tags)
     return blocktypes
 
@@ -496,17 +496,27 @@ def get_all_nearby_holes(agent, location, radius=15, store_inst_seg=True):
 
 
 class PerceptionWrapper:
-    def __init__(self, agent, perceive_freq=20):
+    def __init__(self, agent, perceive_freq=20, slow_perceive_freq_mult=8):
         self.perceive_freq = perceive_freq
         self.agent = agent
         self.radius = 15
+        self.perceive_freq = perceive_freq
 
     def perceive(self, force=False):
         if self.perceive_freq == 0 and not force:
             return
         if self.agent.count % self.perceive_freq != 0 and not force:
             return
-        for obj in all_nearby_objects(self.agent.get_blocks, self.agent.pos):
-            BlockObjectNode.create(self.agent.memory, obj)
-        get_all_nearby_holes(self.agent, self.agent.pos, radius=self.radius)
-        get_nearby_airtouching_blocks(self.agent, self.agent.pos, radius=self.radius)
+        if force or not self.agent.memory.task_stack_peek():
+            # perceive blocks in marked areas
+            for pos, radius in self.agent.areas_to_perceive:
+                for obj in all_nearby_objects(self.agent.get_blocks, pos, radius):
+                    BlockObjectNode.create(self.agent.memory, obj)
+                get_all_nearby_holes(self.agent, pos, radius)
+                get_nearby_airtouching_blocks(self.agent, pos, radius)
+
+            # perceive blocks near the agent
+            for obj in all_nearby_objects(self.agent.get_blocks, self.agent.pos):
+                BlockObjectNode.create(self.agent.memory, obj)
+            get_all_nearby_holes(self.agent, self.agent.pos, radius=self.radius)
+            get_nearby_airtouching_blocks(self.agent, self.agent.pos, radius=self.radius)

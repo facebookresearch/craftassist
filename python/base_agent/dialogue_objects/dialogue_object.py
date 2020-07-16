@@ -260,7 +260,10 @@ class ConfirmTask(DialogueObject):
         self.finished = True
         if len(self.progeny_data) == 0:
             return None, None
-        response_str = self.progeny_data[-1]["response"].chat_text
+        if hasattr(self.progeny_data[-1]["response"], "chat_text"):
+            response_str = self.progeny_data[-1]["response"].chat_text
+        else:
+            response_str = "UNK"
         if response_str in MAP_YES:
             for task in self.tasks:
                 self.memory.task_stack_push(task)
@@ -298,7 +301,10 @@ class ConfirmReferenceObject(DialogueObject):
         if len(self.progeny_data) == 0:
             output_data = None
         else:
-            response_str = self.progeny_data[-1]["response"].chat_text
+            if hasattr(self.progeny_data[-1]["response"], "chat_text"):
+                response_str = self.progeny_data[-1]["response"].chat_text
+            else:
+                response_str = "UNK"
             if response_str in MAP_YES:
                 output_data = {"response": "yes"}
             elif response_str in MAP_NO:

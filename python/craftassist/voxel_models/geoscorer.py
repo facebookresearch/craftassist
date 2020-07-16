@@ -30,6 +30,7 @@ class Geoscorer(object):
             raise Exception("specify a geoscorer model")
         self.radius = self.merger_model.context_sl // 2
         self.seg_sl = self.merger_model.seg_sl
+        self.blacklist = ["BETWEEN", "INSIDE", "AWAY", "NEAR"]
 
     # Define the circumstances where we can use geoscorer
     def use(self, location_d, repeat_num):
@@ -38,6 +39,10 @@ class Geoscorer(object):
 
         loc_type = location_d.get("location_type", "SPEAKER_LOOK")
         if loc_type == "COORDINATES":
+            return False
+
+        rel_dir = location_d.get("relative_direction", None)
+        if rel_dir is None or rel_dir in self.blacklist:
             return False
         return True
 

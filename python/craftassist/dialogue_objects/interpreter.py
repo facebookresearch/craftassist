@@ -14,16 +14,14 @@ import os
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "../..")
 sys.path.append(BASE_AGENT_ROOT)
 
-from base_agent.dialogue_objects import DialogueObject, ConfirmTask, Say
+from base_agent.dialogue_objects import DialogueObject, ConfirmTask, Say, SPEAKERLOOK
 from .interpreter_helper import (
     ErrorWithResponse,
     NextDialogueStep,
     get_block_type,
     get_holes,
-    get_repeat_arrangement,
     get_repeat_num,
-    maybe_get_location_memory,
-    interpret_location,
+    interpret_reference_location,
     interpret_reference_object,
     interpret_schematic,
     interpret_size,
@@ -31,6 +29,14 @@ from .interpreter_helper import (
     interpret_facing,
     interpret_point_target,
 )
+from .modify_helpers import (
+    handle_fill,
+    handle_rigidmotion,
+    handle_scale,
+    handle_replace,
+    handle_thicken,
+)
+from .reference_object_helpers import compute_locations
 from base_agent.memory_nodes import PlayerNode
 from mc_memory_nodes import MobNode
 import dance
@@ -64,6 +70,7 @@ class Interpreter(DialogueObject):
             "SPAWN": self.handle_spawn,
             "FILL": self.handle_fill,
             "DANCE": self.handle_dance,
+            "MODIFY": self.handle_modify,
             "OTHERACTION": self.handle_otheraction,
         }
 
@@ -92,6 +99,45 @@ class Interpreter(DialogueObject):
             self.finished = True
             return err.chat, None
 
+    def handle_modify(self, speaker, d) -> Tuple[Optional[str], Any]:
+        default_ref_d = {"filters": {"location": SPEAKERLOOK}}
+        ref_d = d.get("reference_object", default_ref_d)
+        # only modify blockobjects...
+        objs = interpret_reference_object(
+            self, speaker, ref_d, only_physical=True, only_voxels=True
+        )
+        if len(objs) == 0:
+            raise ErrorWithResponse("I don't understand what you want me to modify.")
+
+        m_d = d.get("modify_dict")
+        if not m_d:
+            raise ErrorWithResponse(
+                "I think you want me to modify an object but am not sure what to do"
+            )
+        for obj in objs:
+            if m_d["modify_type"] == "THINNER" or m_d["modify_type"] == "THICKER":
+                destroy_task_data, build_task_data = handle_thicken(self, speaker, m_d, obj)
+            elif m_d["modify_type"] == "REPLACE":
+                destroy_task_data, build_task_data = handle_replace(self, speaker, m_d, obj)
+            elif m_d["modify_type"] == "SCALE":
+                destroy_task_data, build_task_data = handle_scale(self, speaker, m_d, obj)
+            elif m_d["modify_type"] == "RIGIDMOTION":
+                destroy_task_data, build_task_data = handle_rigidmotion(self, speaker, m_d, obj)
+            elif m_d["modify_type"] == "FILL" or m_d["modify_type"] == "HOLLOW":
+                destroy_task_data, build_task_data = handle_fill(self, speaker, m_d, obj)
+            else:
+                raise ErrorWithResponse(
+                    "I think you want me to modify an object but am not sure what to do (parse error)"
+                )
+
+            if build_task_data:
+                self.append_new_task(tasks.Build, build_task_data)
+            if destroy_task_data:
+                self.append_new_task(tasks.Destroy, destroy_task_data)
+
+        self.finished = True
+        return None, None
+
     def handle_undo(self, speaker, d) -> Tuple[Optional[str], Any]:
         task_name = d.get("undo_action")
         if task_name:
@@ -117,17 +163,18 @@ class Interpreter(DialogueObject):
         return None, None
 
     def handle_spawn(self, speaker, d) -> Tuple[Optional[str], Any]:
-        spawn_obj = d["reference_object"]
-        if not spawn_obj:
+        spawn_filters = d.get("reference_object", {}).get("filters", {})
+        if not spawn_filters:
             raise ErrorWithResponse("I don't understand what you want me to spawn.")
 
-        object_name = spawn_obj["has_name"]
+        object_name = spawn_filters["has_name"]
         schematic = self.memory.get_mob_schematic_by_name(object_name)
         if not schematic:
             raise ErrorWithResponse("I don't know how to spawn: %r." % (object_name))
 
         object_idm = list(schematic.blocks.values())[0]
-        pos, _ = interpret_location(self, speaker, {"location_type": "SPEAKER_LOOK"})
+        mems = interpret_reference_location(self, speaker, SPEAKERLOOK)
+        pos, _ = compute_locations(self, speaker, d, mems)
         repeat_times = get_repeat_num(d)
         for i in range(repeat_times):
             task_data = {"object_idm": object_idm, "pos": pos, "action_dict": d}
@@ -141,8 +188,10 @@ class Interpreter(DialogueObject):
             if self.loop_data and hasattr(self.loop_data, "get_pos"):
                 pos = self.loop_data.get_pos()
             else:
-                location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-                pos, _ = interpret_location(self, speaker, location_d)
+                location_d = d.get("location", SPEAKERLOOK)
+                mems = interpret_reference_location(self, speaker, location_d)
+                pos, _ = compute_locations(self, speaker, d, mems)
+            # TODO: can this actually happen?
             if pos is None:
                 raise ErrorWithResponse("I don't understand where you want me to move.")
             task_data = {"target": pos, "action_dict": d}
@@ -151,9 +200,9 @@ class Interpreter(DialogueObject):
 
         if "stop_condition" in d:
             condition = interpret_stop_condition(self, speaker, d["stop_condition"])
-            location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-            loc, mems = maybe_get_location_memory(self, speaker, location_d)
-            if mems is not None:
+            location_d = d.get("location", SPEAKERLOOK)
+            mems = interpret_reference_location(self, speaker, location_d)
+            if mems is not None and mems:
                 self.loop_data = mems[0]
             loop_task_data = {
                 "new_tasks_fn": new_tasks,
@@ -178,7 +227,7 @@ class Interpreter(DialogueObject):
                 speaker,
                 d["reference_object"],
                 limit=repeat,
-                ignore_mobs=True,
+                only_voxels=True,
                 loose_speakerlook=True,
             )
             if len(objs) == 0:
@@ -198,30 +247,12 @@ class Interpreter(DialogueObject):
                 self, speaker, d.get("schematic", {}), repeat_dict=repeat_dict
             )
 
-        # Get the location to build it
-        location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-        origin, _ = interpret_location(self, speaker, location_d)
-
-        repeat_num = len(interprets)
-        if self.agent.geoscorer and self.agent.geoscorer.use(location_d, repeat_num):
-            r = self.agent.geoscorer.radius
-            brc = (origin[0] - r, origin[1] - r, origin[2] - r)
-            tlc = (brc[0] + 2 * r - 1, brc[1] + 2 * r - 1, brc[2] + 2 * r - 1)
-            context = self.agent.get_blocks(brc[0], tlc[0], brc[1], tlc[1], brc[2], tlc[2])
-            segment = interprets[0][0]
-            origin = self.agent.geoscorer.produce_segment_pos_in_context(segment, context, brc)
-        else:
-            # hack to fix build 1 block underground!!! FIXME should SPEAKER_LOOK deal with this?
-            if location_d["location_type"] == "SPEAKER_LOOK":
-                origin[1] += 1
-
-        if repeat_num > 1:
-            offsets = get_repeat_arrangement(
-                d, self, speaker, interprets[0][0], repeat_num=repeat_num
-            )
-        else:
-            offsets = [(0, 0, 0)]
-
+        # Get the locations to build
+        location_d = d.get("location", SPEAKERLOOK)
+        mems = interpret_reference_location(self, speaker, location_d)
+        origin, offsets = compute_locations(
+            self, speaker, d, mems, objects=interprets, enable_geoscorer=True
+        )
         interprets_with_offsets = [
             (blocks, mem, tags, off) for (blocks, mem, tags), off in zip(interprets, offsets)
         ]
@@ -229,7 +260,6 @@ class Interpreter(DialogueObject):
         tasks_todo = []
         for schematic, schematic_memid, tags, offset in interprets_with_offsets:
             og = np.array(origin) + offset
-
             task_data = {
                 "blocks_list": schematic,
                 "origin": og,
@@ -254,9 +284,15 @@ class Interpreter(DialogueObject):
         return None, None
 
     def handle_fill(self, speaker, d) -> Tuple[Optional[str], Any]:
+        r = d.get("reference_object")
         self.finished = True
-        location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
-        location, _ = interpret_location(self, speaker, location_d)
+        if not r.get("filters"):
+            location_d = SPEAKERLOOK
+        else:
+            location_d = r["filters"].get("location", SPEAKERLOOK)
+        mems = interpret_reference_location(self, speaker, location_d)
+        location, _ = compute_locations(self, speaker, d, mems)
+
         repeat = get_repeat_num(d)
         holes = get_holes(self, speaker, location, limit=repeat)
         if holes is None:
@@ -278,9 +314,9 @@ class Interpreter(DialogueObject):
         return None, None
 
     def handle_destroy(self, speaker, d) -> Tuple[Optional[str], Any]:
-        default_ref_d = {"location": {"location_type": "SPEAKER_LOOK"}}
+        default_ref_d = {"filters": {"location": SPEAKERLOOK}}
         ref_d = d.get("reference_object", default_ref_d)
-        objs = interpret_reference_object(self, speaker, ref_d)
+        objs = interpret_reference_object(self, speaker, ref_d, only_destructible=True)
         if len(objs) == 0:
             raise ErrorWithResponse("I don't understand what you want me to destroy.")
 
@@ -288,14 +324,16 @@ class Interpreter(DialogueObject):
         if all(isinstance(obj, MobNode) for obj in objs):
             raise ErrorWithResponse("I don't kill animals, sorry!")
         if all(isinstance(obj, PlayerNode) for obj in objs):
-            raise ErrorWithResponse("It's illegal to kill someone even in minecraft!")
+            raise ErrorWithResponse("I don't kill players, sorry!")
         objs = [obj for obj in objs if not isinstance(obj, MobNode)]
-
+        num_destroy_tasks = 0
         for obj in objs:
-            schematic = list(obj.blocks.items())
-            task_data = {"schematic": schematic, "action_dict": d}
-            self.append_new_task(tasks.Destroy, task_data)
-        logging.info("Added {} Destroy tasks to stack".format(len(objs)))
+            if hasattr(obj, "blocks"):
+                schematic = list(obj.blocks.items())
+                task_data = {"schematic": schematic, "action_dict": d}
+                self.append_new_task(tasks.Destroy, task_data)
+                num_destroy_tasks += 1
+        logging.info("Added {} Destroy tasks to stack".format(num_destroy_tasks))
         self.finished = True
         return None, None
 
@@ -325,9 +363,10 @@ class Interpreter(DialogueObject):
 
     def handle_dig(self, speaker, d) -> Tuple[Optional[str], Any]:
         def new_tasks():
-            location_d = d.get("location", {"location_type": "SPEAKER_LOOK"})
+            location_d = d.get("location", SPEAKERLOOK)
             repeat = get_repeat_num(d)
-            origin, _ = interpret_location(self, speaker, location_d)
+            mems = interpret_reference_location(self, speaker, location_d)
+            origin, _ = compute_locations(self, speaker, d, mems)
             attrs = {}
             schematic_d = d["schematic"]
             # set the attributes of the hole to be dug.
@@ -377,10 +416,9 @@ class Interpreter(DialogueObject):
                 if rd is not None and (
                     rd == "AROUND" or rd == "CLOCKWISE" or rd == "ANTICLOCKWISE"
                 ):
+                    ref_obj = None
                     location_reference_object = location_d.get("reference_object")
-                    if location_reference_object is None:
-                        ref_obj = "AGENT_POS"
-                    else:
+                    if location_reference_object:
                         objmems = interpret_reference_object(
                             self, speaker, location_reference_object
                         )
@@ -417,17 +455,20 @@ class Interpreter(DialogueObject):
                 if location_d is None:
                     dance_location = None
                 else:
-                    dance_location, _ = interpret_location(self, speaker, location_d)
+                    mems = interpret_reference_location(self, speaker, location_d)
+                    dance_location, _ = compute_locations(self, speaker, d, mems)
                 # TODO use name!
                 if dance_type.get("dance_type_span") is not None:
                     dance_name = dance_type["dance_type_span"]
+                    if dance_name == "dance":
+                        dance_name = "ornamental_dance"
                     dance_memids = self.memory._db_read(
-                        "SELECT DISTINCT(Dances.uuid) FROM Dances INNER JOIN Triples on Dances.uuid=Triples.subj WHERE Triples.obj=?",
+                        "SELECT DISTINCT(Dances.uuid) FROM Dances INNER JOIN Triples on Dances.uuid=Triples.subj WHERE Triples.obj_text=?",
                         dance_name,
                     )
                 else:
                     dance_memids = self.memory._db_read(
-                        "SELECT DISTINCT(Dances.uuid) FROM Dances INNER JOIN Triples on Dances.uuid=Triples.subj WHERE Triples.obj=?",
+                        "SELECT DISTINCT(Dances.uuid) FROM Dances INNER JOIN Triples on Dances.uuid=Triples.subj WHERE Triples.obj_text=?",
                         "ornamental_dance",
                     )
                 dance_memid = random.choice(dance_memids)[0]

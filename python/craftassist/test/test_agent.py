@@ -22,9 +22,10 @@ class BaseAgentTest(unittest.TestCase):
         opts.nsp_embedding_path = None
         opts.model_base_path = None
         opts.QA_nsp_model_path = None
-        opts.ground_truth_file_path = ""
+        opts.ground_truth_data_dir = ""
         opts.semseg_model_path = ""
         opts.geoscorer_model_path = ""
+        opts.web_app = False
         # test does not instantiate cpp client
         opts.port = -1
         opts.no_default_behavior = False

@@ -41,6 +41,7 @@ class Agent {
   // e.g. result[0, 0, -1, 1] is the block meta at block pos (ya, za, xb)
   py::array_t<uint8_t> getBlocks(int xa, int xb, int ya, int yb, int za, int zb);
   vector<Mob> getMobs();
+  vector<ItemStack> getItemStacks();
 
   // Return a cube of blocks centered around the agent, with radius r, in the
   // same order as getBlocks().
@@ -92,6 +93,12 @@ class Agent {
 
   // Send a "dig" packet for the block at (x, y, z)
   bool dig(int x, int y, int z) { return client_.dig({x, y, z}); }
+
+  // Drop the selected item stack
+  void dropItemStack() {client_.dropItemStack();}
+
+  // Drop the selected item
+  void dropItem() {client_.dropItem();}
 
   // Broadcast the given string to the in-game chat
   void sendChat(const string& s) { client_.sendChat(s); }
@@ -223,6 +230,8 @@ bool Agent::setHeldItem(py::object arg) {
 
 vector<Mob> Agent::getMobs() { return client_.getMobs(); }
 
+vector<ItemStack> Agent::getItemStacks() { return client_.getItemStacks(); };
+
 py::tuple Agent::getVision() {
   vector<Block> blocks;
   vector<float> depth;
@@ -318,6 +327,8 @@ PYBIND11_MODULE(agent, m) {
       .def(py::init<const string&, int, const string&>())
       .def("disconnect", &Agent::disconnect, "Disconnect the agent from the server")
       .def("dig", &Agent::dig)
+      .def("drop_item_stack", &Agent::dropItemStack)
+      .def("drop_item", &Agent::dropItem)
       .def("send_chat", &Agent::sendChat)
       .def("set_held_item", &Agent::setHeldItem)
       .def("step_pos_x", &Agent::stepPosX)
@@ -336,6 +347,7 @@ PYBIND11_MODULE(agent, m) {
       .def("use_entity", &Agent::useEntity)
       .def("use_item", &Agent::useItem)
       .def("use_item_on_block", &Agent::useItemOnBlock)
+      .def("get_item_stacks", &Agent::getItemStacks)
       .def("craft", &Agent::craft)
       .def("get_blocks", &Agent::getBlocks)
       .def("get_local_blocks", &Agent::getLocalBlocks)
@@ -387,7 +399,14 @@ PYBIND11_MODULE(agent, m) {
   py::class_<Mob>(m, "Mob")
       .def_readonly("entityId", &Mob::entityId)
       .def_readonly("mobType", &Mob::mobType)
-      .def_readonly("pos", &Mob::pos);
+      .def_readonly("pos", &Mob::pos)
+      .def_readonly("look", &Mob::look);
+
+  py::class_<ItemStack>(m, "ItemStack")
+      .def_readonly("uuid", &ItemStack::uuid)
+      .def_readonly("entityId", &ItemStack::entityId)
+      .def_readonly("item", &ItemStack::item)
+      .def_readonly("pos", &ItemStack::pos);
 
   py::class_<Slot>(m, "Slot")
       .def_readonly("id", &Slot::id)

@@ -37,7 +37,10 @@ class EventHandler {
   void handle(SetSlotEvent e);
   void handle(ServerDifficultyEvent e);
   void handle(SpawnMobEvent e);
+  void handle(SpawnObjectEvent e);
+  void handle(SpawnItemStackEvent e);
   void handle(UpdateHealthEvent e);
+  void handle(CollectItemEvent e);
   void handle(OpenWindowEvent e);
   void handle(ConfirmTransactionEvent e);
   void handle(EntityEquipmentEvent e);

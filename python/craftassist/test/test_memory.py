@@ -6,9 +6,10 @@ import unittest
 
 import shapes
 from mc_memory import MCAgentMemory
-from .utils import Mob, Pos
+from .utils import Mob, Pos, Look
 from entities import MOBS_BY_ID
 from base_craftassist_test_case import BaseCraftassistTestCase
+from all_test_commands import *
 
 
 class ObjectsTest(BaseCraftassistTestCase):
@@ -39,22 +40,13 @@ class TriggersTests(BaseCraftassistTestCase):
     def test_workspace_cleared_on_object_delete(self):
         # Tag object
         tag = "fluff"
-        self.handle_logical_form(
-            {
-                "dialogue_type": "PUT_MEMORY",
-                "filters": {"reference_object": {"location": {"location_type": "SPEAKER_LOOK"}}},
-                "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": tag}},
-            }
-        )
+        d = PUT_MEMORY_COMMANDS["that is fluff"]
+        self.handle_logical_form(d)
         self.assertIn(tag, self.cube_right.get_tags())
 
         # Destroy it
-        changes = self.handle_logical_form(
-            {
-                "dialogue_type": "HUMAN_GIVE_COMMAND",
-                "action": {"action_type": "DESTROY", "reference_object": {"has_tag": tag}},
-            }
-        )
+        d = DESTROY_COMMANDS["destroy the fluff thing"]
+        changes = self.handle_logical_form(d)
         self.assertEqual(set(changes.keys()), set(self.cube_right.blocks.keys()))
 
         # Ensure it is not in recent entities
@@ -72,25 +64,26 @@ class MethodsTests(unittest.TestCase):
     def test_add_mob(self):
         # add mob
         chicken = {v: k for k, v in MOBS_BY_ID.items()}["chicken"]
-        mob_id, mob_type, pos = 42, chicken, Pos(3, 4, 5)
-        self.memory.set_mob_position(Mob(mob_id, mob_type, pos))
+        mob_id, mob_type, pos, look = 42, chicken, Pos(3, 4, 5), Look(0.0, 0.0)
+        self.memory.set_mob_position(Mob(mob_id, mob_type, pos, look))
 
         # get mob
-        self.assertIsNotNone(self.memory.get_mob_by_eid(mob_id))
+        self.assertIsNotNone(self.memory.get_entity_by_eid(mob_id))
 
         # update mob
         pos = Pos(6, 7, 8)
-        self.memory.set_mob_position(Mob(mob_id, mob_type, pos))
+        look = Look(120.0, 50.0)
+        self.memory.set_mob_position(Mob(mob_id, mob_type, pos, look))
 
         # get mob
-        mob_node = self.memory.get_mob_by_eid(mob_id)
+        mob_node = self.memory.get_entity_by_eid(mob_id)
         self.assertIsNotNone(mob_node)
-        self.assertEqual(mob_node.pos, (6, 7, 8))
+        self.assertEqual(mob_node.pos, (6, 7, 8), (120.0, 50.0))
 
     def test_add_guardian_mob(self):
         guardian = {v: k for k, v in MOBS_BY_ID.items()}["guardian"]
-        mob_id, mob_type, pos = 42, guardian, Pos(3, 4, 5)
-        self.memory.set_mob_position(Mob(mob_id, mob_type, pos))
+        mob_id, mob_type, pos, look = 42, guardian, Pos(3, 4, 5), Look(0.0, 0.0)
+        self.memory.set_mob_position(Mob(mob_id, mob_type, pos, look))
 
 
 if __name__ == "__main__":

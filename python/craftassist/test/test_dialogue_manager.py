@@ -3,6 +3,7 @@ from base_agent.loco_mc_agent import LocoMCAgent
 import os
 import unittest
 import logging
+from all_test_commands import *
 
 
 class AttributeDict(dict):
@@ -29,29 +30,17 @@ class FakeAgent(LocoMCAgent):
         self.dialogue_manager = NSPDialogueManager(self, dialogue_object_classes, self.opts)
 
 
-locobot_commands = [
-    "go to the gray chair",
-    "go to the chair",
-    "go forward 0.2 meters",
-    "go forward one meter",
-    "go left 3 feet",
-    "go left 3 meters",
-    "go forward 1 feet",
-    "go back 1 feet",
-    "turn right 90 degrees",
-    "turn left 90 degrees",
-    "turn right 180 degrees",
-    "turn right",
-    "look at where I am pointing",
-    "wave",
-    "follow the chair",
+# NOTE: The following commands in locobot_commands can't be supported
+# right away but we'll attempt them in the next round:
+# "push the chair",
+# "find the closest red thing",
+# "copy this motion",
+# "topple the pile of notebooks",
+locobot_commands = list(GROUND_TRUTH_PARSES) + [
     "push the chair",
-    "find Laurens",
     "find the closest red thing",
     "copy this motion",
     "topple the pile of notebooks",
-    "bring the cup to Mary",
-    "go get me lunch",
 ]
 
 
@@ -65,7 +54,8 @@ class TestDialogueManager(unittest.TestCase):
                 "nsp_grammar_path": "models/ttad/dialogue_grammar.json",
                 "nsp_data_dir": "models/ttad_bert_updated/annotated_data/",
                 "nsp_model_dir": "models/ttad_bert_updated/model/",
-                "ground_truth_file_path": "ground_truth.txt",
+                "ground_truth_data_dir": "models/ttad_bert_updated/ground_truth/",
+                "web_app": False,
             }
         )
 
@@ -85,12 +75,18 @@ class TestDialogueManager(unittest.TestCase):
         logging.info(
             "Printing semantic parsing for {} locobot commands".format(len(locobot_commands))
         )
-        pp = {}
-        for x in locobot_commands:
-            d = self.agent.dialogue_manager.get_logical_form(x, self.agent.dialogue_manager.model)
-            pp[x] = d
-        for k, v in pp.items():
-            logging.info("\nCommand -> '{}'\nParse -> {}\n".format(k, v))
+
+        for command in locobot_commands:
+            ground_truth_parse = GROUND_TRUTH_PARSES.get(command, None)
+            model_prediction = self.agent.dialogue_manager.get_logical_form(
+                command, self.agent.dialogue_manager.model
+            )
+
+            logging.info(
+                "\nCommand -> '{}' \nGround truth -> {} \nParse -> {}\n".format(
+                    command, ground_truth_parse, model_prediction
+                )
+            )
 
 
 if __name__ == "__main__":

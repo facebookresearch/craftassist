@@ -4,12 +4,13 @@ Copyright (c) Facebook, Inc. and its affiliates.
 import os
 import random
 import sys
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 from build_utils import npy_to_blocks_list
 import minecraft_specs
 import dance
 
+PERCEPTION_RANGE = 64
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(BASE_AGENT_ROOT)
 
@@ -31,12 +32,12 @@ from base_agent.memory_nodes import (  # noqa
 
 from mc_memory_nodes import (  # noqa
     DanceNode,
-    BlockTypeNode,
-    MobTypeNode,
-    ObjectNode,
+    VoxelObjectNode,
     BlockObjectNode,
-    ComponentObjectNode,
+    BlockTypeNode,
     MobNode,
+    ItemStackNode,
+    MobTypeNode,
     InstSegNode,
     SchematicNode,
     NODELIST,
@@ -69,6 +70,7 @@ class MCAgentMemory(AgentMemory):
         load_minecraft_specs=True,
         load_block_types=True,
         load_mob_types=True,
+        preception_range=PERCEPTION_RANGE,
     ):
         super(MCAgentMemory, self).__init__(
             db_file=db_file, schema_paths=schema_paths, db_log_path=db_log_path, nodelist=NODELIST
@@ -82,40 +84,117 @@ class MCAgentMemory(AgentMemory):
         self.dances = {}
         dance.add_default_dances(self)
 
+        self.perception_range = preception_range
+
+    ########################
+    ### ReferenceObjects ###
+    ########################
+
+    def get_entity_by_eid(self, eid) -> Optional["ReferenceObjectNode"]:
+        r = self._db_read_one("SELECT uuid FROM ReferenceObjects WHERE eid=?", eid)
+        if r:
+            return self.get_mem_by_id(r[0])
+        else:
+            return None
+
     ###############
-    ### Blocks  ###
+    ### Voxels  ###
     ###############
 
-    def _upsert_block(
+    # count updates are done by hand to not need to count all voxels every time
+    # use these functions, don't add/delete/modify voxels with raw sql
+
+    def update_voxel_count(self, memid, dn):
+        c = self._db_read_one("SELECT voxel_count FROM ReferenceObjects WHERE uuid=?", memid)
+        if c:
+            count = c[0] + dn
+            self._db_write("UPDATE ReferenceObjects SET voxel_count=? WHERE uuid=?", count, memid)
+            return count
+        else:
+            return None
+
+    def update_voxel_mean(self, memid, count, loc):
+        """ update the x, y, z entries in ReferenceObjects
+        to account for the removal or addition of a block.
+        count should be the number of voxels *after* addition if >0
+        and -count the number *after* removal if count < 0
+        count should not be 0- handle that outside
+        """
+        old_loc = self._db_read_one("SELECT x, y, z  FROM ReferenceObjects WHERE uuid=?", memid)
+        # TODO warn/error if no such memory?
+        assert count != 0
+        if old_loc:
+            b = 1 / count
+            if count > 0:
+                a = (count - 1) / count
+            else:
+                a = (1 - count) / (-count)
+            new_loc = (
+                old_loc[0] * a + loc[0] * b,
+                old_loc[1] * a + loc[1] * b,
+                old_loc[2] * a + loc[2] * b,
+            )
+            self._db_write(
+                "UPDATE ReferenceObjects SET x=?, y=?, z=? WHERE uuid=?", *new_loc, memid
+            )
+            return new_loc
+
+    def remove_voxel(self, x, y, z, ref_type):
+        memids = self._db_read_one(
+            "SELECT uuid FROM VoxelObjects WHERE x=? and y=? and z=? and ref_type=?",
+            x,
+            y,
+            z,
+            ref_type,
+        )
+        if not memids:
+            # TODO error/warning?
+            return
+        memid = memids[0]
+        c = self.update_voxel_count(memid, -1)
+        if c > 0:
+            self.update_voxel_mean(memid, c, (x, y, z))
+        self._db_write(
+            "DELETE FROM VoxelObjects WHERE x=? AND y=? AND z=? and ref_type=?", x, y, z, ref_type
+        )
+        if c == 0:
+            #        if not self.memory.check_memid_exists(memid, "VoxelObjects"):
+            # object is gone now.  TODO be more careful here... maybe want to keep some records?
+            self.remove_memid_triple(memid, role="both")
+
+    # this only upserts to the same ref_type- if the voxel is occupied by
+    # a different ref_type it will insert a new ref object even if update is True
+    def upsert_block(
         self,
         block: Block,
         memid: str,
-        table: str,
+        ref_type: str,
         player_placed: bool = False,
         agent_placed: bool = False,
+        update: bool = True,  # if update is set to False, forces a write
     ):
         ((x, y, z), (b, m)) = block
-        if self._db_read_one("SELECT * FROM {} WHERE x=? AND y=? AND z=?".format(table), x, y, z):
-            self._db_write_blockobj(block, memid, table, player_placed, agent_placed, update=True)
+        old_memid = self._db_read_one(
+            "SELECT uuid FROM VoxelObjects WHERE x=? AND y=? AND z=? and ref_type=?",
+            x,
+            y,
+            z,
+            ref_type,
+        )
+        # add to voxel count
+        new_count = self.update_voxel_count(memid, 1)
+        assert new_count
+        self.update_voxel_mean(memid, new_count, (x, y, z))
+        if old_memid and update:
+            if old_memid != memid:
+                self.remove_voxel(x, y, z, ref_type)
+                cmd = "INSERT INTO VoxelObjects (uuid, bid, meta, updated, player_placed, agent_placed, ref_type, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            else:
+                cmd = "UPDATE VoxelObjects SET uuid=?, bid=?, meta=?, updated=?, player_placed=?, agent_placed=? WHERE ref_type=? AND x=? AND y=? AND z=?"
         else:
-            self._db_write_blockobj(block, memid, table, player_placed, agent_placed, update=False)
-
-    def _db_write_blockobj(
-        self,
-        block: Block,
-        memid: str,
-        table: str,
-        player_placed: bool,
-        agent_placed: bool = False,
-        update: bool = False,
-    ):
-        (x, y, z), (b, m) = block
-        if update:
-            cmd = "UPDATE {} SET uuid=?, bid=?, meta=?, updated=?, player_placed=?, agent_placed=? WHERE x=? AND y=? AND z=? "
-        else:
-            cmd = "INSERT INTO {} (uuid, bid, meta, updated, player_placed, agent_placed, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            cmd = "INSERT INTO VoxelObjects (uuid, bid, meta, updated, player_placed, agent_placed, ref_type, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         self._db_write(
-            cmd.format(table), memid, b, m, self.get_time(), player_placed, agent_placed, x, y, z
+            cmd, memid, b, m, self.get_time(), player_placed, agent_placed, ref_type, x, y, z
         )
 
     ######################
@@ -123,26 +202,20 @@ class MCAgentMemory(AgentMemory):
     ######################
 
     # rename this... "object" is bad name
-    # also the sanity checks seem excessive?
-    def get_object_by_id(self, memid: str, table="BlockObjects") -> "ObjectNode":
-        # sanity check...
-        r = self._db_read(
-            "SELECT x, y, z, bid, meta FROM {} WHERE uuid=? ORDER BY updated".format(table), memid
-        )
-        assert r, memid
-        # end sanity check
+    def get_object_by_id(self, memid: str, table="BlockObjects") -> "VoxelObjectNode":
         if table == "BlockObjects":
             return BlockObjectNode(self, memid)
-        elif table == "ComponentObjects":
-            return ComponentObjectNode(self, memid)
+        elif table == "InstSeg":
+            return InstSegNode(self, memid)
         else:
             raise ValueError("Bad table={}".format(table))
 
     # and rename this
-    def get_object_info_by_xyz(self, xyz: XYZ, table: str, just_memid=True):
+    def get_object_info_by_xyz(self, xyz: XYZ, ref_type: str, just_memid=True):
         r = self._db_read(
-            "SELECT DISTINCT(uuid), bid, meta FROM {} WHERE x=? AND y=? AND z=?".format(table),
+            "SELECT DISTINCT(uuid), bid, meta FROM VoxelObjects WHERE x=? AND y=? AND z=? and ref_type=?",
             *xyz,
+            ref_type
         )
         if just_memid:
             return [memid for (memid, bid, meta) in r]
@@ -151,59 +224,31 @@ class MCAgentMemory(AgentMemory):
 
     # WARNING: these do not search archived/snapshotted block objects
     # TODO replace all these all through the codebase with generic counterparts
-    def get_block_object_ids_by_xyz(self, xyz: XYZ, table="BlockObjects") -> List[str]:
+    def get_block_object_ids_by_xyz(self, xyz: XYZ) -> List[str]:
         return self.get_object_info_by_xyz(xyz, "BlockObjects")
 
-    def get_block_object_by_xyz(self, xyz: XYZ) -> Optional["ObjectNode"]:
+    def get_block_object_by_xyz(self, xyz: XYZ) -> Optional["VoxelObjectNode"]:
         memids = self.get_block_object_ids_by_xyz(xyz)
         if len(memids) == 0:
             return None
         return self.get_block_object_by_id(memids[0])
 
-    # TODO remove this?
-    def get_block_objects_with_tags(self, *tags) -> List["ObjectNode"]:
-        tags += ("_block_object",)
-        return self.get_objects_by_tags("BlockObjects", *tags)
-
-    def get_block_object_by_id(self, memid: str) -> "ObjectNode":
+    def get_block_object_by_id(self, memid: str) -> "VoxelObjectNode":
         return self.get_object_by_id(memid, "BlockObjects")
 
     def tag_block_object_from_schematic(self, block_object_memid: str, schematic_memid: str):
-        self.add_triple(block_object_memid, "_from_schematic", schematic_memid)
-
-    # does not search archived mems for now
-    # TODO remove this? replace with get_memory_by_tags(self, *tags, table=None)
-    def get_objects_by_tags(self, table, *tags) -> List["ObjectNode"]:
-        memids = set.intersection(*[set(self.get_memids_by_tag(t)) for t in tags])
-        objects = [self.get_object_by_id(memid, table) for memid in memids]
-        return [o for o in objects if o is not None]
-
-    #######################
-    ### ComponentObject ###
-    #######################
-
-    def get_component_object_by_id(self, memid: str) -> Optional["ObjectNode"]:
-        return self.get_object_by_id(memid, "ComponentObjects")
-
-    def get_component_object_ids_by_xyz(self, xyz: XYZ) -> List[str]:
-        return self.get_object_info_by_xyz(xyz, "ComponentObjects")
-
-    # TODO remove this?
-    def get_component_objects_with_tags(self, *tags) -> List["ObjectNode"]:
-        tags += ("_component_object",)
-        return self.get_objects_by_tags("ComponentObjects", *tags)
+        self.add_triple(subj=block_object_memid, pred_text="_from_schematic", obj=schematic_memid)
 
     #####################
     ### InstSegObject ###
     #####################
 
-    # HERE
-    # TODO remove this? use get_tagged_memory(self, *tags, table=None, intersect=True)
-    def get_instseg_objects_with_tags(self, *tags) -> List["ReferenceObjectNode"]:
-        tags += ("_inst_seg",)
-        memids = set.intersection(*[set(self.get_memids_by_tag(t)) for t in tags])
-        mems = [self.get_mem_by_id(memid) for memid in memids]
-        return [m for m in mems if type(m) == InstSegNode]  # noqa: T484
+    def get_instseg_object_ids_by_xyz(self, xyz: XYZ) -> List[str]:
+        r = self._db_read(
+            'SELECT DISTINCT(uuid) FROM VoxelObjects WHERE ref_type="inst_seg" AND x=? AND y=? AND z=?',
+            *xyz
+        )
+        return r
 
     ####################
     ###  Schematics  ###
@@ -217,7 +262,7 @@ class MCAgentMemory(AgentMemory):
             """
                     SELECT {}.type_name
                     FROM {} INNER JOIN Triples as T ON T.subj={}.uuid
-                    WHERE (T.pred="has_name" OR T.pred="has_tag") AND T.obj=?""".format(
+                    WHERE (T.pred_text="has_name" OR T.pred_text="has_tag") AND T.obj_text=?""".format(
                 table_name, table_name, table_name
             ),
             name,
@@ -232,7 +277,7 @@ class MCAgentMemory(AgentMemory):
                 """
                     SELECT Schematics.uuid
                     FROM Schematics INNER JOIN Triples as T ON T.subj=Schematics.uuid
-                    WHERE (T.pred="has_name" OR T.pred="has_tag") AND T.obj=?""",
+                    WHERE (T.pred_text="has_name" OR T.pred_text="has_tag") AND T.obj_text=?""",
                 schematic_name,
             )
             if schematics:
@@ -245,12 +290,13 @@ class MCAgentMemory(AgentMemory):
     def get_mob_schematic_by_name(self, name: str) -> Optional["SchematicNode"]:
         return self.get_schematic_by_property_name(name, "MobTypes")
 
+    # TODO call this in get_schematic_by_property_name
     def get_schematic_by_name(self, name: str) -> Optional["SchematicNode"]:
         r = self._db_read(
             """
                 SELECT Schematics.uuid
                 FROM Schematics INNER JOIN Triples as T ON T.subj=Schematics.uuid
-                WHERE (T.pred="has_name" OR T.pred="has_tag") AND T.obj=?""",
+                WHERE (T.pred_text="has_name" OR T.pred_text="has_tag") AND T.obj_text=?""",
             name,
         )
         if r:  # if multiple exist, then randomly select one
@@ -262,7 +308,7 @@ class MCAgentMemory(AgentMemory):
 
     def convert_block_object_to_schematic(self, block_object_memid: str) -> "SchematicNode":
         r = self._db_read_one(
-            'SELECT subj FROM Triples WHERE pred="_source_block_object" AND obj=?',
+            'SELECT subj FROM Triples WHERE pred_text="_source_block_object" AND obj=?',
             block_object_memid,
         )
         if r:
@@ -277,7 +323,7 @@ class MCAgentMemory(AgentMemory):
             memid = SchematicNode.create(self, list(block_object.blocks.items()))
 
             # add triple linking the object to the schematic
-            self.add_triple(memid, "_source_block_object", block_object.memid)
+            self.add_triple(subj=memid, pred_text="_source_block_object", obj=block_object.memid)
 
             return self.get_schematic_by_id(memid)
 
@@ -288,10 +334,11 @@ class MCAgentMemory(AgentMemory):
                 memid = SchematicNode.create(self, npy_to_blocks_list(npy))
                 if premem.get("name"):
                     for n in premem["name"]:
-                        self.add_triple(memid, "has_name", n)
+                        self.add_triple(subj=memid, pred_text="has_name", obj_text=n)
+                        self.add_triple(subj=memid, pred_text="has_tag", obj_text=n)
                 if premem.get("tags"):
                     for t in premem["tags"]:
-                        self.add_triple(memid, "has_name", t)
+                        self.add_triple(subj=memid, pred_text="has_tag", obj_text=t)
 
         # load single blocks as schematics
         bid_to_name = minecraft_specs.get_block_data()["bid_to_name"]
@@ -299,9 +346,13 @@ class MCAgentMemory(AgentMemory):
             if d >= 256:
                 continue
             memid = SchematicNode.create(self, [((0, 0, 0), (d, m))])
-            self.add_triple(memid, "has_name", name)
+            self.add_triple(subj=memid, pred_text="has_name", obj_text=name)
             if "block" in name:
-                self.add_triple(memid, "has_name", name.strip("block").strip())
+                self.add_triple(
+                    subj=memid, pred_text="has_name", obj_text=name.strip("block").strip()
+                )
+            # tag single blocks with 'block'
+            self.add_triple(subj=memid, pred_text="has_name", obj_text="block")
 
     def _load_block_types(
         self,
@@ -328,19 +379,21 @@ class MCAgentMemory(AgentMemory):
             if b >= 256:
                 continue
             memid = BlockTypeNode.create(self, type_name, (b, m))
-            self.add_triple(memid, "has_name", type_name)
+            self.add_triple(subj=memid, pred_text="has_name", obj_text=type_name)
             if "block" in type_name:
-                self.add_triple(memid, "has_name", type_name.strip("block").strip())
+                self.add_triple(
+                    subj=memid, pred_text="has_name", obj_text=type_name.strip("block").strip()
+                )
 
             if load_color:
                 if name_to_colors.get(type_name) is not None:
                     for color in name_to_colors[type_name]:
-                        self.add_triple(memid, "has_colour", color)
+                        self.add_triple(subj=memid, pred_text="has_colour", obj_text=color)
 
             if load_block_property:
                 if block_name_to_properties.get(type_name) is not None:
                     for property in block_name_to_properties[type_name]:
-                        self.add_triple(memid, "has_name", property)
+                        self.add_triple(subj_text=memid, pred_text="has_name", obj_text=property)
 
     def _load_mob_types(self, load_mob_types=True):
         if not load_mob_types:
@@ -353,99 +406,58 @@ class MCAgentMemory(AgentMemory):
 
             # load single mob as schematics
             memid = SchematicNode.create(self, [((0, 0, 0), (383, m))])
-            self.add_triple(memid, "has_name", type_name)
+            self.add_triple(subj=memid, pred_text="has_name", obj_text=type_name)
             if "block" in type_name:
-                self.add_triple(memid, "has_name", type_name.strip("block").strip())
+                self.add_triple(
+                    subj=memid, pred_text="has_name", obj_text=type_name.strip("block").strip()
+                )
 
             # then load properties
             memid = MobTypeNode.create(self, type_name, (383, m))
-            self.add_triple(memid, "has_name", type_name)
+            self.add_triple(subj=memid, pred_text="has_name", obj_text=type_name)
             if mob_name_to_properties.get(type_name) is not None:
                 for property in mob_name_to_properties[type_name]:
-                    self.add_triple(memid, "has_name", property)
+                    self.add_triple(subj=memid, pred_text="has_name", obj_text=property)
 
     ##############
     ###  Mobs  ###
     ##############
 
-    # does not return archived mems
-    def get_mobs(
-        self,
-        spatial_range: Tuple[int, int, int, int, int, int] = None,
-        player_placed: bool = None,
-        agent_placed: bool = None,
-        spawntime: Tuple[int, int] = None,
-        mobtype: str = None,
-    ) -> List["MobNode"]:
-        """Find mobs matching the given filters
-
-        Args:
-          spatial_range = [xmin, xmax, ymin, ymax, zmin, zmax]
-          spawntime = [time_min, time_max] .  can be negative to ignore
-              spawntime is in the form of self.get_time()
-          mobtype = string
-        """
-
-        def maybe_add_AND(query):
-            if query[-6:] != "WHERE ":
-                query += " AND"
-            return query
-
-        query = "SELECT MOBS.uuid FROM Mobs INNER JOIN Memories as M ON Mobs.uuid=M.uuid WHERE M.is_snapshot=0 AND"
-        #        query = "SELECT uuid FROM Mobs WHERE "
-        args: List = []
-        if spatial_range is not None:
-            args.extend(spatial_range)
-            query += " x>? AND x<? AND y>? AND y<? AND z>? AND z<?"
-        if player_placed is not None:
-            args.append(player_placed)
-            query = maybe_add_AND(query) + " player_placed = ? "
-        if agent_placed is not None:
-            args.append(agent_placed)
-            query = maybe_add_AND(query) + " agent_placed = ? "
-        if spawntime is not None:
-            if spawntime[0] > 0:
-                args.append(spawntime[0])
-                query = maybe_add_AND(query) + " spawn >= ? "
-            if spawntime[1] > 0:
-                args.append(spawntime[1])
-                query = maybe_add_AND(query) + " spawn <= ? "
-        if mobtype is not None:
-            args.append(mobtype)
-            query = maybe_add_AND(query) + " mobtype=?"
-        memids = [m[0] for m in self._db_read(query, *args)]
-        return [self.get_mob_by_id(memid) for memid in memids]
-
-    # does not return archived mems
-    def get_mobs_tagged(self, *tags) -> List["MobNode"]:
-        tags += ("_mob",)
-        memids = set.intersection(*[set(self.get_memids_by_tag(t)) for t in tags])
-        return [self.get_mob_by_id(memid) for memid in memids]
-
-    def get_mob_by_id(self, memid) -> "MobNode":
-        return MobNode(self, memid)
-
-    def get_mob_by_eid(self, eid) -> Optional["MobNode"]:
-        r = self._db_read_one("SELECT uuid FROM Mobs WHERE eid=?", eid)
-        if r:
-            return MobNode(self, r[0])
-        else:
-            return None
-
     def set_mob_position(self, mob) -> "MobNode":
-        r = self._db_read_one("SELECT uuid FROM Mobs WHERE eid=?", mob.entityId)
+        r = self._db_read_one("SELECT uuid FROM ReferenceObjects WHERE eid=?", mob.entityId)
         if r:
             self._db_write(
-                "UPDATE Mobs SET x=?, y=?, z=? WHERE eid=?",
+                "UPDATE ReferenceObjects SET x=?, y=?, z=?, yaw=?, pitch=? WHERE eid=?",
                 mob.pos.x,
                 mob.pos.y,
                 mob.pos.z,
+                mob.look.yaw,
+                mob.look.pitch,
                 mob.entityId,
             )
             (memid,) = r
         else:
             memid = MobNode.create(self, mob)
-        return self.get_mob_by_id(memid)
+        return self.get_mem_by_id(memid)
+
+    ####################
+    ###  ItemStacks  ###
+    ####################
+
+    def set_item_stack_position(self, item_stack) -> "ItemStackNode":
+        r = self._db_read_one("SELECT uuid FROM ReferenceObjects WHERE eid=?", item_stack.entityId)
+        if r:
+            self._db_write(
+                "UPDATE ReferenceObjects SET x=?, y=?, z=? WHERE eid=?",
+                item_stack.pos.x,
+                item_stack.pos.y,
+                item_stack.pos.z,
+                item_stack.entityId,
+            )
+            (memid,) = r
+        else:
+            memid = ItemStackNode.create(self, item_stack)
+        return self.get_mem_by_id(memid)
 
     ###############
     ###  Dances  ##

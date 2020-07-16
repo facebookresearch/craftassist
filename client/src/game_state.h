@@ -65,6 +65,17 @@ class GameState {
   std::optional<Mob> getMob(unsigned long entityId);
   std::vector<Mob> getMobs();
 
+  // Objects
+  void setObject(Object object);
+  std::optional<Object> getObject(unsigned long entityId);
+  std::vector<Object> getObjects();
+
+  // ItemStacks
+  void setItemStack(ItemStack itemStack);
+  std::optional<ItemStack> getItemStack(unsigned long entityId);
+  std::vector<ItemStack> getItemStacks();
+  void setItemStackDeltaCount(unsigned long entityId, uint8_t deltaCount);
+
   // Inventory
   void setPlayerInventory(std::vector<Slot> slots) { playerInventory_ = slots; }
   void setPlayerInventorySlot(uint16_t idx, Slot slot) { playerInventory_[idx] = slot; }
@@ -91,6 +102,8 @@ class GameState {
   std::unordered_map<std::string, std::string> otherPlayerNames_;
   std::unordered_map<std::string, Player> otherPlayers_;
   std::unordered_map<unsigned long, Mob> mobs_;
+  std::unordered_map<unsigned long, Object> objects_;
+  std::unordered_map<unsigned long, ItemStack> itemStacks_;
   std::vector<Slot> playerInventory_;
   uint8_t currentHotbarIndex_ = 0;
   uint8_t currentOpenWindowId_ = 0;

@@ -148,6 +148,8 @@ vector<Player> Client::getOtherPlayers() { return gameState_->getOtherPlayers();
 
 vector<Mob> Client::getMobs() { return gameState_->getMobs(); }
 
+vector<ItemStack> Client::getItemStacks() { return gameState_->getItemStacks(); }
+
 optional<Player> Client::getOtherPlayerByName(const string& name) {
   return gameState_->getOtherPlayerByName(name);
 }
@@ -342,6 +344,14 @@ bool Client::digFeet() {
   float yaw = gameState_->getLook().yaw;
   BlockPos pos = getPosition().toBlockPos() + discreteStepDirection(yaw);
   return dig(pos);
+}
+
+void Client::dropItemStack() {
+  packetWriter_->safeWrite(encoder_->playerDropItemStackPacket());
+}
+
+void Client::dropItem() {
+  packetWriter_->safeWrite(encoder_->playerDropItemPacket());
 }
 
 void Client::turnAngle(float angle) {

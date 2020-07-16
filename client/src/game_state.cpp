@@ -1,6 +1,5 @@
 // Copyright (c) Facebook, Inc. and its affiliates.
 
-
 #include "game_state.h"
 #include <glog/logging.h>
 #include "block_map.h"
@@ -124,6 +123,58 @@ vector<Mob> GameState::getMobs() {
     mobs.push_back(p.second);
   }
   return mobs;
+}
+
+void GameState::setObject(Object object) { objects_[object.entityId] = object; }
+
+optional<Object> GameState::getObject(unsigned long entityId) {
+  auto objectIter = objects_.find(entityId);
+  if (objectIter == objects_.end()) {
+    return std::nullopt;
+  } else {
+    return objectIter->second;
+  }
+}
+
+vector<Object> GameState::getObjects() {
+  vector<Object> objects;
+  objects.reserve(objects_.size());
+  for (pair<unsigned long, Object> p : objects_) {
+    objects.push_back(p.second);
+  }
+  return objects;
+}
+
+void GameState::setItemStack(ItemStack itemStack) { itemStacks_[itemStack.entityId] = itemStack; }
+
+optional<ItemStack> GameState::getItemStack(unsigned long entityId) {
+  auto itemStackIter = itemStacks_.find(entityId);
+  if (itemStackIter == itemStacks_.end()) {
+    return std::nullopt;
+  } else {
+    return itemStackIter->second;
+  }
+}
+
+vector<ItemStack> GameState::getItemStacks() {
+  vector<ItemStack> itemStacks;
+  itemStacks.reserve(itemStacks_.size());
+  for (pair<unsigned long, ItemStack> p : itemStacks_) {
+    itemStacks.push_back(p.second);
+  }
+  return itemStacks;
+}
+
+void GameState::setItemStackDeltaCount(unsigned long entityId, uint8_t deltaCount) {
+  optional<ItemStack> p = getItemStack(entityId);
+  if (!p) {
+    return;
+  }
+  Slot item = p->item;
+  item.count += deltaCount;
+  p->item = item;
+  setItemStack(*p);
+  p = getItemStack(entityId);
 }
 
 optional<Player> GameState::getOtherPlayerByName(const string& name) {

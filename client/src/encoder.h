@@ -52,6 +52,9 @@ class Encoder {
   std::vector<uint8_t> playerLookPacket(float yaw, float pitch, bool onGround);
   std::vector<uint8_t> playerStartDiggingPacket(BlockPos pos);
   std::vector<uint8_t> playerFinishedDiggingPacket(BlockPos pos);
+  std::vector<uint8_t> playerDropItemStackPacket();
+  std::vector<uint8_t> playerDropItemPacket();
+
   std::vector<uint8_t> clickWindowPacket(uint8_t windowId, uint16_t slot, bool rightClick,
                                          uint16_t counter, Slot clicked);
   std::vector<uint8_t> closeWindowPacket(uint8_t windowId);

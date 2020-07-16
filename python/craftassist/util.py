@@ -1,12 +1,10 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
-import os
-import sys
-
 from collections import defaultdict
 from math import sin, cos, pi
 import binascii
+import copy
 import hashlib
 import logging
 import numpy as np
@@ -15,12 +13,10 @@ import traceback
 from typing import cast, Tuple, List, TypeVar, Sequence
 import uuid
 
-BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
-sys.path.append(BASE_AGENT_ROOT)
-
-import base_agent.rotation as rotation
+import rotation
 
 XYZ = Tuple[int, int, int]
+LOOK = Tuple[float, float]
 # two points p0(x0, y0, z0), p1(x1, y1, z1) determine a 3d cube(point_at_target)
 POINT_AT_TARGET = Tuple[int, int, int, int, int, int]
 IDM = Tuple[int, int]
@@ -278,14 +274,16 @@ def capped_line_of_sight(agent, player_struct, cap=20):
 def get_locs_from_entity(e):
     """Assumes input is either mob, memory, or tuple/list of coords
     outputs a tuple of coordinate tuples"""
+
+    if hasattr(e, "pos"):
+        if type(e.pos) is list or type(e.pos) is tuple or hasattr(e.pos, "dtype"):
+            return (tuple(to_block_pos(e.pos)),)
+        else:
+            return tuple((tuple(to_block_pos(pos_to_np(e.pos))),))
+
     if str(type(e)).find("memory") > 0:
         if hasattr(e, "blocks"):
             return strip_idmeta(e.blocks)
-        if hasattr(e, "position_history"):
-            if len(e.position_history) > 0:
-                mid = max(e.position_history)
-                loc = e.position_history[mid]
-                return tuple((tuple(to_block_pos(pos_to_np(loc))),))
         return None
     elif type(e) is tuple or type(e) is list:
         if len(e) > 0:
@@ -293,10 +291,7 @@ def get_locs_from_entity(e):
                 return e
             else:
                 return tuple((e,))
-        elif str(type(e)) == "<class 'agent.Mob'>" or str(type(e)).find("Agent") > 0:
-            return tuple((tuple(to_block_pos(pos_to_np(e.pos))),))
-
-        return None
+    return None
 
 
 def fill_idmeta(agent, poss: List[XYZ]) -> List[Block]:
@@ -311,6 +306,64 @@ def fill_idmeta(agent, poss: List[XYZ]) -> List[Block]:
         idm = tuple(B[y - my, z - mz, x - mx])
         idms.append(cast(IDM, idm))
     return [(cast(XYZ, tuple(pos)), idm) for (pos, idm) in zip(poss, idms)]
+
+
+def cluster_areas(areas):
+    """Cluster a list of areas so that intersected ones are unioned
+
+       areas: list of tuple ((x, y, z), radius), each defines a cube
+       where (x, y, z) is the center and radius is half the side length
+    """
+
+    def expand_xyzs(pos, radius):
+        xmin, ymin, zmin = pos[0] - radius, pos[1] - radius, pos[2] - radius
+        xmax, ymax, zmax = pos[0] + radius, pos[1] + radius, pos[2] + radius
+        return xmin, xmax, ymin, ymax, zmin, zmax
+
+    def is_intersecting(area1, area2):
+        x1_min, x1_max, y1_min, y1_max, z1_min, z1_max = expand_xyzs(area1[0], area1[1])
+        x2_min, x2_max, y2_min, y2_max, z2_min, z2_max = expand_xyzs(area2[0], area2[1])
+        return (
+            (x1_min <= x2_max and x1_max >= x2_min)
+            and (y1_min <= y2_max and y1_max >= y2_min)
+            and (z1_min <= z2_max and z1_max >= z2_min)
+        )
+
+    def merge_area(area1, area2):
+        x1_min, x1_max, y1_min, y1_max, z1_min, z1_max = expand_xyzs(area1[0], area1[1])
+        x2_min, x2_max, y2_min, y2_max, z2_min, z2_max = expand_xyzs(area2[0], area2[1])
+
+        x_min, y_min, z_min = min(x1_min, x2_min), min(y1_min, y2_min), min(z1_min, z2_min)
+        x_max, y_max, z_max = max(x1_max, x2_max), max(y1_max, y2_max), max(z1_max, z2_max)
+
+        x, y, z = (x_min + x_max) // 2, (y_min + y_max) // 2, (z_min + z_max) // 2
+        radius = max(
+            (x_max - x_min + 1) // 2, max((y_max - y_min + 1) // 2, (z_max - z_min + 1) // 2)
+        )
+        return ((x, y, z), radius)
+
+    unclustered_areas = copy.deepcopy(areas)
+    clustered_areas = []
+
+    while len(unclustered_areas) > 0:
+        area = unclustered_areas[0]
+        del unclustered_areas[0]
+        finished = True
+        idx = 0
+        while idx < len(unclustered_areas) or not finished:
+            if idx >= len(unclustered_areas):
+                idx = 0
+                finished = True
+                continue
+            if is_intersecting(area, unclustered_areas[idx]):
+                area = merge_area(area, unclustered_areas[idx])
+                finished = False
+                del unclustered_areas[idx]
+            else:
+                idx += 1
+        clustered_areas.append(area)
+
+    return clustered_areas
 
 
 class ErrorWithResponse(Exception):

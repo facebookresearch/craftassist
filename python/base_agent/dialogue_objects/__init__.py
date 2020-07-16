@@ -16,7 +16,14 @@ from dialogue_object import (
     Say,
 )
 
-from dialogue_object_utils import process_spans, coref_resolve
+from dialogue_object_utils import (
+    SPEAKERLOOK,
+    SPEAKERPOS,
+    AGENTPOS,
+    is_loc_speakerlook,
+    process_spans,
+    coref_resolve,
+)
 
 __all__ = [
     AwaitResponse,
@@ -29,6 +36,10 @@ __all__ = [
     ConfirmTask,
     ConfirmReferenceObject,
     Say,
+    SPEAKERLOOK,
+    SPEAKERPOS,
+    AGENTPOS,
+    is_loc_speakerlook,
     coref_resolve,
     process_spans,
 ]

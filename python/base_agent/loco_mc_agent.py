@@ -26,10 +26,11 @@ class LocoMCAgent(BaseAgent):
         self.uncaught_error_count = 0
         self.last_chat_time = 0
         self.last_task_memid = None
+        self.areas_to_perceive = []
 
     def init_physical_interfaces(self):
         """
-        should define or otherwise set up 
+        should define or otherwise set up
         (at least):
         self.send_chat(),
         movement primitives, including

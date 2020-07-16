@@ -6,6 +6,7 @@ ARG current_branch
 RUN apt-get -y update
 RUN apt-get install -y \
         cmake \
+	curl \
         g++ \
         clang-format \
         git \
@@ -19,6 +20,9 @@ RUN apt-get install -y \
         python3-pip \
         zlib1g-dev \
         ;
+
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
+RUN apt-get -y install nodejs
 
 RUN pip3 install torch
 
@@ -50,4 +54,12 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 COPY run.fromenv.sh /run.fromenv.sh
+
+EXPOSE 3000
+EXPOSE 2556
+EXPOSE 2557
+EXPOSE 25565 
+EXPOSE 9000
+EXPOSE 5000
+
 ENTRYPOINT ["/run.fromenv.sh"]  # uses $RUN_SH_GZ_B64

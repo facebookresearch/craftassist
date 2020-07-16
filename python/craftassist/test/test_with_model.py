@@ -28,7 +28,8 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
         opts.nsp_embedding_path = None
         opts.model_base_path = None
         opts.QA_nsp_model_path = None
-        opts.ground_truth_file_path = ""
+        opts.ground_truth_data_dir = ""
+        opts.web_app = False
         super().setUp(agent_opts=opts)
 
         self.cube_right = self.add_object(shapes.cube(bid=(42, 0)), (9, 63, 4))

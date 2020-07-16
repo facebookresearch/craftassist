@@ -1,20 +1,21 @@
 import uuid
+import ast
 from typing import Optional, List, Dict, cast
-from util import XYZ, POINT_AT_TARGET
+from .util import XYZ, POINT_AT_TARGET, to_player_struct
 from task import Task
 
 
 class MemoryNode:
-    TABLE_ROWS = ["uuid"]
+    TABLE_COLUMNS = ["uuid"]
     PROPERTIES_BLACKLIST = ["agent_memory", "forgetme"]
-    TABLE: Optional[str] = None
+    NODE_TYPE: Optional[str] = None
 
     @classmethod
     def new(cls, agent_memory, snapshot=False) -> str:
         memid = uuid.uuid4().hex
         t = agent_memory.get_time()
         agent_memory._db_write(
-            "INSERT INTO Memories VALUES (?,?,?,?,?,?)", memid, cls.TABLE, t, t, t, snapshot
+            "INSERT INTO Memories VALUES (?,?,?,?,?,?)", memid, cls.NODE_TYPE, t, t, t, snapshot
         )
         return memid
 
@@ -24,9 +25,6 @@ class MemoryNode:
 
     def get_tags(self) -> List[str]:
         return self.agent_memory.get_tags_by_memid(self.memid)
-
-    def get_all_has_relations(self) -> Dict[str, str]:
-        return self.agent_memory.get_all_has_relations(self.memid)
 
     def get_properties(self) -> Dict[str, str]:
         blacklist = self.PROPERTIES_BLACKLIST + self._more_properties_blacklist()
@@ -44,7 +42,7 @@ class MemoryNode:
         """Override in subclasses if necessary to properly snapshot."""
 
         read_cmd = "SELECT "
-        for r in self.TABLE_ROWS:
+        for r in self.TABLE_COLUMNS:
             read_cmd += r + ", "
         read_cmd = read_cmd.strip(", ")
         read_cmd += " FROM " + self.TABLE + " WHERE uuid=?"
@@ -56,9 +54,13 @@ class MemoryNode:
         new_data = list(data)
         new_data[0] = archive_memid
 
-        write_cmd = "INSERT INTO " + self.TABLE + "("
+        if hasattr(self, "ARCHIVE_TABLE"):
+            archive_table = self.ARCHIVE_TABLE
+        else:
+            archive_table = self.TABLE
+        write_cmd = "INSERT INTO " + archive_table + "("
         qs = ""
-        for r in self.TABLE_ROWS:
+        for r in self.TABLE_COLUMNS:
             write_cmd += r + ", "
             qs += "?, "
         write_cmd = write_cmd.strip(", ")
@@ -68,21 +70,71 @@ class MemoryNode:
 
 
 def link_archive_to_mem(agent_memory, memid, archive_memid):
-    agent_memory.add_triple(archive_memid, "_archive_of", memid)
-    agent_memory.add_triple(memid, "_has_archive", archive_memid)
+    agent_memory.add_triple(subj=archive_memid, pred_text="_archive_of", obj=memid)
+    agent_memory.add_triple(subj=memid, pred_text="_has_archive", obj=archive_memid)
+
+
+class ProgramNode(MemoryNode):
+    """represents logical forms (outputs from the semantic parser)"""
+
+    TABLE_COLUMNS = ["uuid", "logical_form"]
+    TABLE = "Programs"
+    NODE_TYPE = "Program"
+
+    def __init__(self, agent_memory, memid: str):
+        super().__init__(agent_memory, memid)
+        text = self.agent_memory._db_read_one(
+            "SELECT logical_form FROM Programs WHERE uuid=?", self.memid
+        )
+        self.logical_form = ast.literal_eval(text)
+
+    @classmethod
+    def create(cls, memory, logical_form, snapshot=False) -> str:
+        memid = cls.new(memory, snapshot=snapshot)
+        memory._db_write(
+            "INSERT INTO Programs(uuid, logical_form) VALUES (?,?)", memid, format(logical_form)
+        )
+        return memid
+
+
+class NamedAbstractionNode(MemoryNode):
+    """a abstract concept with a name, to be used in triples"""
+
+    TABLE_COLUMNS = ["uuid", "name"]
+    TABLE = "NamedAbstractions"
+    NODE_TYPE = "NamedAbstraction"
+
+    def __init__(self, agent_memory, memid: str):
+        super().__init__(agent_memory, memid)
+        name = self.agent_memory._db_read_one(
+            "SELECT name FROM NamedAbstractions WHERE uuid=?", self.memid
+        )
+        self.name = name
+
+    @classmethod
+    def create(cls, memory, name, snapshot=False) -> str:
+        memid = memory._db_read_one("SELECT uuid FROM NamedAbstractions WHERE name=?", name)
+        if memid:
+            return memid[0]
+        memid = cls.new(memory, snapshot=snapshot)
+        memory._db_write("INSERT INTO NamedAbstractions(uuid, name) VALUES (?,?)", memid, name)
+        return memid
 
 
 # the table entry just has the memid and a modification time,
 # actual set elements are handled as triples
 class SetNode(MemoryNode):
-    TABLE_ROWS = ["uuid"]
+    """ for representing sets of objects, so that it is easier to build complex relations 
+    using RDF/triplestore format.  is currently fetal- not used in main codebase yet """
+
+    TABLE_COLUMNS = ["uuid"]
     TABLE = "SetMems"
+    NODE_TYPE = "Set"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
-        time = self.agent_memory._db_read_one("SELECT time FROM SetMems WHERE uuid=?", self.memid)
-        self.time = time
 
+    # FIXME put the member triples
     @classmethod
     def create(cls, memory, snapshot=False) -> str:
         memid = cls.new(memory, snapshot=snapshot)
@@ -90,13 +142,20 @@ class SetNode(MemoryNode):
         return memid
 
     def get_members(self):
-        return self.agent_memory.get_triples(pred="set_member_", obj=self.memid)
+        return self.agent_memory.get_triples(pred_text="set_member_", obj=self.memid)
 
     def snapshot(self, agent_memory):
         return SetNode.create(agent_memory, snapshot=True)
 
 
 class ReferenceObjectNode(MemoryNode):
+    """ generic memory node for anything that has a spatial location and can be
+    used a spatial reference (e.g. to the left of the x)."""
+
+    TABLE = "ReferenceObjects"
+    NODE_TYPE = "ReferenceObject"
+    ARCHIVE_TABLE = "ArchivedReferenceObjects"
+
     def get_pos(self) -> XYZ:
         raise NotImplementedError("must be implemented in subclass")
 
@@ -108,13 +167,15 @@ class ReferenceObjectNode(MemoryNode):
 
 
 class PlayerNode(ReferenceObjectNode):
-    TABLE_ROWS = ["uuid", "eid", "name", "x", "y", "z", "pitch", "yaw"]
-    TABLE = "Players"
+    """ represents humans and other agents that can affect the world """
+
+    TABLE_COLUMNS = ["uuid", "eid", "name", "x", "y", "z", "pitch", "yaw", "ref_type"]
+    NODE_TYPE = "Player"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
         eid, name, x, y, z, pitch, yaw = self.agent_memory._db_read_one(
-            "SELECT eid, name, x, y, z, pitch, yaw FROM Players WHERE uuid=?", self.memid
+            "SELECT eid, name, x, y, z, pitch, yaw FROM ReferenceObjects WHERE uuid=?", self.memid
         )
         self.eid = eid
         self.name = name
@@ -126,7 +187,7 @@ class PlayerNode(ReferenceObjectNode):
     def create(cls, memory, player_struct) -> str:
         memid = cls.new(memory)
         memory._db_write(
-            "INSERT INTO Players(uuid, eid, name, x, y, z, pitch, yaw) VALUES (?,?,?,?,?,?,?,?)",
+            "INSERT INTO ReferenceObjects(uuid, eid, name, x, y, z, pitch, yaw, ref_type) VALUES (?,?,?,?,?,?,?,?,?)",
             memid,
             player_struct.entityId,
             player_struct.name,
@@ -135,8 +196,22 @@ class PlayerNode(ReferenceObjectNode):
             player_struct.pos.z,
             player_struct.look.pitch,
             player_struct.look.yaw,
+            "player",
         )
         memory.tag(memid, "_player")
+        memory.tag(memid, "_physical_object")
+        memory.tag(memid, "_animate")
+        # this is a hack until memory_filters does "not"
+        memory.tag(memid, "_not_location")
+        return memid
+
+    @classmethod
+    def update(cls, memory, p, memid) -> str:
+        cmd = "UPDATE ReferenceObjects SET eid=?, name=?, x=?,  y=?, z=?, pitch=?, yaw=? WHERE "
+        cmd = cmd + "uuid=?"
+        memory._db_write(
+            cmd, p.entityId, p.name, p.pos.x, p.pos.y, p.pos.z, p.look.pitch, p.look.yaw, memid
+        )
         return memid
 
     def get_pos(self) -> XYZ:
@@ -152,36 +227,63 @@ class PlayerNode(ReferenceObjectNode):
         x, y, z = self.pos
         return x, x, y, y, z, z
 
+    def get_struct(self):
+        return to_player_struct(self.pos, self.yaw, self.pitch, self.eid, self.name)
+
+
+class SelfNode(PlayerNode):
+    """special PLayerNode for representing the agent's self"""
+
+    TABLE_COLUMNS = ["uuid", "eid", "name", "x", "y", "z", "pitch", "yaw", "ref_type"]
+    NODE_TYPE = "Self"
+
 
 # locations should always be archives?
-# shouldn't this be a reference object?  TODO!!
-class LocationNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "x", "y", "z"]
-    TABLE = "Locations"
+class LocationNode(ReferenceObjectNode):
+    """ReferenceObjectNode representing a raw location (a point in space) """
+
+    TABLE_COLUMNS = ["uuid", "x", "y", "z", "ref_type"]
+    NODE_TYPE = "Location"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
         x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Locations WHERE uuid=?", self.memid
+            "SELECT x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
         )
         self.location = (x, y, z)
+        self.pos = (x, y, z)
 
     @classmethod
     def create(cls, memory, xyz: XYZ) -> str:
         memid = cls.new(memory)
         memory._db_write(
-            "INSERT INTO Locations(uuid, x, y, z) VALUES (?, ?, ?, ?)",
+            "INSERT INTO ReferenceObjects(uuid, x, y, z, ref_type) VALUES (?, ?, ?, ?, ?)",
             memid,
             xyz[0],
             xyz[1],
             xyz[2],
+            "location",
         )
         return memid
 
+    def get_bounds(self):
+        x, y, z = self.pos
+        return x, x, y, y, z, z
+
+    def get_pos(self) -> XYZ:
+        return self.pos
+
+    def get_point_at_target(self) -> POINT_AT_TARGET:
+        x, y, z = self.pos
+        return cast(POINT_AT_TARGET, (x, y, z, x, y, z))
+
 
 class TimeNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "time"]
+    """represents a temporal 'location' """
+
+    TABLE_COLUMNS = ["uuid", "time"]
     TABLE = "Times"
+    NODE_TYPE = "Time"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -196,8 +298,11 @@ class TimeNode(MemoryNode):
 
 
 class ChatNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "speaker", "chat", "time"]
+    """represents a chat/utterance from another agent/human """
+
+    TABLE_COLUMNS = ["uuid", "speaker", "chat", "time"]
     TABLE = "Chats"
+    NODE_TYPE = "Time"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -222,8 +327,11 @@ class ChatNode(MemoryNode):
 
 
 class TaskNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "action_name", "pickled", "paused", "created_at", "finished_at"]
+    """ represents a task object that was placed on the agent's task_stack """
+
+    TABLE_COLUMNS = ["uuid", "action_name", "pickled", "paused", "created_at", "finished_at"]
     TABLE = "Tasks"
+    NODE_TYPE = "Task"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -250,7 +358,7 @@ class TaskNode(MemoryNode):
 
     def get_chat(self) -> Optional[ChatNode]:
         """Return the memory of the chat that caused this task's creation, or None"""
-        triples = self.agent_memory.get_triples(pred="chat_effect_", obj=self.memid)
+        triples = self.agent_memory.get_triples(pred_text="chat_effect_", obj=self.memid)
         if triples:
             chat_id, _, _ = triples[0]
             return ChatNode(self.agent_memory, chat_id)
@@ -259,7 +367,7 @@ class TaskNode(MemoryNode):
 
     def get_parent_task(self) -> Optional["TaskNode"]:
         """Return the 'TaskNode' of the parent task, or None"""
-        triples = self.agent_memory.get_triples(subj=self.memid, pred="_has_parent_task")
+        triples = self.agent_memory.get_triples(subj=self.memid, pred_text="_has_parent_task")
         if len(triples) == 0:
             return None
         elif len(triples) == 1:
@@ -278,7 +386,7 @@ class TaskNode(MemoryNode):
 
     def get_child_tasks(self) -> List["TaskNode"]:
         """Return tasks that were spawned beause of this task"""
-        r = self.agent_memory.get_triples(pred="_has_parent_task", obj=self.memid)
+        r = self.agent_memory.get_triples(pred_text="_has_parent_task", obj=self.memid)
         memids = [m for m, _, _ in r]
         return [TaskNode(self.agent_memory, m) for m in memids]
 
@@ -305,12 +413,14 @@ class TaskNode(MemoryNode):
 
 
 # list of nodes to register in memory
-NODELIST = [TaskNode, ChatNode, SetNode, TimeNode, PlayerNode]
-"""
-NODELIST = {"Tasks": TaskNode,
-            "Chats": ChatNode,
-            "SetMems": SetNode,
-            "Locations": LocationNode,
-            "Times": TimeNode,
-            "Players": PlayerNode}
-"""
+NODELIST = [
+    TaskNode,
+    ChatNode,
+    LocationNode,
+    SetNode,
+    TimeNode,
+    PlayerNode,
+    SelfNode,
+    ProgramNode,
+    NamedAbstractionNode,
+]

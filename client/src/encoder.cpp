@@ -178,6 +178,20 @@ vector<uint8_t> Encoder::playerFinishedDiggingPacket(BlockPos pos) {
   return packet(0x14, THRESHOLD);
 }
 
+vector<uint8_t> Encoder::playerDropItemStackPacket() {
+  varint(3); // drop the entire selected stack
+  position(0, 0, 0); // location is always set to 0/0/0
+  byte(0); // face is always set to -Y(0)
+  return packet(0x14, THRESHOLD);
+}
+
+vector<uint8_t> Encoder::playerDropItemPacket() {
+  varint(4); // drop the selected item
+  position(0, 0, 0); // location is always set to 0/0/0
+  byte(0); // face is always set to -Y(0)
+  return packet(0x14, THRESHOLD);
+}
+
 vector<uint8_t> Encoder::clickWindowPacket(uint8_t windowId, uint16_t idx, bool rightClick,
                                            uint16_t counter, Slot clicked) {
   byte(windowId);

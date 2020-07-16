@@ -4,10 +4,11 @@ import sys
 import numpy as np
 import logging
 from collections import Counter
-from typing import cast, List, Sequence
+from typing import cast, List, Sequence, Dict
 
 # FIXME fix util imports
-from util import XYZ, POINT_AT_TARGET, IDM, Block, get_bounds
+from util import XYZ, LOOK, POINT_AT_TARGET, IDM, Block
+import minecraft_specs
 from entities import MOBS_BY_ID
 
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
@@ -16,40 +17,94 @@ sys.path.append(BASE_AGENT_ROOT)
 from base_agent.memory_nodes import link_archive_to_mem, ReferenceObjectNode, MemoryNode, NODELIST
 
 
-class ObjectNode(ReferenceObjectNode):
+class VoxelObjectNode(ReferenceObjectNode):
+    """this is a reference object that is distributed over
+    multiple voxels.   uses VoxelObjects table to hold the
+    location of the voxels; and ReferenceObjects to hold 'global' info"""
+
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
-        r = self.agent_memory._db_read(
-            "SELECT x, y, z, bid, meta FROM {} WHERE uuid=?".format(self.TABLE), self.memid
-        )
-        self.blocks = {(x, y, z): (b, m) for (x, y, z, b, m) in r}
+        ref = self.agent_memory._db_read("SELECT * FROM ReferenceObjects WHERE uuid=?", self.memid)
+        if len(ref) == 0:
+            raise Exception("no mention of this VoxelObject in ReferenceObjects Table")
+        self.ref_info = ref[0]
+        voxels = self.agent_memory._db_read("SELECT * FROM VoxelObjects WHERE uuid=?", self.memid)
+        self.locs: List[tuple] = []
+        self.blocks: Dict[tuple, tuple] = {}
+        self.update_times: Dict[tuple, int] = {}
+        self.player_placed: Dict[tuple, bool] = {}
+        self.agent_placed: Dict[tuple, bool] = {}
+        for v in voxels:
+            loc = (v[1], v[2], v[3])
+            self.locs.append(loc)
+            if v[4]:
+                assert v[5] is not None
+                self.blocks[loc] = (v[4], v[5])
+            else:
+                self.blocks[loc] = (None, None)
+            self.agent_placed[loc] = v[6]
+            self.player_placed[loc] = v[7]
+            self.update_times[loc] = v[8]
+            # TODO assert these all the same?
+            self.memtype = v[9]
 
     def get_pos(self) -> XYZ:
-        return cast(XYZ, tuple(int(x) for x in np.mean(list(self.blocks.keys()), axis=0)))
+        return cast(XYZ, tuple(int(x) for x in np.mean(self.locs, axis=0)))
 
     def get_point_at_target(self) -> POINT_AT_TARGET:
-        point_min = [int(x) for x in np.min(list(self.blocks.keys()), axis=0)]
-        point_max = [int(x) for x in np.max(list(self.blocks.keys()), axis=0)]
+        point_min = [int(x) for x in np.min(self.locs, axis=0)]
+        point_max = [int(x) for x in np.max(self.locs, axis=0)]
         return cast(POINT_AT_TARGET, point_min + point_max)
 
     def get_bounds(self):
-        return get_bounds(list(self.blocks.keys()))
+        M = np.max(self.locs, axis=0)
+        m = np.min(self.locs, axis=0)
+        return m[0], M[0], m[1], M[1], m[2], M[2]
 
     def snapshot(self, agent_memory):
-        if self.TABLE == "BlockObjects":
-            table = "ArchivedBlockObjects"
-        else:
-            table = self.TABLE
         archive_memid = self.new(agent_memory, snapshot=True)
-        for bid, meta in self.blocks.items():
-            agent_memory._upsert_block((bid, meta), archive_memid, table)
+        for loc in self.locs:
+            cmd = "INSERT INTO ArchivedVoxelObjects (uuid, x, y, z, bid, meta, agent_placed, player_placed, updated, ref_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            values = (
+                archive_memid,
+                loc[0],
+                loc[1],
+                loc[2],
+                self.blocks[loc][0],
+                self.blocks[loc][1],
+                self.agent_placed[loc],
+                self.player_placed[loc],
+                self.update_times[loc],
+                self.memtype,
+            )
+            agent_memory._db_write(cmd, *values)
+
+        archive_memid = self.new(agent_memory, snapshot=True)
+        cmd = "INSERT INTO ArchivedReferenceObjects (uuid, eid, x, y, z, yaw, pitch, name, type_name, ref_type, player_placed, agent_placed, created, updated, voxel_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        info = list(self.ref_info)
+        info[0] = archive_memid
+        agent_memory._db_write(cmd, *info)
         link_archive_to_mem(agent_memory, self.memid, archive_memid)
         return archive_memid
 
 
-class BlockObjectNode(ObjectNode):
-    TABLE_ROWS = ["uuid", "x", "y", "z", "bid", "meta", "agent_placed", "player_placed", "updated"]
+class BlockObjectNode(VoxelObjectNode):
+    """ this is a voxel object that represents a set of physically present blocks.
+    it is considered to be nonephemeral"""
+
+    TABLE_COLUMNS = [
+        "uuid",
+        "x",
+        "y",
+        "z",
+        "bid",
+        "meta",
+        "agent_placed",
+        "player_placed",
+        "updated",
+    ]
     TABLE = "BlockObjects"
+    NODE_TYPE = "BlockObject"
 
     @classmethod
     def create(cls, memory, blocks: Sequence[Block]) -> str:
@@ -59,10 +114,18 @@ class BlockObjectNode(ObjectNode):
             if old_memids:
                 return old_memids[0]
         memid = cls.new(memory)
+        # TODO check/assert this isn't there...
+        cmd = "INSERT INTO ReferenceObjects (uuid, x, y, z, ref_type, voxel_count) VALUES ( ?, ?, ?, ?, ?, ?)"
+        # TODO this is going to cause a bug, need better way to initialize and track mean loc
+        memory._db_write(cmd, memid, 0, 0, 0, "BlockObjects", 0)
         for block in blocks:
-            memory._upsert_block(block, memid, "BlockObjects")
+            memory.upsert_block(block, memid, "BlockObjects")
         memory.tag(memid, "_block_object")
+        memory.tag(memid, "_voxel_object")
         memory.tag(memid, "_physical_object")
+        memory.tag(memid, "_destructible")
+        # this is a hack until memory_filters does "not"
+        memory.tag(memid, "_not_location")
         logging.info(
             "Added block object {} with {} blocks, {}".format(
                 memid, len(blocks), Counter([idm for _, idm in blocks])
@@ -75,27 +138,15 @@ class BlockObjectNode(ObjectNode):
         return "<BlockObject Node @ {}>".format(list(self.blocks.keys())[0])
 
 
-class ComponentObjectNode(ObjectNode):
-    TABLE_ROWS = ["uuid", "x", "y", "z", "bid", "meta", "agent_placed", "player_placed", "updated"]
-    TABLE = "ComponentObjects"
-
-    @classmethod
-    def create(cls, memory, blocks: List[Block], labels: List[str]) -> str:
-        memid = cls.new(memory)
-        for block in blocks:
-            memory._upsert_block(block, memid, cls.TABLE)
-        memory.tag(memid, "_component_object")
-        memory.tag(memid, "_physical_object")
-        for l in labels:
-            memory.tag(memid, l)
-        return memid
-
-
 # note: instance segmentation objects should not be tagged except by the creator
 # build an archive if you want to tag permanently
-class InstSegNode(ReferenceObjectNode):
-    TABLE_ROWS = ["uuid", "x", "y", "z"]
-    TABLE = "InstSeg"
+class InstSegNode(VoxelObjectNode):
+    """ this is a voxel object that represents a region of space, and is considered ephemeral"""
+
+    TABLE_COLUMNS = ["uuid", "x", "y", "z", "ref_type"]
+    # FIXME this shouldn't be used, but is being used in e.g. get_recent_entities
+    TABLE = "inst_seg"
+    NODE_TYPE = "InstSeg"
 
     @classmethod
     def create(cls, memory, locs, tags=[]) -> str:
@@ -103,82 +154,80 @@ class InstSegNode(ReferenceObjectNode):
         # check if instance segmentation object already exists in memory
         inst_memids = {}
         for xyz in locs:
-            m = memory._db_read("SELECT uuid from InstSeg WHERE x=? AND y=? AND z=?", *xyz)
+            m = memory._db_read(
+                'SELECT uuid from VoxelObjects WHERE ref_type="inst_seg" AND x=? AND y=? AND z=?',
+                *xyz
+            )
             if len(m) > 0:
                 for memid in m:
                     inst_memids[memid[0]] = True
+        # FIXME just remember the locs in the first pass
         for m in inst_memids.keys():
-            olocs = memory._db_read("SELECT x, y, z from InstSeg WHERE uuid=?", m)
+            olocs = memory._db_read("SELECT x, y, z from VoxelObjects WHERE uuid=?", m)
             # TODO maybe make an archive?
             if len(set(olocs) - set(locs)) == 0:
                 memory._db_write("DELETE FROM Memories WHERE uuid=?", m)
 
         memid = cls.new(memory)
+        loc = np.mean(locs, axis=0)
+        # TODO check/assert this isn't there...
+        cmd = "INSERT INTO ReferenceObjects (uuid, x, y, z, ref_type) VALUES ( ?, ?, ?, ?, ?)"
+        memory._db_write(cmd, memid, loc[0], loc[1], loc[2], "inst_seg")
         for loc in locs:
-            cmd = "INSERT INTO InstSeg (uuid, x, y, z) VALUES ( ?, ?, ?, ?)"
-            memory._db_write(cmd, memid, loc[0], loc[1], loc[2])
+            cmd = "INSERT INTO VoxelObjects (uuid, x, y, z, ref_type) VALUES ( ?, ?, ?, ?, ?)"
+            memory._db_write(cmd, memid, loc[0], loc[1], loc[2], "inst_seg")
+        memory.tag(memid, "_voxel_object")
         memory.tag(memid, "_inst_seg")
+        memory.tag(memid, "_destructible")
+        # this is a hack until memory_filters does "not"
+        memory.tag(memid, "_not_location")
         for tag in tags:
             memory.tag(memid, tag)
         return memid
 
     def __init__(self, memory, memid: str):
         super().__init__(memory, memid)
-        r = memory._db_read("SELECT x, y, z FROM InstSeg WHERE uuid=?", self.memid)
+        r = memory._db_read("SELECT x, y, z FROM VoxelObjects WHERE uuid=?", self.memid)
         self.locs = r
         self.blocks = {l: (0, 0) for l in self.locs}
-        tags = memory.get_triples(subj=self.memid, pred="has_tag")
+        tags = memory.get_triples(subj=self.memid, pred_text="has_tag")
         self.tags = []  # noqa: T484
         for tag in tags:
             if tag[2][0] != "_":
                 self.tags.append(tag[2])
-
-    def get_pos(self) -> XYZ:
-        return cast(XYZ, tuple(int(x) for x in np.mean(self.locs, axis=0)))
-
-    def get_point_at_target(self) -> POINT_AT_TARGET:
-        point_min = [int(x) for x in np.min(list(self.blocks.keys()), axis=0)]
-        point_max = [int(x) for x in np.max(list(self.blocks.keys()), axis=0)]
-        return cast(POINT_AT_TARGET, point_min + point_max)
-
-    def get_bounds(self):
-        M = np.max(self.locs, axis=0)
-        m = np.min(self.locs, axis=0)
-        return m[0], M[0], m[1], M[1], m[2], M[2]
-
-    def snapshot(self, agent_memory):
-        archive_memid = self.new(agent_memory, snapshot=True)
-        for loc in self.locs:
-            cmd = "INSERT INTO InstSeg (uuid, x, y, z) VALUES ( ?, ?, ?, ?)"
-            agent_memory._db_write(cmd, archive_memid, loc[0], loc[1], loc[2])
-        link_archive_to_mem(agent_memory, self.memid, archive_memid)
-        return archive_memid
 
     def __repr__(self):
         return "<InstSeg Node @ {} with tags {} >".format(self.locs, self.tags)
 
 
 class MobNode(ReferenceObjectNode):
-    TABLE_ROWS = [
+    """ a memory node represneting a mob"""
+
+    TABLE_COLUMNS = [
         "uuid",
         "eid",
         "x",
         "y",
         "z",
-        "mobtype",
+        "yaw",
+        "pitch",
+        "ref_type",
+        "type_name",
         "player_placed",
         "agent_placed",
-        "spawn",
+        "created",
     ]
-    TABLE = "Mobs"
+    TABLE = "ReferenceObjects"
+    NODE_TYPE = "Mob"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
-        eid, x, y, z = self.agent_memory._db_read_one(
-            "SELECT eid, x, y, z FROM Mobs WHERE uuid=?", self.memid
+        eid, x, y, z, yaw, pitch = self.agent_memory._db_read_one(
+            "SELECT eid, x, y, z, yaw, pitch FROM ReferenceObjects WHERE uuid=?", self.memid
         )
         self.eid = eid
         self.pos = (x, y, z)
+        self.look = (yaw, pitch)
 
     @classmethod
     def create(cls, memory, mob, player_placed=False, agent_placed=False) -> str:
@@ -186,32 +235,46 @@ class MobNode(ReferenceObjectNode):
         memid = cls.new(memory)
         mobtype = MOBS_BY_ID[mob.mobType]
         memory._db_write(
-            "INSERT INTO Mobs(uuid, eid, x, y, z, mobtype, player_placed, agent_placed, spawn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO ReferenceObjects(uuid, eid, x, y, z, yaw, pitch, ref_type, type_name, player_placed, agent_placed, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             memid,
             mob.entityId,
             mob.pos.x,
             mob.pos.y,
             mob.pos.z,
+            mob.look.yaw,
+            mob.look.pitch,
+            "mob",
             mobtype,
             player_placed,
             agent_placed,
             memory.get_time(),
         )
-        memory.tag(memid, "_mob")
+        memory.tag(memid, "mob")
+        memory.tag(memid, "_physical_object")
+        memory.tag(memid, "_animate")
+        # this is a hack until memory_filters does "not"
+        memory.tag(memid, "_not_location")
         memory.tag(memid, mobtype)
         return memid
 
     def get_pos(self) -> XYZ:
         x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Mobs WHERE uuid=?", self.memid
+            "SELECT x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
         )
         self.pos = (x, y, z)
         return self.pos
 
+    def get_look(self) -> LOOK:
+        yaw, pitch = self.agent_memory._db_read_one(
+            "SELECT yaw, pitch FROM ReferenceObjects WHERE uuid=?", self.memid
+        )
+        self.look = (yaw, pitch)
+        return self.look
+
     # TODO: use a smarter way to get point_at_target
     def get_point_at_target(self) -> POINT_AT_TARGET:
         x, y, z = self.agent_memory._db_read_one(
-            "SELECT x, y, z FROM Mobs WHERE uuid=?", self.memid
+            "SELECT x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
         )
         # use the block above the mob as point_at_target
         return cast(POINT_AT_TARGET, (x, y + 1, z, x, y + 1, z))
@@ -221,9 +284,68 @@ class MobNode(ReferenceObjectNode):
         return x, x, y, y, z, z
 
 
+class ItemStackNode(ReferenceObjectNode):
+    TABLE_ROWS = ["uuid", "eid", "x", "y", "z", "type_name", "ref_type", "created"]
+    TABLE = "ReferenceObjects"
+    NODE_TYPE = "ItemStack"
+
+    def __init__(self, agent_memory, memid: str):
+        super().__init__(agent_memory, memid)
+        eid, x, y, z = self.agent_memory._db_read_one(
+            "SELECT eid, x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
+        )
+        self.eid = eid
+        self.pos = (x, y, z)
+
+    @classmethod
+    def create(cls, memory, item_stack) -> str:
+        bid_to_name = minecraft_specs.get_block_data()["bid_to_name"]
+        type_name = bid_to_name[(item_stack.item.id, item_stack.item.meta)]
+        memid = cls.new(memory)
+        memory._db_write(
+            "INSERT INTO ReferenceObjects(uuid, eid, x, y, z, type_name, ref_type, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            memid,
+            item_stack.entityId,
+            item_stack.pos.x,
+            item_stack.pos.y,
+            item_stack.pos.z,
+            type_name,
+            "item_stack",
+            memory.get_time(),
+        )
+        memory.tag(memid, type_name)
+        memory.tag(memid, "_item_stack")
+        memory.tag(memid, "_physical_object")
+        # this is a hack until memory_filters does "not"
+        memory.tag(memid, "_not_location")
+        return memid
+
+    def get_pos(self) -> XYZ:
+        x, y, z = self.agent_memory._db_read_one(
+            "SELECT x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
+        )
+        self.pos = (x, y, z)
+        return self.pos
+
+    # TODO: use a smarter way to get point_at_target
+    def get_point_at_target(self) -> POINT_AT_TARGET:
+        x, y, z = self.agent_memory._db_read_one(
+            "SELECT x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
+        )
+        # use the block above the item stack as point_at_target
+        return cast(POINT_AT_TARGET, (x, y + 1, z, x, y + 1, z))
+
+    def get_bounds(self):
+        x, y, z = self.pos
+        return x, x, y, y, z, z
+
+
 class SchematicNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "x", "y", "z", "bid", "meta"]
+    """ a memory node representing a plan for an object that could be built"""
+
+    TABLE_COLUMNS = ["uuid", "x", "y", "z", "bid", "meta"]
     TABLE = "Schematics"
+    NODE_TYPE = "Schematic"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -251,8 +373,9 @@ class SchematicNode(MemoryNode):
 
 
 class BlockTypeNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "type_name", "bid", "meta"]
+    TABLE_COLUMNS = ["uuid", "type_name", "bid", "meta"]
     TABLE = "BlockTypes"
+    NODE_TYPE = "BlockType"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -277,8 +400,9 @@ class BlockTypeNode(MemoryNode):
 
 
 class MobTypeNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "type_name", "bid", "meta"]
+    TABLE_COLUMNS = ["uuid", "type_name", "bid", "meta"]
     TABLE = "MobTypes"
+    NODE_TYPE = "MobType"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -303,8 +427,9 @@ class MobTypeNode(MemoryNode):
 
 
 class DanceNode(MemoryNode):
-    TABLE_ROWS = ["uuid"]
+    TABLE_COLUMNS = ["uuid"]
     TABLE = "Dances"
+    NODE_TYPE = "Dance"
 
     def __init__(self, agent_memory, memid: str):
         super().__init__(agent_memory, memid)
@@ -318,16 +443,17 @@ class DanceNode(MemoryNode):
         # TODO put in db via pickle like tasks?
         memory.dances[memid] = dance_fn
         if name is not None:
-            memory.add_triple(memid, "has_name", name)
+            memory.add_triple(subj=memid, pred_text="has_name", obj_text=name)
         if len(tags) > 0:
             for tag in tags:
-                memory.add_triple(memid, "has_tag", tag)
+                memory.add_triple(subj=memid, pred_text="has_tag", obj_text=tag)
         return memid
 
 
 class RewardNode(MemoryNode):
-    TABLE_ROWS = ["uuid", "value", "time"]
+    TABLE_COLUMNS = ["uuid", "value", "time"]
     TABLE = "Rewards"
+    NODE_TYPE = "Reward"
 
     def __init__(self, agent_memory, memid: str):
         _, value, timestamp = agent_memory._db_read_one(
@@ -354,18 +480,8 @@ NODELIST = NODELIST + [
     BlockTypeNode,
     SchematicNode,
     MobNode,
+    ItemStackNode,
+    MobTypeNode,
     InstSegNode,
-    ComponentObjectNode,
     BlockObjectNode,
 ]  # noqa
-
-"""
-NODELIST["rewards"] = RewardNode
-NODELIST["Dances"] = DanceNode
-NODELIST["BlockTypes"] = BlockTypeNode
-NODELIST["Schematics"] = SchematicNode
-NODELIST["Mobs"] = MobNode
-NODELIST["InstSeg"] = InstSegNode
-NODELIST["ComponentObjects"] = ComponentObjectNode
-NODELIST["BlockObjects"] = BlockObjectNode
-"""

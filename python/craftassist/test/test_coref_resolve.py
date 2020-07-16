@@ -6,6 +6,7 @@ import unittest
 
 import shapes
 from base_craftassist_test_case import BaseCraftassistTestCase
+from all_test_commands import *
 
 
 class CorefResolveTestCase(BaseCraftassistTestCase):
@@ -17,14 +18,7 @@ class CorefResolveTestCase(BaseCraftassistTestCase):
 
     def test_destroy_it(self):
         # build a gold cube
-        d = {
-            "dialogue_type": "HUMAN_GIVE_COMMAND",
-            "action": {
-                "action_type": "BUILD",
-                "schematic": {"has_name": "cube", "has_block_type": "gold"},
-                "location": {"location_type": "COORDINATES", "coordinates": "0 66 0"},
-            },
-        }
+        d = BUILD_COMMANDS["build a gold cube at 0 66 0"]
         changes = self.handle_logical_form(d)
 
         # assert cube was built
@@ -33,13 +27,7 @@ class CorefResolveTestCase(BaseCraftassistTestCase):
         cube_xyzs = set(changes.keys())
 
         # destroy it
-        d = {
-            "dialogue_type": "HUMAN_GIVE_COMMAND",
-            "action": {
-                "action_type": "DESTROY",
-                "reference_object": {"contains_coreference": "yes"},
-            },
-        }
+        d = DESTROY_COMMANDS["destroy it"]
         changes = self.handle_logical_form(d, chatstr="destroy it")
 
         # assert cube was destroyed

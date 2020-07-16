@@ -6,6 +6,7 @@ import unittest
 
 import shapes
 from base_craftassist_test_case import BaseCraftassistTestCase
+from all_test_commands import *
 
 
 class PutMemoryTestCase(BaseCraftassistTestCase):
@@ -16,48 +17,26 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
         self.set_looking_at(list(self.cube_right.blocks.keys())[0])
 
     def test_good_job(self):
-        d = {
-            "dialogue_type": "PUT_MEMORY",
-            "upsert": {"memory_data": {"memory_type": "REWARD", "reward_value": "POSITIVE"}},
-        }
+        d = PUT_MEMORY_COMMANDS["good job"]
         self.handle_logical_form(d)
 
     def test_tag(self):
-        d = {
-            "dialogue_type": "PUT_MEMORY",
-            "filters": {"reference_object": {"location": {"location_type": "SPEAKER_LOOK"}}},
-            "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": "fluffy"}},
-        }
+        d = PUT_MEMORY_COMMANDS["that is fluffy"]
         self.handle_logical_form(d)
 
         # destroy it
-        d = {
-            "dialogue_type": "HUMAN_GIVE_COMMAND",
-            "action": {"action_type": "DESTROY", "reference_object": {"has_tag": "fluffy"}},
-        }
+        d = DESTROY_COMMANDS["destroy the fluffy object"]
         changes = self.handle_logical_form(d, answer="yes")
 
         # ensure it was destroyed
         self.assertEqual(changes, {k: (0, 0) for k in self.cube_right.blocks.keys()})
 
     def test_tag_and_build(self):
-        tag = "fluffy"
-        d = {
-            "dialogue_type": "PUT_MEMORY",
-            "filters": {"reference_object": {"location": {"location_type": "SPEAKER_LOOK"}}},
-            "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": tag}},
-        }
+        d = PUT_MEMORY_COMMANDS["that is fluffy"]
         self.handle_logical_form(d)
 
         # build a fluffy
-        d = {
-            "dialogue_type": "HUMAN_GIVE_COMMAND",
-            "action": {
-                "action_type": "BUILD",
-                "schematic": {"has_name": tag},
-                "location": {"location_type": "AGENT_POS"},
-            },
-        }
+        d = BUILD_COMMANDS["build a fluffy here"]
         changes = self.handle_logical_form(d, answer="yes")
 
         self.assert_schematics_equal(changes.items(), self.cube_right.blocks.items())

@@ -128,6 +128,21 @@ struct Mob {
   uint64_t entityId;
   uint8_t mobType;
   Pos pos;
+  Look look;
+};
+
+struct Object {
+  std::string uuid;
+  uint64_t entityId;
+  uint8_t objectType;
+  Pos pos;
+};
+
+struct ItemStack {
+  std::string uuid;
+  uint64_t entityId;
+  Slot item;
+  Pos pos;
 };
 
 ////////////////

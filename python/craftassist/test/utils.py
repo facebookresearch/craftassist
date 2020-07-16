@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 
 Player = namedtuple("Player", "entityId, name, pos, look, mainHand")
-Mob = namedtuple("Mob", "entityId, mobType, pos")
+Mob = namedtuple("Mob", "entityId, mobType, pos, look")
 Pos = namedtuple("Pos", "x, y, z")
 Look = namedtuple("Look", "yaw, pitch")
 Item = namedtuple("Item", "id, meta")

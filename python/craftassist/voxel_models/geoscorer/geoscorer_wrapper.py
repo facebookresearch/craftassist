@@ -3,7 +3,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 
 import argparse
-import models
+from training_utils import get_context_segment_trainer_modules
 from spatial_utils import index_to_coord
 
 
@@ -17,7 +17,7 @@ class ContextSegmentMergerWrapper(object):
             raise Exception("Geoscorer wrapper requires a model path")
 
         self.opts = {}
-        tms = models.get_context_segment_trainer_modules(
+        tms = get_context_segment_trainer_modules(
             opts=self.opts, checkpoint_path=models_path, backup=False, verbose=False
         )
         self.context_net = tms["context_net"]
@@ -33,10 +33,11 @@ class ContextSegmentMergerWrapper(object):
     def segment_context_to_pos(self, segment, context):
         # Coords are in Z, X, Y, so put segment into same coords
         segment = segment.permute(1, 2, 0).contiguous()
+        batch = {"context": context.unsqueeze(0), "seg": segment.unsqueeze(0)}
 
-        c_embed = self.context_net(context.unsqueeze(0))
-        s_embed = self.seg_net(segment.unsqueeze(0))
-        scores = self.score_module([c_embed, s_embed])
+        batch["c_embeds"] = self.context_net(batch)
+        batch["s_embeds"] = self.seg_net(batch)
+        scores = self.score_module(batch)
         index = scores[0].flatten().max(0)[1]
         target_coord = index_to_coord(index.item(), self.context_sl)
 

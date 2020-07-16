@@ -9,13 +9,8 @@ from ttad.generation_dialogues.templates.templates import template_map  # Dict[s
 from typing import Dict, List, Tuple, Sequence
 
 
-def adtt(d: Dict) -> Tuple[str, Dict]:
+def adtt(d: Dict) -> str:
     """Return a string that would produce the action dict `d`
-
-    THIS IS NOT FULLY WORKING! Some relative directions (and maybe other stuff)
-    are not yet working. In the mean time, also return the generated action
-    dict gen_d which corresponds to the returned text, and whose
-    relative_direction values may be different than the input d.
 
     d is post-process_span (i.e. its span values are replaced with strings)
     d is pre-coref_resolve (i.e. its coref_resolve values are strings, not
@@ -34,7 +29,10 @@ def adtt(d: Dict) -> Tuple[str, Dict]:
         if len(dialogue) != 1:
             continue
         if dicts_match(d, gen_d):
-            return replace_spans(dialogue[0], gen_d, d), gen_d
+            print(gen_d)
+            text = replace_spans(dialogue[0], gen_d, d)
+            print(dialogue[0])
+            return replace_relative_direction(text, gen_d, d)
 
     raise ValueError("No matching template found for {}".format(d))
 
@@ -109,6 +107,61 @@ def recurse_remove_keys(d: Dict, keys: Sequence[str]):
     for k, v in d.items():
         if type(v) == dict:
             recurse_remove_keys(v, keys)
+
+
+def replace_relative_direction(text: str, gen_d: Dict, d: Dict) -> str:
+    try:
+        rel_dir = d["action"]["location"]["relative_direction"]
+        agent_pos = False
+        try:
+            if (
+                d["action"]["location"]["reference_object"]["location"]["location_type"]
+                == "AGENT_POS"
+            ):
+                agent_pos = True
+        except:
+            agent_pos = False
+
+        # generate direction dict
+        direction_dict = {}
+        if not agent_pos:
+            direction_dict["LEFT"] = ["to the left of", "towards the left of"]
+            direction_dict["RIGHT"] = ["to the right of", "towards the right of"]
+            direction_dict["UP"] = ["above", "on top of", "to the top of"]
+            direction_dict["DOWN"] = ["below", "under"]
+            direction_dict["FRONT"] = ["in front of"]
+            direction_dict["BACK"] = ["behind"]
+            direction_dict["AWAY"] = ["away from"]
+            direction_dict["INSIDE"] = ["inside"]
+            direction_dict["OUTSIDE"] = ["outside"]
+            direction_dict["NEAR"] = ["next to", "close to", "near"]
+            direction_dict["CLOCKWISE"] = ["clockwise"]
+            direction_dict["ANTICLOCKWISE"] = ["anticlockwise"]
+        else:
+            direction_dict["LEFT"] = ["to the left", "to your left", "east", "left"]
+            direction_dict["RIGHT"] = ["to the right", "to your right", "right", "west"]
+            direction_dict["UP"] = ["up", "north"]
+            direction_dict["DOWN"] = ["down", "south"]
+            direction_dict["FRONT"] = ["front", "forward", "to the front"]
+            direction_dict["BACK"] = ["back", "backwards", "to the back"]
+            direction_dict["AWAY"] = ["away"]
+            direction_dict["CLOCKWISE"] = ["clockwise"]
+            direction_dict["ANTICLOCKWISE"] = ["anticlockwise"]
+
+        # generate a list of the direction phrases and sort by longest to shortest
+        direction_list: List[str] = []
+        for k in direction_dict.keys():
+            direction_list = direction_list + direction_dict[k]
+        direction_list = sorted(direction_list, key=len, reverse=True)
+
+        # look for direction phrase in the text to replace
+        for dir_phrase in direction_list:
+            if dir_phrase in text:
+                text = text.replace(dir_phrase, direction_dict[rel_dir][0])
+                break
+        return text
+    except:
+        return text
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ import traceback
 from typing import Tuple, List, TypeVar
 import uuid
 
-
+##FFS FIXME!!!! arrange utils properly, put things in one place
 XYZ = Tuple[int, int, int]
 # two points p0(x0, y0, z0), p1(x1, y1, z1) determine a 3d cube(point_at_target)
 POINT_AT_TARGET = Tuple[int, int, int, int, int, int]
@@ -21,9 +21,23 @@ IDM = Tuple[int, int]
 Block = Tuple[XYZ, IDM]
 Hole = Tuple[List[XYZ], IDM]
 T = TypeVar("T")  # generic type
+#####FIXME!!!!!!  make all these dicts all through code
 Pos = namedtuple("pos", ["x", "y", "z"])
+Look = namedtuple("look", "yaw, pitch")
+Player = namedtuple("Player", "entityId, name, pos, look")
 
 TICK_PER_SEC = 100
+
+# TODO make this just a dict, and change in memory and agent
+# eg in object_looked_at and PlayerNode
+def to_player_struct(pos, yaw, pitch, eid, name):
+    if len(pos) == 2:
+        pos = Pos(pos[0], 0.0, pos[1])
+    else:
+        pos = Pos(pos[0], pos[1], pos[2])
+    look = Look(yaw, pitch)
+    return Player(eid, name, pos, look)
+
 
 # converts from seconds to internal tick
 def round_time(t):

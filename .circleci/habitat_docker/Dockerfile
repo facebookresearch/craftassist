@@ -11,13 +11,6 @@ SHELL ["/bin/bash", "-c"]
 #################
 # Habitat install
 #################
-# tested pyrobot commit that works with Habitat
-RUN cd ~/low_cost_ws/src/pyrobot && git checkout Develop && \
-    git pull https://github.com/facebookresearch/pyrobot Develop && \
-    git checkout db61d4492e75eedd7c9dc62ae40d7b7d3a48cb82 && \
-    . /root/pyenv_pyrobot_python3/bin/activate && . /root/pyrobot_catkin_ws/devel/setup.bash && \
-    pip install -e . && \
-    pip install netifaces pyro4
 
 # habitat system deps
 RUN apt-get update || true
@@ -49,3 +42,11 @@ RUN git clone https://github.com/facebookresearch/habitat-sim && \
     pip install -e .
 
 RUN patchelf --set-rpath '$ORIGIN' /root/pyenv_pyrobot_python3/lib/python3.6/site-packages/habitat_sim-0.1.4-py3.6-linux-x86_64.egg/habitat_sim/_ext/habitat_sim_bindings.cpython-36m-x86_64-linux-gnu.so
+
+# tested pyrobot commit that works with Habitat
+RUN cd ~/low_cost_ws/src/pyrobot && git checkout Develop && \
+    git pull https://github.com/facebookresearch/pyrobot Develop && \
+    git checkout 94fc6d6d177f5ac737e82b04844ff792d94b0dc5 && \
+    . /root/pyenv_pyrobot_python3/bin/activate && . /root/pyrobot_catkin_ws/devel/setup.bash && \
+    pip install -e . && \
+    pip install netifaces pyro4

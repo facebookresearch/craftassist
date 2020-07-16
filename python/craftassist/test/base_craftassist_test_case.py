@@ -1,14 +1,18 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
+# import sys
+# import os
+# BASE_DIR = os.path.join(os.path.dirname(__file__), "../../")
+# sys.path.append(BASE_DIR)
 
 import unittest
 from unittest.mock import Mock
 
 from build_utils import to_relative_pos
-from base_agent.dialogue_objects import AwaitResponse
+from base_agent.dialogue_objects import AwaitResponse, SPEAKERLOOK
 from fake_agent import FakeAgent
-from mc_memory_nodes import ObjectNode
+from mc_memory_nodes import VoxelObjectNode
 from typing import List, Sequence, Dict
 from util import XYZ, Block, IDM
 from utils import Player, Pos, Look, Item
@@ -20,6 +24,7 @@ class BaseCraftassistTestCase(unittest.TestCase):
         spec = {
             "players": [Player(42, "SPEAKER", Pos(5, 63, 5), Look(270, 0), Item(0, 0))],
             "mobs": [],
+            "item_stacks": [],
             "ground_generator": flat_ground_generator,
             "agent": {"pos": (0, 63, 0)},
             "coord_shift": (-16, 54, -16),
@@ -44,55 +49,112 @@ class BaseCraftassistTestCase(unittest.TestCase):
         self.possible_actions = {
             "destroy_speaker_look": {
                 "action_type": "DESTROY",
-                "reference_object": {"location": {"location_type": "SPEAKER_LOOK"}},
+                "reference_object": {
+                    "filters": {"location": SPEAKERLOOK},
+                    "text_span": "where I'm looking",
+                },
+            },
+            "spawn_5_sheep": {
+                "action_type": "SPAWN",
+                "reference_object": {"filters": {"has_name": "sheep"}, "text_span": "sheep"},
+                "repeat": {"repeat_key": "FOR", "repeat_count": "5"},
             },
             "copy_speaker_look_to_agent_pos": {
                 "action_type": "BUILD",
-                "reference_object": {"location": {"location_type": "SPEAKER_LOOK"}},
-                "location": {"location_type": "AGENT_POS"},
+                "reference_object": {
+                    "filters": {"location": SPEAKERLOOK},
+                    "text_span": "where I'm looking",
+                },
+                "location": {
+                    "reference_object": {"special_reference": "AGENT"},
+                    "text_span": "where I am",
+                },
             },
             "build_small_sphere": {
                 "action_type": "BUILD",
-                "schematic": {"has_name": "sphere", "has_size": "small"},
+                "schematic": {
+                    "has_name": "sphere",
+                    "has_size": "small",
+                    "text_span": "small sphere",
+                },
             },
             "build_1x1x1_cube": {
                 "action_type": "BUILD",
-                "schematic": {"has_name": "cube", "has_size": "1 x 1 x 1"},
+                "schematic": {
+                    "has_name": "cube",
+                    "has_size": "1 x 1 x 1",
+                    "text_span": "1 x 1 x 1 cube",
+                },
             },
             "move_speaker_pos": {
                 "action_type": "MOVE",
-                "location": {"location_type": "SPEAKER_POS"},
+                "location": {
+                    "reference_object": {"special_reference": "SPEAKER"},
+                    "text_span": "to me",
+                },
             },
-            "build_diamond": {"action_type": "BUILD", "schematic": {"has_name": "diamond"}},
+            "build_diamond": {
+                "action_type": "BUILD",
+                "schematic": {"has_name": "diamond", "text_span": "diamond"},
+            },
             "build_gold_cube": {
                 "action_type": "BUILD",
-                "schematic": {"has_block_type": "gold", "has_name": "cube"},
+                "schematic": {
+                    "has_block_type": "gold",
+                    "has_name": "cube",
+                    "text_span": "gold cube",
+                },
+            },
+            "build_red_cube": {
+                "action_type": "BUILD",
+                "location": {"reference_object": {"special_reference": "SPEAKER_LOOK"}},
+                "schematic": {"has_colour": "red", "has_name": "cube", "text_span": "red cube"},
+            },
+            "destroy_red_cube": {
+                "action_type": "DESTROY",
+                "reference_object": {
+                    "filters": {"has_name": "cube", "has_colour": "red"},
+                    "text_span": "red cube",
+                },
             },
             "fill_all_holes_speaker_look": {
                 "action_type": "FILL",
-                "location": {"location_type": "SPEAKER_LOOK"},
+                "reference_object": {
+                    "filters": {"location": SPEAKERLOOK},
+                    "text_span": "where I'm looking",
+                },
                 "repeat": {"repeat_key": "ALL"},
             },
             "go_to_tree": {
                 "action_type": "MOVE",
                 "location": {
-                    "location_type": "REFERENCE_OBJECT",
-                    "reference_object": {"has_name": "tree"},
+                    "reference_object": {"filters": {"has_name": "tree"}},
+                    "text_span": "tree",
                 },
             },
             "build_square_height_1": {
                 "action_type": "BUILD",
-                "schematic": {"has_name": "square", "has_height": "1"},
+                "schematic": {
+                    "has_name": "square",
+                    "has_height": "1",
+                    "text_span": "square height 1",
+                },
             },
             "stop": {"action_type": "STOP"},
             "fill_speaker_look": {
                 "action_type": "FILL",
-                "location": {"location_type": "SPEAKER_LOOK"},
+                "reference_object": {
+                    "filters": {"location": SPEAKERLOOK},
+                    "text_span": "where I'm looking",
+                },
             },
             "fill_speaker_look_gold": {
                 "action_type": "FILL",
                 "has_block_type": "gold",
-                "location": {"location_type": "SPEAKER_LOOK"},
+                "reference_object": {
+                    "filters": {"location": SPEAKERLOOK},
+                    "text_span": "where I'm looking",
+                },
             },
         }
 
@@ -106,9 +168,9 @@ class BaseCraftassistTestCase(unittest.TestCase):
 
         If "stop_on_chat" is specified, stop iterating if the agent says anything
         """
-        dummy_chat = "TEST {}".format(d)
-        self.add_incoming_chat(dummy_chat, self.speaker)
-        self.agent.set_logical_form(d, dummy_chat, self.speaker)
+        chatstr = chatstr or "TEST {}".format(d)
+        self.add_incoming_chat(chatstr, self.speaker)
+        self.agent.set_logical_form(d, chatstr, self.speaker)
         changes = self.flush(max_steps, stop_on_chat=stop_on_chat)
         if len(self.agent.dialogue_manager.dialogue_stack) != 0 and answer is not None:
             self.add_incoming_chat(answer, self.speaker)
@@ -162,8 +224,10 @@ class BaseCraftassistTestCase(unittest.TestCase):
     def set_blocks(self, xyzbms: List[Block], origin: XYZ = (0, 0, 0)):
         self.agent.set_blocks(xyzbms, origin)
 
-    def add_object(self, xyzbms: List[Block], origin: XYZ = (0, 0, 0)) -> ObjectNode:
-        return self.agent.add_object(xyzbms, origin)
+    def add_object(
+        self, xyzbms: List[Block], origin: XYZ = (0, 0, 0), relations={}
+    ) -> VoxelObjectNode:
+        return self.agent.add_object(xyzbms=xyzbms, origin=origin, relations=relations)
 
     def add_incoming_chat(self, chat: str, speaker_name: str):
         """Add a chat to memory as if it was just spoken by SPEAKER"""

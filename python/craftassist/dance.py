@@ -117,7 +117,7 @@ class RefObjMovement(Movement):
     ):
         self.agent = agent
         self.tick = 0
-        if ref_object is None or ref_object == "AGENT_POS":
+        if not ref_object:
             x, y, z = agent.pos
             bounds = (x, x, y, y, z, z)
             center = (x, y, z)
@@ -125,7 +125,7 @@ class RefObjMovement(Movement):
             bounds = ref_object.get_bounds()
             center = ref_object.get_pos()
         d = max(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4])
-        if relative_direction == "CLOCKWISE":
+        if relative_direction == "CLOCKWISE" or relative_direction == "AROUND":
             offsets = shapes.arrange(
                 "circle", schematic=None, shapeparams={"encircled_object_radius": d}
             )
