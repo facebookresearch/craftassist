@@ -1,0 +1,178 @@
+/**
+ *
+ * @license
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ */
+
+/**
+ * @fileoverview This file contains the css for the template generator.
+ */
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+#logicalAndSurfaceForms {
+  position: relative;
+  left: -200px;
+}
+#heading1 {
+  position: relative;
+  left: 624px;
+  top: 70px;
+}
+#heading2 {
+  position: relative;
+  left: 1150px;
+  top: -190px;
+}
+
+#dropdownHeading {
+  position: relative;
+  top: 100px;
+}
+
+#logicalAndSurfaceForms {
+  position: relative;
+
+  width: 50%;
+  height: 200px;
+  top: -31px;
+}
+
+#surfaceForms {
+  background-color: cornflowerblue;
+  width: 50%;
+  height: 100%;
+  position: relative;
+  top: 60px;
+  left: 850px;
+  overflow: scroll;
+
+  text-align: left;
+}
+#actionDict {
+  background-color: cornflowerblue;
+  height: 100%;
+  width: 50%;
+  position: relative;
+  top: -200px;
+  left: 1400px;
+  overflow: scroll;
+
+  text-align: left;
+}
+
+#highlight {
+  position: relative;
+  top: -420px;
+  left: 870px;
+}
+
+#colors {
+  position: relative;
+  top: -420px;
+  left: 700px;
+}
+
+#generator {
+  position: relative;
+  left: 1400px;
+  top: -250px;
+}
+
+#numberOfGen {
+  position: relative;
+  left: 1400px;
+  top: -250px;
+}
+
+#clear {
+  position: relative;
+  top: -720px;
+  left: 1000px;
+}
+
+#correct{
+  position: relative;
+  left:400px;
+  top:-420px;
+}
+
+#searchInput {
+  background-image: url("/css/searchicon.png"); /* Add a search icon to input */
+  background-position: 10px 12px; /* Position the search icon */
+  background-repeat: no-repeat; /* Do not repeat the icon image */
+  width: 50%; /* Full-width */
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 40px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+  margin-bottom: 12px; /* Add some space below the input */
+  position: relative;
+  left: 260px;
+  top: -415px;
+}
+
+#UL {
+  /* Remove default list styling */
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  height: 150px;
+  overflow: scroll;
+  width: 50%;
+  position: relative;
+  left: 300px;
+  top: -415px;
+}
+
+#UL li a {
+  border: 1px solid #ddd; /* Add a border to all links */
+  margin-top: -1px; /* Prevent double borders */
+  background-color: #f6f6f6; /* Grey background color */
+  padding: 12px; /* Add some padding */
+  text-decoration: none; /* Remove default text underline */
+  font-size: 18px; /* Increase the font-size */
+  color: black; /* Add a black text color */
+  display: block; /* Make it into a block element to fill the whole 
+ list */
+}
+
+#UL li a:hover:not(.header) {
+  background-color: #eee; /* Add a hover effect to all links, except for headers */
+}
+
+#highlight {
+  position: relative;
+  top: -420px;
+  left: 700px;
+}
+
+#colors {
+  position: relative;
+  top: -420px;
+  left: 700px;
+}
+
+#generator {
+  position: relative;
+  left: 1100px;
+  top: -420px;
+}
+
+#numberOfGen {
+  position: relative;
+  left:1200px;
+  top:-420px;
+}
+
