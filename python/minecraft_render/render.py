@@ -38,8 +38,8 @@ def gen_scene_json(args, name):
     j['camera']['position']['x'] = args.camera[0]
     j['camera']['position']['y'] = args.camera[1]
     j['camera']['position']['z'] = args.camera[2]
-    j['camera']['orientation']['yaw']   = (90 - args.look[0]) * 3.14159 / 180;
-    j['camera']['orientation']['pitch'] = (args.look[1] - 90) * 3.14159 / 180;
+    j['camera']['orientation']['yaw']   = (90 - args.look[0]) * 3.14159 / 180
+    j['camera']['orientation']['pitch'] = (args.look[1] - 90) * 3.14159 / 180
     j['camera']['focalOffset'] = args.focal_offset
     j['chunkList'] = [[a, b] for a in range(args.chunk_min, args.chunk_max+1) \
                              for b in range(args.chunk_min, args.chunk_max+1)]
