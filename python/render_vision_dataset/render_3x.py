@@ -84,7 +84,7 @@ def render(npy_p2b, out_dir, port, spp, img_size):
         str(a)
         for a in [
             "python3",
-            "{}/../minecraft_render/render.py".format(repo_home),
+            "{}/python/minecraft_render/render.py".format(repo_home),
             "--world",
             world_dir,
             "--out",

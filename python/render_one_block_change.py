@@ -230,7 +230,7 @@ def render(
             str(a)
             for a in [
                 "python3.7",
-                "{}/../minecraft_render/render.py".format(repo_home),
+                "{}/python/minecraft_render/render.py".format(repo_home),
                 "--world",
                 world_dir,
                 "--out",
