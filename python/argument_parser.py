@@ -1,0 +1,116 @@
+import argparse
+import os
+
+
+class ArgumentParser:
+    def __init__(self, agent_type, base_path):
+        self.agent_parsers = {"Minecraft": self.add_mc_parser, "Locobot": self.add_loco_parser}
+        self.base_path = base_path
+        self.parser = argparse.ArgumentParser()
+
+        # NSP args
+        self.add_nsp_parser()
+
+        # Agent specific args
+        self.agent_parsers[agent_type]()
+
+        # Common / Debug stuff
+        self.parser.add_argument(
+            "--verify_hash_script_path",
+            default="../../data_scripts/compare_directory_hash.sh",
+            help="path to script that checks hash against latest models",
+        )
+        self.parser.add_argument("--verbose", "-v", action="store_true", help="Debug logging")
+
+    def add_nsp_parser(self):
+        nsp_parser = self.parser.add_argument_group("Neural Semantic Parser Args")
+
+        nsp_parser.add_argument(
+            "--model_base_path",
+            default="#relative",
+            help="if empty model paths are relative to this file",
+        )
+        nsp_parser.add_argument(
+            "--QA_nsp_model_path",
+            default="models/semantic_parser/ttad/ttad.pth",
+            help="path to previous TTAD model for QA",
+        )
+        nsp_parser.add_argument(
+            "--nsp_model_dir",
+            default="models/semantic_parser/ttad_bert_updated/",
+            help="path to current listener model dir",
+        )
+        nsp_parser.add_argument(
+            "--nsp_embeddings_path",
+            default="models/semantic_parser/ttad/ttad_ft_embeds.pth",
+            help="path to current model embeddings",
+        )
+        nsp_parser.add_argument(
+            "--nsp_grammar_path",
+            default="models/semantic_parser/ttad/dialogue_grammar.json",
+            help="path to grammar",
+        )
+        nsp_parser.add_argument(
+            "--nsp_data_dir", default="datasets/annotated_data/", help="path to annotated data"
+        )
+        nsp_parser.add_argument(
+            "--ground_truth_data_dir",
+            default="datasets/ground_truth/",
+            help="path to folder of common short and templated commands",
+        )
+        nsp_parser.add_argument(
+            "--no_ground_truth",
+            action="store_true",
+            default=False,
+            help="do not load from ground truth",
+        )
+        nsp_parser.add_argument("--web_app", action="store_true", help="use web app")
+
+    def add_mc_parser(self):
+        mc_parser = self.parser.add_argument_group("Minecraft Agent Args")
+        mc_parser.add_argument(
+            "--semseg_model_path", default="", help="path to semantic segmentation model"
+        )
+        mc_parser.add_argument(
+            "--geoscorer_model_path", default="", help="path to geoscorer model"
+        )
+        mc_parser.add_argument("--port", type=int, default=25565)
+        mc_parser.add_argument(
+            "--no_default_behavior",
+            action="store_true",
+            help="do not perform default behaviors when idle",
+        )
+
+    def add_loco_parser(self):
+        loco_parser = self.parser.add_argument_group("Locobot Agent Args")
+        IP = "192.168.1.244"
+        if os.getenv("LOCOBOT_IP"):
+            IP = os.getenv("LOCOBOT_IP")
+            print("setting default locobot ip from env variable LOCOBOT_IP={}".format(IP))
+        loco_parser.add_argument("--ip", default=IP, help="IP of the locobot")
+        loco_parser.add_argument(
+            "--incoming_chat_path", default="incoming_chat.txt", help="path to incoming chat file"
+        )
+        loco_parser.add_argument("--silent", default=False)
+        loco_parser.add_argument("--backend", default="habitat")
+        loco_parser.add_argument(
+            "--perception_model_dir",
+            default="models/perception/",
+            help="path to perception model data dir",
+        )
+
+    def fix_path(self, opts):
+        if opts.model_base_path == "#relative":
+            base_path = self.base_path
+        else:
+            base_path = opts.model_base_path
+        od = opts.__dict__
+        for optname, optval in od.items():
+            if "path" in optname or "dir" in optname:
+                if optval:
+                    od[optname] = os.path.join(base_path, optval)
+        return opts
+
+    def parse(self):
+        opts = self.parser.parse_args()
+        return self.fix_path(opts)

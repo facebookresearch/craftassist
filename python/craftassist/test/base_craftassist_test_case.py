@@ -10,11 +10,11 @@ import unittest
 from unittest.mock import Mock
 
 from build_utils import to_relative_pos
-from base_agent.dialogue_objects import AwaitResponse, SPEAKERLOOK
+from base_agent.dialogue_objects import AwaitResponse
 from fake_agent import FakeAgent
 from mc_memory_nodes import VoxelObjectNode
 from typing import List, Sequence, Dict
-from util import XYZ, Block, IDM
+from mc_util import XYZ, Block, IDM
 from utils import Player, Pos, Look, Item
 from world import World, Opt, flat_ground_generator
 
@@ -34,129 +34,9 @@ class BaseCraftassistTestCase(unittest.TestCase):
         self.world = World(world_opts, spec)
         self.agent = FakeAgent(self.world, opts=agent_opts)
 
-        # More helpful error message to encourage test writers to use self.set_looking_at()
-        self.agent.get_player_line_of_sight = Mock(
-            side_effect=NotImplementedError(
-                "Cannot call into C++ function in this unit test. "
-                + "Call self.set_looking_at() to set the return value"
-            )
-        )
-
+        self.set_looking_at((0, 63, 0))
         self.speaker = self.agent.get_other_players()[0].name
         self.agent.perceive()
-
-        # Combinable actions to be used in test cases
-        self.possible_actions = {
-            "destroy_speaker_look": {
-                "action_type": "DESTROY",
-                "reference_object": {
-                    "filters": {"location": SPEAKERLOOK},
-                    "text_span": "where I'm looking",
-                },
-            },
-            "spawn_5_sheep": {
-                "action_type": "SPAWN",
-                "reference_object": {"filters": {"has_name": "sheep"}, "text_span": "sheep"},
-                "repeat": {"repeat_key": "FOR", "repeat_count": "5"},
-            },
-            "copy_speaker_look_to_agent_pos": {
-                "action_type": "BUILD",
-                "reference_object": {
-                    "filters": {"location": SPEAKERLOOK},
-                    "text_span": "where I'm looking",
-                },
-                "location": {
-                    "reference_object": {"special_reference": "AGENT"},
-                    "text_span": "where I am",
-                },
-            },
-            "build_small_sphere": {
-                "action_type": "BUILD",
-                "schematic": {
-                    "has_name": "sphere",
-                    "has_size": "small",
-                    "text_span": "small sphere",
-                },
-            },
-            "build_1x1x1_cube": {
-                "action_type": "BUILD",
-                "schematic": {
-                    "has_name": "cube",
-                    "has_size": "1 x 1 x 1",
-                    "text_span": "1 x 1 x 1 cube",
-                },
-            },
-            "move_speaker_pos": {
-                "action_type": "MOVE",
-                "location": {
-                    "reference_object": {"special_reference": "SPEAKER"},
-                    "text_span": "to me",
-                },
-            },
-            "build_diamond": {
-                "action_type": "BUILD",
-                "schematic": {"has_name": "diamond", "text_span": "diamond"},
-            },
-            "build_gold_cube": {
-                "action_type": "BUILD",
-                "schematic": {
-                    "has_block_type": "gold",
-                    "has_name": "cube",
-                    "text_span": "gold cube",
-                },
-            },
-            "build_red_cube": {
-                "action_type": "BUILD",
-                "location": {"reference_object": {"special_reference": "SPEAKER_LOOK"}},
-                "schematic": {"has_colour": "red", "has_name": "cube", "text_span": "red cube"},
-            },
-            "destroy_red_cube": {
-                "action_type": "DESTROY",
-                "reference_object": {
-                    "filters": {"has_name": "cube", "has_colour": "red"},
-                    "text_span": "red cube",
-                },
-            },
-            "fill_all_holes_speaker_look": {
-                "action_type": "FILL",
-                "reference_object": {
-                    "filters": {"location": SPEAKERLOOK},
-                    "text_span": "where I'm looking",
-                },
-                "repeat": {"repeat_key": "ALL"},
-            },
-            "go_to_tree": {
-                "action_type": "MOVE",
-                "location": {
-                    "reference_object": {"filters": {"has_name": "tree"}},
-                    "text_span": "tree",
-                },
-            },
-            "build_square_height_1": {
-                "action_type": "BUILD",
-                "schematic": {
-                    "has_name": "square",
-                    "has_height": "1",
-                    "text_span": "square height 1",
-                },
-            },
-            "stop": {"action_type": "STOP"},
-            "fill_speaker_look": {
-                "action_type": "FILL",
-                "reference_object": {
-                    "filters": {"location": SPEAKERLOOK},
-                    "text_span": "where I'm looking",
-                },
-            },
-            "fill_speaker_look_gold": {
-                "action_type": "FILL",
-                "has_block_type": "gold",
-                "reference_object": {
-                    "filters": {"location": SPEAKERLOOK},
-                    "text_span": "where I'm looking",
-                },
-            },
-        }
 
     def handle_logical_form(
         self, d, chatstr: str = "", answer: str = None, stop_on_chat=False, max_steps=10000

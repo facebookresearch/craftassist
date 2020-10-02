@@ -6,21 +6,47 @@ import logging
 import numpy as np
 from typing import List
 
-from util import XYZ, IDM, Block
+from mc_util import XYZ, IDM, Block
 from utils import Look, Pos, Item, Player
 from base_agent.loco_mc_agent import LocoMCAgent
+from base_agent.base_util import TICKS_PER_SEC
 from mc_memory import MCAgentMemory
 from mc_memory_nodes import VoxelObjectNode
 from craftassist_agent import CraftAssistAgent
+from base_agent.base_util import Time
 from base_agent.nsp_dialogue_manager import NSPDialogueManager
 from dialogue_objects import GetMemoryHandler, PutMemoryHandler, Interpreter
 from low_level_perception import LowLevelMCPerception
 import heuristic_perception
 from rotation import look_vec
 
+# how many internal, non-world-interacting steps agent takes before world steps:
+WORLD_STEP = 10
+
+WORLD_STEPS_PER_DAY = 480
+
 
 class Opt:
     pass
+
+
+class FakeMCTime(Time):
+    def __init__(self, world):
+        self.world = world
+
+    def get_world_hour(self):
+        return (self.world.count % WORLD_STEPS_PER_DAY) / WORLD_STEPS_PER_DAY
+
+    # converts from "seconds" to internal tick
+    def round_time(self, t):
+        return int(TICKS_PER_SEC * t)
+
+    def get_time(self):
+        return self.world.count * TICKS_PER_SEC
+
+    def add_tick(self, ticks=1):
+        for i in range(ticks):
+            self.world.step()
 
 
 class FakeCPPAction:
@@ -30,7 +56,7 @@ class FakeCPPAction:
         self.agent = agent
 
     def action(self, *args):
-        pass
+        self.agent.world_interaction_occurred = True
 
     def __call__(self, *args):
         if hasattr(self.agent, "recorder"):
@@ -42,6 +68,7 @@ class Dig(FakeCPPAction):
     NAME = "dig"
 
     def action(self, x, y, z):
+        self.agent.world_interaction_occurred = True
         dug = self.agent.world.dig((x, y, z))
         if dug:
             self.agent._changed_blocks.append(((x, y, z), (0, 0)))
@@ -54,6 +81,7 @@ class SendChat(FakeCPPAction):
     NAME = "send_chat"
 
     def action(self, chat):
+        self.agent.world_interaction_occurred = True
         logging.info("FakeAgent.send_chat: {}".format(chat))
         self.agent._outgoing_chats.append(chat)
 
@@ -62,6 +90,7 @@ class SetHeldItem(FakeCPPAction):
     NAME = "set_held_item"
 
     def action(self, arg):
+        self.agent.world_interaction_occurred = True
         try:
             d, m = arg
             self.agent._held_item = (d, m)
@@ -73,6 +102,7 @@ class StepPosX(FakeCPPAction):
     NAME = "step_pos_x"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         self.agent.pos += (1, 0, 0)
 
 
@@ -80,6 +110,7 @@ class StepNegX(FakeCPPAction):
     NAME = "step_neg_x"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         self.agent.pos += (-1, 0, 0)
 
 
@@ -87,6 +118,7 @@ class StepPosZ(FakeCPPAction):
     NAME = "step_pos_z"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         self.agent.pos += (0, 0, 1)
 
 
@@ -94,6 +126,7 @@ class StepNegZ(FakeCPPAction):
     NAME = "step_neg_z"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         self.agent.pos += (0, 0, -1)
 
 
@@ -101,6 +134,7 @@ class StepPosY(FakeCPPAction):
     NAME = "step_pos_y"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         self.agent.pos += (0, 1, 0)
 
 
@@ -108,6 +142,7 @@ class StepNegY(FakeCPPAction):
     NAME = "step_neg_y"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         self.agent.pos += (0, -1, 0)
 
 
@@ -115,6 +150,7 @@ class StepForward(FakeCPPAction):
     NAME = "step_forward"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         dx, dy, dz = self.agent._look_vec
         self.agent.pos += (dx, 0, dz)
 
@@ -123,6 +159,7 @@ class TurnAngle(FakeCPPAction):
     NAME = "turn_angle"
 
     def action(self, angle):
+        self.agent.world_interaction_occurred = True
         if angle == 90:
             self.agent.turn_left()
         elif angle == -90:
@@ -135,6 +172,7 @@ class TurnLeft(FakeCPPAction):
     NAME = "turn_left"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         old_l = (self.agent._look_vec[0], self.agent._look_vec[1])
         idx = self.agent.CCW_LOOK_VECS.index(old_l)
         new_l = self.agent.CCW_LOOK_VECS[(idx + 1) % len(self.agent.CCW_LOOK_VECS)]
@@ -146,6 +184,7 @@ class TurnRight(FakeCPPAction):
     NAME = "turn_right"
 
     def action(self):
+        self.agent.world_interaction_occurred = True
         old_l = (self.agent._look_vec[0], self.agent._look_vec[1])
         idx = self.agent.CCW_LOOK_VECS.index(old_l)
         new_l = self.agent.CCW_LOOK_VECS[(idx - 1) % len(self.agent.CCW_LOOK_VECS)]
@@ -157,6 +196,7 @@ class PlaceBlock(FakeCPPAction):
     NAME = "place_block"
 
     def action(self, x, y, z):
+        self.agent.world_interaction_occurred = True
         block = ((x, y, z), self.agent._held_item)
         self.agent.world.place_block(block)
         self.agent._changed_blocks.append(block)
@@ -174,6 +214,7 @@ class SetLook(FakeCPPAction):
     NAME = "set_look"
 
     def action(self, yaw, pitch):
+        self.agent.world_interaction_occurred = True
         a = look_vec(yaw, pitch)
         self._look_vec = [a[0], a[1], a[2]]
 
@@ -187,6 +228,8 @@ class Craft(FakeCPPAction):
 
 class FakeAgent(LocoMCAgent):
     CCW_LOOK_VECS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    default_frame = CraftAssistAgent.default_frame
+    coordinate_transforms = CraftAssistAgent.default_frame
 
     def __init__(self, world, opts=None, do_heuristic_perception=False):
         self.world = world
@@ -200,6 +243,7 @@ class FakeAgent(LocoMCAgent):
             opts.QA_nsp_model_path = None
             opts.ground_truth_data_dir = ""
             opts.web_app = False
+            opts.no_ground_truth = True
         super(FakeAgent, self).__init__(opts)
         self.do_heuristic_perception = do_heuristic_perception
         self.no_default_behavior = True
@@ -209,6 +253,7 @@ class FakeAgent(LocoMCAgent):
             pos = self.world.agent_data["pos"]
         self.pos = np.array(pos, dtype="int")
         self.logical_form = None
+        self.world_interaction_occurred = False
 
         self._held_item: IDM = (0, 0)
         self._look_vec = (1, 0, 0)
@@ -219,7 +264,7 @@ class FakeAgent(LocoMCAgent):
     def init_perception(self):
         self.geoscorer = None
         self.perception_modules = {}
-        self.perception_modules["low_level"] = LowLevelMCPerception(self)
+        self.perception_modules["low_level"] = LowLevelMCPerception(self, perceive_freq=1)
         self.perception_modules["heuristic"] = heuristic_perception.PerceptionWrapper(self)
 
     def init_physical_interfaces(self):
@@ -240,7 +285,8 @@ class FakeAgent(LocoMCAgent):
         self.place_block = PlaceBlock(self)
 
     def init_memory(self):
-        self.memory = MCAgentMemory(load_minecraft_specs=False)  # don't load specs, it's slow
+        T = FakeMCTime(self.world)
+        self.memory = MCAgentMemory(load_minecraft_specs=False, agent_time=T)
 
     def init_controller(self):
         dialogue_object_classes = {}
@@ -254,7 +300,9 @@ class FakeAgent(LocoMCAgent):
 
     def step(self):
         if hasattr(self.world, "step"):
-            self.world.step()
+            if self.world_interaction_occurred or self.count % WORLD_STEP == 0:
+                self.world.step()
+                self.world_interaction_occurred = False
         if hasattr(self, "recorder"):
             self.recorder.record_world()
         super().step()
@@ -272,6 +320,8 @@ class FakeAgent(LocoMCAgent):
             chatstr = self.logical_form["chatstr"]
             speaker_name = self.logical_form["speaker"]
             self.memory.add_chat(self.memory.get_player_by_name(speaker_name).memid, chatstr)
+            # force to get objects, speaker info
+            self.perceive(force=True)
             obj = self.dialogue_manager.handle_logical_form(speaker_name, d, chatstr)
             if obj is not None:
                 self.dialogue_manager.dialogue_stack.append(obj)

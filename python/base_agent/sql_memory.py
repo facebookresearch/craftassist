@@ -12,7 +12,7 @@ import sqlite3
 import uuid
 from itertools import zip_longest
 from typing import cast, Optional, List, Tuple, Sequence, Union
-from base_agent.util import XYZ, Time
+from base_agent.base_util import XYZ, Time
 from base_agent.task import Task
 from base_agent.memory_filters import ReferenceObjectSearcher
 
@@ -36,16 +36,24 @@ SCHEMAS = [os.path.join(os.path.dirname(__file__), "memory_schema.sql")]
 
 class AgentMemory:
     def __init__(
-        self, db_file=":memory:", schema_paths=SCHEMAS, db_log_path=None, nodelist=NODELIST
+        self,
+        db_file=":memory:",
+        schema_paths=SCHEMAS,
+        db_log_path=None,
+        nodelist=NODELIST,
+        agent_time=None,
     ):
         if db_log_path:
             self._db_log_file = gzip.open(db_log_path + ".gz", "w")
             self._db_log_idx = 0
         self.sql_queries = []
+        if os.path.isfile(db_file):
+            os.remove(db_file)
         self.db = sqlite3.connect(db_file)
         self.task_db = {}
-        self.time = Time(mode="clock")
         self._safe_pickle_saved_attrs = {}
+
+        self.init_time_interface(agent_time)
 
         for schema_path in schema_paths:
             with open(schema_path, "r") as f:
@@ -72,8 +80,14 @@ class AgentMemory:
         if getattr(self, "_db_log_file", None):
             self._db_log_file.close()
 
+    def init_time_interface(self, agent_time=None):
+        self.time = agent_time or Time()
+
     def get_time(self):
         return self.time.get_time()
+
+    def get_world_time(self):
+        return self.time.get_world_time()
 
     def add_tick(self, ticks=1):
         self.time.add_tick(ticks)
@@ -151,7 +165,7 @@ class AgentMemory:
     ##########################
 
     def get_reference_objects(self, filter_dict):
-        return self.ref_searcher.search(self, filter_dict)
+        return self.ref_searcher.search(self, search_data=filter_dict)
 
     #################
     ###  Triples  ###
@@ -168,7 +182,7 @@ class AgentMemory:
         confidence: float = 1.0,
     ):
         """ adds (subj, pred, obj) triple to the triplestore.
-            *_text is the name field of a NamedAbstraction; if 
+            *_text is the name field of a NamedAbstraction; if
             such a NamedAbstraction does not exist, this builds it as a side effect.
             subj and obj can be memids or text, but pred_text is required """
 
@@ -241,13 +255,13 @@ class AgentMemory:
         obj_text: str = None,
         return_obj_text: str = "if_exists",
     ) -> List[Tuple[str, str, str]]:
-        """ gets triples from the triplestore.  
-        if return_obj_text == "if_exists", will return the obj_text 
+        """ gets triples from the triplestore.
+        if return_obj_text == "if_exists", will return the obj_text
             if it exists, and the memid otherwise
         if return_obj_text == "always", returns the obj_text even if it is None
         if return_obj_text == "never", returns the obj memid
-        subj is always returned as a memid even when searched as text. 
-        need at least one non-None part of the triple, and 
+        subj is always returned as a memid even when searched as text.
+        need at least one non-None part of the triple, and
         text should not not be input for a part of a triple where a memid is set
         """
         assert any([subj or subj_text, pred_text, obj or obj_text])

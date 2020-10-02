@@ -10,7 +10,7 @@ import random
 import shape_helpers as sh
 import tasks
 
-from util import pos_to_np
+from mc_util import pos_to_np
 
 
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")

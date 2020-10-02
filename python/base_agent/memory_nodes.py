@@ -1,7 +1,7 @@
 import uuid
 import ast
 from typing import Optional, List, Dict, cast
-from .util import XYZ, POINT_AT_TARGET, to_player_struct
+from base_util import XYZ, POINT_AT_TARGET, to_player_struct
 from task import Task
 
 
@@ -124,7 +124,7 @@ class NamedAbstractionNode(MemoryNode):
 # the table entry just has the memid and a modification time,
 # actual set elements are handled as triples
 class SetNode(MemoryNode):
-    """ for representing sets of objects, so that it is easier to build complex relations 
+    """ for representing sets of objects, so that it is easier to build complex relations
     using RDF/triplestore format.  is currently fetal- not used in main codebase yet """
 
     TABLE_COLUMNS = ["uuid"]
@@ -215,6 +215,10 @@ class PlayerNode(ReferenceObjectNode):
         return memid
 
     def get_pos(self) -> XYZ:
+        x, y, z = self.agent_memory._db_read_one(
+            "SELECT x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
+        )
+        self.pos = (x, y, z)
         return self.pos
 
     # TODO: use a smarter way to get point_at_target
@@ -276,6 +280,36 @@ class LocationNode(ReferenceObjectNode):
     def get_point_at_target(self) -> POINT_AT_TARGET:
         x, y, z = self.pos
         return cast(POINT_AT_TARGET, (x, y, z, x, y, z))
+
+
+# locations should always be archives?
+class AttentionNode(LocationNode):
+    """ReferenceObjectNode representing spatial attention"""
+
+    TABLE_COLUMNS = ["uuid", "x", "y", "z", "type_name", "ref_type"]
+    NODE_TYPE = "Attention"
+
+    def __init__(self, agent_memory, memid: str):
+        super().__init__(agent_memory, memid)
+        # we use the type_name field to store whose attention it is
+        attender = self.agent_memory._db_read_one(
+            "SELECT type_name FROM ReferenceObjects WHERE uuid=?", self.memid
+        )
+        self.attender = attender
+
+    @classmethod
+    def create(cls, memory, xyz: XYZ, attender=None) -> str:
+        memid = cls.new(memory)
+        memory._db_write(
+            "INSERT INTO ReferenceObjects(uuid, x, y, z, type_name, ref_type) VALUES (?, ?, ?, ?, ?, ?)",
+            memid,
+            xyz[0],
+            xyz[1],
+            xyz[2],
+            attender,
+            "attention",
+        )
+        return memid
 
 
 class TimeNode(MemoryNode):
@@ -417,6 +451,7 @@ NODELIST = [
     TaskNode,
     ChatNode,
     LocationNode,
+    AttentionNode,
     SetNode,
     TimeNode,
     PlayerNode,

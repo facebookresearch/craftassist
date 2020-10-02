@@ -1,7 +1,6 @@
 """
 Copyright (c) Facebook, Inc. and its affiliates.
 """
-# TODO correct path for safety.txt
 # TODO correct model paths
 
 import os
@@ -18,6 +17,8 @@ import numpy as np
 import time
 from multiprocessing import set_start_method
 
+import inventory
+
 import mc_memory
 from dialogue_objects import GetMemoryHandler, PutMemoryHandler, Interpreter
 
@@ -25,19 +26,20 @@ BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(BASE_AGENT_ROOT)
 
 from base_agent.loco_mc_agent import LocoMCAgent
-from base_agent.util import hash_user
-
+from argument_parser import ArgumentParser
 
 from agent import Agent as MCAgent
 
 from low_level_perception import LowLevelMCPerception
 import heuristic_perception
 
-from util import cluster_areas
+from mc_util import cluster_areas, hash_user, MCTime
 from voxel_models.subcomponent_classifier import SubcomponentClassifierWrapper
 from voxel_models.geoscorer import Geoscorer
 from base_agent.nsp_dialogue_manager import NSPDialogueManager
 import default_behaviors
+import subprocess
+import rotation
 
 faulthandler.register(signal.SIGUSR1)
 
@@ -51,9 +53,13 @@ logging.getLogger().handlers.clear()
 sentry_sdk.init()  # enabled if SENTRY_DSN set in env
 
 DEFAULT_BEHAVIOUR_TIMEOUT = 20
+DEFAULT_FRAME = "SPEAKER"
 
 
 class CraftAssistAgent(LocoMCAgent):
+    default_frame = DEFAULT_FRAME
+    coordinate_transforms = rotation
+
     def __init__(self, opts):
         super(CraftAssistAgent, self).__init__(opts)
         self.no_default_behavior = opts.no_default_behavior
@@ -63,11 +69,17 @@ class CraftAssistAgent(LocoMCAgent):
         # List of tuple (XYZ, radius), each defines a cube
         self.areas_to_perceive = []
         self.add_self_memory_node()
+        self.init_inventory()
+
+    def init_inventory(self):
+        self.inventory = inventory.Inventory()
+        logging.info("Initialized agent inventory")
 
     def init_memory(self):
         self.memory = mc_memory.MCAgentMemory(
             db_file=os.environ.get("DB_FILE", ":memory:"),
             db_log_path="agent_memory.{}.log".format(self.name),
+            agent_time=MCTime(self.get_world_time),
         )
         logging.info("Initialized agent memory")
 
@@ -104,11 +116,6 @@ class CraftAssistAgent(LocoMCAgent):
     def controller_step(self):
         """Process incoming chats and modify task stack"""
         raw_incoming_chats = self.get_incoming_chats()
-        if raw_incoming_chats:
-            # force to get objects
-            self.perceive(force=True)
-            # logging.info("Incoming chats: {}".format(raw_incoming_chats))
-
         incoming_chats = []
         for raw_chat in raw_incoming_chats:
             match = re.search("^<([^>]+)> (.*)", raw_chat)
@@ -123,8 +130,11 @@ class CraftAssistAgent(LocoMCAgent):
                 continue
             incoming_chats.append((speaker, chat))
             self.memory.add_chat(self.memory.get_player_by_name(speaker).memid, chat)
+        if incoming_chats:
+            # force to get objects, speaker info
+            self.perceive(force=True)
+            # logging.info("Incoming chats: {}".format(raw_incoming_chats))
 
-        if len(incoming_chats) > 0:
             # change this to memory.get_time() format?
             self.last_chat_time = time.time()
             # for now just process the first incoming chat
@@ -173,6 +183,13 @@ class CraftAssistAgent(LocoMCAgent):
         # round to 100th of second, return as
         # n hundreth of seconds since agent init
         return self.memory.get_time()
+
+    def get_world_time(self):
+        # MC time is based on ticks, where 20 ticks happen every second.
+        # There are 24000 ticks in a day, making Minecraft days exactly 20 minutes long.
+        # The time of day in MC is based on the timestamp modulo 24000 (default).
+        # 0 is sunrise, 6000 is noon, 12000 is sunset, and 18000 is midnight.
+        return self.get_time_of_day()
 
     def safe_get_changed_blocks(self):
         blocks = self.cagent.get_changed_blocks()
@@ -230,8 +247,13 @@ class CraftAssistAgent(LocoMCAgent):
         self.cagent = MCAgent("localhost", self.opts.port, self.name)
         logging.info("Logged in to server")
         self.dig = self.cagent.dig
-        self.drop_item_stack = self.cagent.drop_item_stack
-        self.drop_item = self.cagent.drop_item
+        self.drop_item_stack_in_hand = self.cagent.drop_item_stack_in_hand
+        self.drop_item_in_hand = self.cagent.drop_item_in_hand
+        self.drop_inventory_item_stack = self.cagent.drop_inventory_item_stack
+        self.set_inventory_slot = self.cagent.set_inventory_slot
+        self.get_player_inventory = self.cagent.get_player_inventory
+        self.get_inventory_item_count = self.cagent.get_inventory_item_count
+        self.get_inventory_items_counts = self.cagent.get_inventory_items_counts
         # defined above...
         # self.send_chat = self.cagent.send_chat
         self.set_held_item = self.cagent.set_held_item
@@ -251,6 +273,7 @@ class CraftAssistAgent(LocoMCAgent):
         self.use_entity = self.cagent.use_entity
         self.use_item = self.cagent.use_item
         self.use_item_on_block = self.cagent.use_item_on_block
+        self.is_item_stack_on_ground = self.cagent.is_item_stack_on_ground
         self.craft = self.cagent.craft
         self.get_blocks = self.cagent.get_blocks
         self.get_local_blocks = self.cagent.get_local_blocks
@@ -264,6 +287,9 @@ class CraftAssistAgent(LocoMCAgent):
         self.get_player_line_of_sight = self.cagent.get_player_line_of_sight
         self.get_changed_blocks = self.cagent.get_changed_blocks
         self.get_item_stacks = self.cagent.get_item_stacks
+        self.get_world_age = self.cagent.get_world_age
+        self.get_time_of_day = self.cagent.get_time_of_day
+        self.get_item_stack = self.cagent.get_item_stack
 
     def add_self_memory_node(self):
         # clean this up!  FIXME!!!!! put in base_agent_memory?
@@ -287,77 +313,9 @@ class CraftAssistAgent(LocoMCAgent):
 
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    # TODO arrange all model paths so only one dir needs to be given
-    parser.add_argument(
-        "--model_base_path",
-        default="#relative",
-        help="if empty model paths are relative to this file",
-    )
-    parser.add_argument(
-        "--QA_nsp_model_path",
-        default="models/ttad/ttad.pth",
-        help="path to previous TTAD model for QA",
-    )
-    parser.add_argument(
-        "--nsp_model_dir",
-        default="models/ttad_bert_updated/model/",
-        help="path to current listener model dir",
-    )
-    parser.add_argument(
-        "--nsp_embeddings_path",
-        default="models/ttad/ttad_ft_embeds.pth",
-        help="path to current model embeddings",
-    )
-    parser.add_argument(
-        "--nsp_grammar_path", default="models/ttad/dialogue_grammar.json", help="path to grammar"
-    )
-    parser.add_argument(
-        "--nsp_data_dir",
-        default="models/ttad_bert_updated/annotated_data/",
-        help="path to annotated data",
-    )
-    parser.add_argument(
-        "--ground_truth_data_dir",
-        default="models/ttad_bert_updated/ground_truth/",
-        help="path to folder of common short and templated commands",
-    )
-    # parser.add_argument(
-    #     "--greetings_path",
-    #     default="models/ttad_bert_updated/ground_truth/greetings.txt",
-    #     help="path to greetings",
-    # )
-    parser.add_argument(
-        "--semseg_model_path", default="", help="path to semantic segmentation model"
-    )
-    parser.add_argument(
-        "--semseg_vocab_path", default="", help="path to block-id vocab map for segmentation model"
-    )
-    parser.add_argument("--geoscorer_model_path", default="", help="path to geoscorer model")
-    parser.add_argument("--port", type=int, default=25565)
-    parser.add_argument("--verbose", "-v", action="store_true", help="Debug logging")
-    parser.add_argument("--web_app", action="store_true", help="use web app, send action dict")
-    parser.add_argument(
-        "--no_default_behavior",
-        action="store_true",
-        help="do not perform default behaviors when idle",
-    )
-    opts = parser.parse_args()
-
-    def fix_path(opts):
-        if opts.model_base_path == "#relative":
-            base_path = os.path.dirname(__file__)
-        else:
-            base_path = opts.model_base_path
-        od = opts.__dict__
-        for optname, optval in od.items():
-            if "path" in optname or "dir" in optname:
-                if optval:
-                    od[optname] = os.path.join(base_path, optval)
-
-    fix_path(opts)
+    base_path = os.path.dirname(__file__)
+    parser = ArgumentParser("Minecraft", base_path)
+    opts = parser.parse()
 
     # set up stdout logging
     sh = logging.StreamHandler()
@@ -366,6 +324,9 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(sh)
     logging.info("Info logging")
     logging.debug("Debug logging")
+
+    # Check that models and datasets are up to date
+    rc = subprocess.call([opts.verify_hash_script_path, "craftassist"])
 
     set_start_method("spawn", force=True)
 

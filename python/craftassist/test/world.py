@@ -1,33 +1,13 @@
 import numpy as np
 from typing import Sequence, Dict
-from util import Block, XYZ, IDM
-from utils import Pos, Look
+from mc_util import Block, XYZ, IDM
 from rotation import look_vec
-from entities import MOBS_BY_ID
+from fake_mobs import make_mob_opts, MOB_META, SimpleMob
 
 FLAT_GROUND_DEPTH = 8
-FALL_SPEED = 1
-# TODO make these prettier
-MOB_COLORS = {
-    "rabbit": (0.3, 0.3, 0.3),
-    "cow": (0.9, 0.9, 0.9),
-    "pig": (0.9, 0.5, 0.5),
-    "chicken": (0.9, 0.9, 0.0),
-    "sheep": (0.6, 0.6, 0.6),
-}
-MOB_META = {101: "rabbit", 92: "cow", 90: "pig", 93: "chicken", 91: "sheep"}
-MOB_SPEED = {"rabbit": 1, "cow": 0.3, "pig": 0.5, "chicken": 1, "sheep": 0.3}
-MOB_LOITER_PROB = {"rabbit": 0.3, "cow": 0.5, "pig": 0.3, "chicken": 0.1, "sheep": 0.5}
-MOB_LOITER_TIME = {"rabbit": 2, "cow": 2, "pig": 2, "chicken": 1, "sheep": 2}
-MOB_STEP_HEIGHT = {"rabbit": 1, "cow": 1, "pig": 1, "chicken": 2, "sheep": 2}
-MOB_DIRECTION_CHANGE_PROB = {"rabbit": 0.1, "cow": 0.1, "pig": 0.2, "chicken": 0.3, "sheep": 0.2}
 
 
 class Opt:
-    pass
-
-
-class MobInfo:
     pass
 
 
@@ -35,126 +15,16 @@ def flat_ground_generator_with_grass(world):
     flat_ground_generator(world, grass=True)
 
 
-def flat_ground_generator(world, grass=False):
+def flat_ground_generator(world, grass=False, ground_depth=FLAT_GROUND_DEPTH):
     r = world.to_world_coords((0, 62, 0))[1]
     # r = world.sl // 2
     world.blocks[:] = 0
     world.blocks[:, 0:r, :, 0] = 7
-    world.blocks[:, r - FLAT_GROUND_DEPTH : r, :, 0] = 3
+    world.blocks[:, r - ground_depth : r, :, 0] = 3
     if grass:
         world.blocks[:, r, :, 0] = 2
     else:
         world.blocks[:, r, :, 0] = 3
-
-
-def make_mob_opts(mobname):
-    opts = Opt()
-    opts.mobname = mobname
-    opts.direction_change_prob = MOB_DIRECTION_CHANGE_PROB[mobname]
-    opts.color = MOB_COLORS[mobname]
-    opts.speed = MOB_SPEED[mobname]
-    opts.loiter_prob = MOB_LOITER_PROB[mobname]
-    opts.loiter_time = MOB_LOITER_TIME[mobname]
-    opts.step_height = MOB_STEP_HEIGHT[mobname]
-    opts.mobType = list(MOBS_BY_ID.keys())[list(MOBS_BY_ID.values()).index(mobname)]
-    return opts
-
-
-def check_bounds(p, sl):
-    if p >= sl or p < 0:
-        return -1
-    return 1
-
-
-class SimpleMob:
-    def __init__(self, opts, start_pos=None, start_look=(0.0, 0.0)):
-        self.mobname = opts.mobname
-        self.color = opts.color
-        self.direction_change_prob = opts.direction_change_prob
-        self.loiter_prob = opts.loiter_prob
-        self.loiter_time = opts.loiter_time
-        self.speed = opts.speed
-        self.step_height = opts.step_height
-        self.pos = start_pos
-        self.look = start_look
-        self.loitering = -1
-        self.new_direction()
-        self.entityId = str(np.random.randint(0, 100000))
-        self.mobType = opts.mobType
-        self.agent_built = False
-
-    def add_to_world(self, world):
-        self.world = world
-        if self.pos is None:
-            xz = np.random.randint(0, world.sl, (2,))
-            slice = self.world.blocks[xz[0], :, xz[1], 0]
-            nz = np.flatnonzero(slice)
-            if len(nz) == 0:
-                # mob will be floating, but why no floor here?
-                h = 0
-            else:
-                # if top block is nonzero mob will be trapped
-                h = nz[-1]
-            off = self.world.coord_shift
-            self.pos = (float(xz[0]) + off[0], float(h + 1) + off[1], float(xz[1]) + off[2])
-        self.world.mobs.append(self)
-
-    def get_info(self):
-        info = MobInfo()
-        info.entityId = self.entityId
-        info.pos = Pos(*self.pos)
-        info.look = Look(*self.look)
-        info.mobType = self.mobType
-        info.color = self.color
-        info.mobname = self.mobname
-        return info
-
-    def new_direction(self):
-        new_direction = np.random.randn(2)
-        self.direction = new_direction / np.linalg.norm(new_direction)
-        # self.look ##NOT IMPLEMENTED
-
-    def step(self):
-        # check if falling:
-        x, y, z = self.world.to_world_coords(self.pos)
-        fy = int(np.floor(y))
-        rx = int(np.round(x))
-        rz = int(np.round(z))
-        if y > 0:
-            if self.world.blocks[rx, fy - 1, rz, 0] == 0:
-                self.pos = (self.pos[0], self.pos[1] - FALL_SPEED, self.pos[2])
-                return
-        # TODO when look implemented: change looks when loitering
-        if self.loitering >= 0:
-            self.loitering += 1
-            if self.loitering > self.loiter_time:
-                self.loitering = -1
-            return
-        if np.random.rand() < self.loiter_prob:
-            self.loitering = 0
-            return
-        if np.random.rand() < self.direction_change_prob:
-            self.new_direction()
-        step = self.direction * self.speed
-        bx = check_bounds(int(np.round(x + step[0])), self.world.sl)
-        bz = check_bounds(int(np.round(z + step[1])), self.world.sl)
-        # if hitting boundary, reverse...
-        self.direction[0] = bx * self.direction[0]
-        self.direction[1] = bz * self.direction[1]
-        step = self.direction * self.speed
-        new_x = step[0] + x
-        new_z = step[1] + z
-        # is there a block in new location? if no go there, if yes go up
-        for i in range(self.step_height):
-            if fy + i >= self.world.sl:
-                self.new_direction()
-                return
-            if self.world.blocks[int(np.round(new_x)), fy + i, int(np.round(new_z)), 0] == 0:
-                self.pos = self.world.from_world_coords((new_x, y + i, new_z))
-                return
-        # couldn't get past a wall of blocks, try a different dir
-        self.new_direction()
-        return
 
 
 def shift_coords(p, shift):
@@ -199,7 +69,11 @@ class World:
 
         self.blocks = np.zeros((opts.sl, opts.sl, opts.sl, 2), dtype="int32")
         if spec.get("ground_generator"):
-            spec["ground_generator"](self)
+            ground_args = spec.get("ground_args", None)
+            if ground_args is None:
+                spec["ground_generator"](self)
+            else:
+                spec["ground_generator"](self, **ground_args)
         else:
             self.build_ground()
         self.mobs = []
@@ -247,7 +121,8 @@ class World:
         ground_height = ground_height - ground_height.mean() + avg_ground_height
         for i in range(self.sl):
             for j in range(self.sl):
-                for k in range(int(ground_height[i, j])):
+                height = min(31, max(0, int(ground_height[i, j])))
+                for k in range(int(height)):
                     self.blocks[i, k, j] = (3, 0)
 
         # FIXME this is broken

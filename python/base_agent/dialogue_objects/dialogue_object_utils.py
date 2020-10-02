@@ -1,6 +1,23 @@
+from copy import deepcopy
+
 SPEAKERLOOK = {"reference_object": {"special_reference": "SPEAKER_LOOK"}}
 SPEAKERPOS = {"reference_object": {"special_reference": "SPEAKER"}}
 AGENTPOS = {"reference_object": {"special_reference": "AGENT"}}
+
+
+def strip_prefix(s, pre):
+    if s.startswith(pre):
+        return s[len(pre) :]
+    return s
+
+
+# FIXME!? maybe start using triples appropriately now?
+def tags_from_dict(d):
+    return [
+        strip_prefix(tag, "the ")
+        for key, tag in d.items()
+        if key.startswith("has_") and isinstance(tag, str)
+    ]
 
 
 def is_loc_speakerlook(d):
@@ -44,13 +61,13 @@ def process_spans(d, original_words, lemmatized_words):
 # and
 # in addition to being bad, abstraction is leaking
 def coref_resolve(memory, d, chat):
-    """Walk logical form "d" and replace coref_resolve values
+    """Walk logical form "d" and replace coref_resolve values    
 
     Possible substitutions:
     - a subdict lik SPEAKERPOS
     - a MemoryNode object
     - "NULL"
-
+    
     Assumes spans have been substituted.
     """
 
@@ -58,20 +75,29 @@ def coref_resolve(memory, d, chat):
     if not type(d) is dict:
         return
     for k, v in d.items():
+        if type(v) == dict:
+            coref_resolve(memory, v, chat)
+        if type(v) == list:
+            for a in v:
+                coref_resolve(memory, a, chat)
+        v_copy = v
         if k == "location":
             # v is a location dict
             for k_ in v:
                 if k_ == "contains_coreference":
+                    v_copy = deepcopy(v)
                     val = SPEAKERPOS if "here" in c else SPEAKERLOOK
-                    v["reference_object"] = val["reference_object"]
-                    del v["contains_coreference"]
+                    v_copy["reference_object"] = val["reference_object"]
+                    v_copy["contains_coreference"] = "resolved"
+            d[k] = v_copy
         elif k == "filters":
             # v is a reference object dict
             for k_ in v:
                 if k_ == "contains_coreference":
+                    v_copy = deepcopy(v)
                     if "this" in c or "that" in c:
-                        v["location"] = SPEAKERLOOK
-                        del v["contains_coreference"]
+                        v_copy["location"] = SPEAKERLOOK
+                        v_copy["contains_coreference"] = "resolved"
                     else:
                         mems = memory.get_recent_entities("BlockObject")
                         if len(mems) == 0:
@@ -79,13 +105,25 @@ def coref_resolve(memory, d, chat):
                                 "Mob"
                             )  # if its a follow, this should be first, FIXME
                             if len(mems) == 0:
-                                v[k_] = "NULL"
+                                v_copy[k_] = "NULL"
                             else:
-                                v[k_] = mems[0]
+                                v_copy[k_] = mems[0]
                         else:
-                            v[k_] = mems[0]
-        if type(v) == dict:
-            coref_resolve(memory, v, chat)
-        if type(v) == list:
-            for a in v:
-                coref_resolve(memory, a, chat)
+                            v_copy[k_] = mems[0]
+            d[k] = v_copy
+        # fix/delete this branch! its for old broken spec
+        else:
+            for k_ in v:
+                if k_ == "contains_coreference":
+                    v_copy = deepcopy(v)
+                    if "this" in c or "that" in c:
+                        v_copy["location"] = SPEAKERLOOK
+                        v_copy["contains_coreference"] = "resolved"
+            d[k] = v_copy
+
+
+if __name__ == "__main__":
+    x = eval(
+        "{'dialogue_type': 'PUT_MEMORY', 'filters': {'reference_object':{'contains_coreference': 'yes'}}, 'upsert': {'memory_data': {'memory_type': 'TRIPLE', 'has_tag': 'j'}}}"
+    )
+    y = coref_resolve(None, x, "that is a j")

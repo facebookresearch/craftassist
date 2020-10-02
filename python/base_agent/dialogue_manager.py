@@ -31,7 +31,6 @@ dialogue_object_data is for explicit commands to force the manager to
 return a specific Dialogue object to put on the stack.
 """
 import logging
-import os
 from typing import Tuple, Optional
 
 from dialogue_stack import DialogueStack
@@ -43,11 +42,10 @@ class DialogueManager(object):
         self.agent = agent
         self.dialogue_stack = DialogueStack(agent, agent.memory)
         self.model = model
-        self.safety_words = self.get_safety_words()
 
-    def get_safety_words(self):
+    def get_safety_words(self, safety_words_path):
         """Read a list of safety words to prevent abuse."""
-        with open(os.path.join(os.path.dirname(__file__), "safety.txt")) as f:
+        with open(safety_words_path) as f:
             safety_lines = f.readlines()
         safety_words = []
         for l in safety_lines:
@@ -56,8 +54,10 @@ class DialogueManager(object):
                 safety_words.append(w)
         return safety_words
 
-    def check_safety(self, string):
-        notsafe = any([string.lower().find(w) > 0 for w in self.safety_words])
+    def is_safe(self, string):
+        safety_set = set(self.safety_words)
+        cmd_set = set(string.lower().split())
+        notsafe = len(cmd_set & safety_set) > 0
         return not notsafe
 
     # the dialogue manager model should access the task stack and chat history
@@ -66,7 +66,7 @@ class DialogueManager(object):
     # chat is a (speaker, str) tuple
     def step(self, chat: Tuple[str, str]):
         # check safety
-        if not self.check_safety(chat[1]):
+        if not self.is_safe(chat[1]):
             self.dialogue_stack.append_new(Say, "Please don't be rude.")
             return
 

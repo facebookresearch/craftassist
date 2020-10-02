@@ -12,6 +12,7 @@ writeups/*.gz
 writeups/*.out
 *.DS_Store
 python/craftassist/models/*
+python/craftassist/datasets/*
 python/craftassist/ttad/data/*
 !python/craftassist/models/.gitignore
 !python/craftassist/ttad/data/.gitignore
@@ -22,4 +23,13 @@ data_scripts/upload*
 .mypy_cache
 python/locobot/models/*
 !python/locobot/models/.gitignore
+annotation_tools/locobot_webcontrol/node_modules/*
 annotation_tools/locobot_webcontrol/package-lock.json
+annotation_tools/turk/turk_base_app/node_modules/
+annotation_tools/turk/turk_base_app/package-lock.json
+chat.lock
+datasets/
+incoming_chat.txt
+models/
+python/craftassist/ground_truth_data.txt
+python/locobot/test/test_assets/perception_handlers/

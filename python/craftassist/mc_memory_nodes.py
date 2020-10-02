@@ -7,7 +7,7 @@ from collections import Counter
 from typing import cast, List, Sequence, Dict
 
 # FIXME fix util imports
-from util import XYZ, LOOK, POINT_AT_TARGET, IDM, Block
+from mc_util import XYZ, LOOK, POINT_AT_TARGET, IDM, Block
 import minecraft_specs
 from entities import MOBS_BY_ID
 
@@ -103,7 +103,7 @@ class BlockObjectNode(VoxelObjectNode):
         "player_placed",
         "updated",
     ]
-    TABLE = "BlockObjects"
+    TABLE = "ReferenceObjects"
     NODE_TYPE = "BlockObject"
 
     @classmethod
@@ -144,8 +144,7 @@ class InstSegNode(VoxelObjectNode):
     """ this is a voxel object that represents a region of space, and is considered ephemeral"""
 
     TABLE_COLUMNS = ["uuid", "x", "y", "z", "ref_type"]
-    # FIXME this shouldn't be used, but is being used in e.g. get_recent_entities
-    TABLE = "inst_seg"
+    TABLE = "ReferenceObjects"
     NODE_TYPE = "InstSeg"
 
     @classmethod
@@ -294,6 +293,7 @@ class ItemStackNode(ReferenceObjectNode):
         eid, x, y, z = self.agent_memory._db_read_one(
             "SELECT eid, x, y, z FROM ReferenceObjects WHERE uuid=?", self.memid
         )
+        self.memid = memid
         self.eid = eid
         self.pos = (x, y, z)
 
@@ -315,6 +315,7 @@ class ItemStackNode(ReferenceObjectNode):
         )
         memory.tag(memid, type_name)
         memory.tag(memid, "_item_stack")
+        memory.tag(memid, "_on_ground")
         memory.tag(memid, "_physical_object")
         # this is a hack until memory_filters does "not"
         memory.tag(memid, "_not_location")

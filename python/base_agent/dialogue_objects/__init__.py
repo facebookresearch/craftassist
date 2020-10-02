@@ -23,7 +23,12 @@ from dialogue_object_utils import (
     is_loc_speakerlook,
     process_spans,
     coref_resolve,
+    tags_from_dict,
+    strip_prefix,
 )
+
+from reference_object_helpers import ReferenceObjectInterpreter
+from condition_helper import ConditionInterpreter
 
 __all__ = [
     AwaitResponse,
@@ -42,4 +47,8 @@ __all__ = [
     is_loc_speakerlook,
     coref_resolve,
     process_spans,
+    tags_from_dict,
+    strip_prefix,
+    ReferenceObjectInterpreter,
+    ConditionInterpreter,
 ]

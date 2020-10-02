@@ -14,9 +14,9 @@ THIS_DIR = os.path.dirname(__file__)
 class ActionDictBuilder(object):
     def __init__(
         self,
-        model_path=THIS_DIR + "/../../models/ttad/ttad.pth",
-        embeddings_path=THIS_DIR + "/../../models/ttad/ttad_ft_embeds.pth",
-        action_tree_path=THIS_DIR + "/../../models/ttad/dialogue_grammar.json",
+        model_path=THIS_DIR + "/../../models/semantic_parser/ttad/ttad.pth",
+        embeddings_path=THIS_DIR + "/../../models/semantic_parser/ttad/ttad_ft_embeds.pth",
+        action_tree_path=THIS_DIR + "/../../models/semantic_parser/ttad/dialogue_grammar.json",
         cuda=False,
     ):
         model, loss, w2i, args = load_model(

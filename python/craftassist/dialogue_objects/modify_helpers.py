@@ -12,8 +12,13 @@ from shape_transforms import (
     maybe_convert_to_list,
     maybe_convert_to_npy,
 )
-from .interpreter_helper import get_block_type, ErrorWithResponse, interpret_reference_location
+from .interpreter_helper import (
+    ErrorWithResponse,
+    interpret_reference_location,
+    interpret_relative_direction,
+)
 from .reference_object_helpers import compute_locations
+from .block_helpers import get_block_type
 
 # TODO lots of reuse with build here....
 # TODO don't destroy then build if its unecessary...
@@ -39,7 +44,8 @@ def handle_rigidmotion(interpreter, speaker, modify_dict, obj):
     location_d = modify_dict.get("location")
     if location_d:
         mems = interpret_reference_location(interpreter, speaker, location_d)
-        origin, _ = compute_locations(interpreter, [], modify_dict, mems)
+        steps, reldir = interpret_relative_direction(interpreter, location_d)
+        origin, _ = compute_locations(interpreter, speaker, mems, steps, reldir)
     else:
         origin = (mx, my, mz)
 

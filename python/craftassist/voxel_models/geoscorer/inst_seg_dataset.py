@@ -25,7 +25,7 @@ def parse_instance_data(inst_data):
         instances = defaultdict(list)
         touching = defaultdict(set)
         for b in blocks:
-            b_w_id = [b[i] for i in range(3)]
+            b_w_id = [b[0], b[2], b[1]]
             b_w_id.append(S[b])
             seg_id = segs[b]
             instances[seg_id].append(b_w_id)
@@ -102,12 +102,25 @@ def get_seg_context_sparse(seg_data, drop_perc, rand_drop=True):
     return seg_sparse, context_sparse
 
 
-def get_inst_seg_example(seg_data, drop_perc, c_sl, s_sl, use_id):
+def get_inst_seg_example(seg_data, drop_perc, c_sl, s_sl, use_id, ground_type=None):
     seg_sparse, context_sparse = get_seg_context_sparse(seg_data, drop_perc)
-    schem_sparse = seg_sparse + context_sparse
-    return su.convert_sparse_context_seg_to_example(
-        context_sparse, seg_sparse, c_sl, s_sl, use_id, schem_sparse=schem_sparse
+    target_coord, shift_vec, shifted_seg_sparse = su.convert_sparse_context_seg_to_target_coord_shifted_seg(
+        context_sparse, seg_sparse, c_sl, s_sl
     )
+    if ground_type is not None:
+        max_z = max([c[0][2] for c in context_sparse] + [s[0][2] for s in shifted_seg_sparse])
+        if max_z < c_sl - 1:
+            context_sparse = [((c[0][0], c[0][1], c[0][2] + 1), c[1]) for c in context_sparse]
+            shifted_seg_sparse = [
+                ((s[0][0], s[0][1], s[0][2] + 1), s[1]) for s in shifted_seg_sparse
+            ]
+            target_coord[2] += 1
+            su.add_ground_to_context(context_sparse, target_coord, flat=True, random_height=False)
+    schem_sparse = seg_sparse + context_sparse
+    example = su.convert_sparse_context_seg_target_to_example(
+        context_sparse, shifted_seg_sparse, target_coord, c_sl, s_sl, use_id, schem_sparse
+    )
+    return example
 
 
 # Returns three tensors: 32x32x32 context, 8x8x8 segment, 1 target
@@ -124,6 +137,7 @@ class SegmentContextInstanceData(torch.utils.data.Dataset):
         useid=False,
         use_direction=False,
         drop_perc=0.8,
+        ground_type=None,
     ):
         self.use_direction = use_direction
         self.c_sl = context_side_length
@@ -131,6 +145,7 @@ class SegmentContextInstanceData(torch.utils.data.Dataset):
         self.num_examples = nexamples
         self.useid = useid
         self.drop_perc = drop_perc
+        self.ground_type = ground_type
 
         # Load the parsed data
         parsed_file = os.path.join(data_dir, "training_parsed.pkl")
@@ -143,11 +158,11 @@ class SegmentContextInstanceData(torch.utils.data.Dataset):
     def _get_example(self):
         if not self.use_direction:
             return get_inst_seg_example(
-                self.seg_data, self.drop_perc, self.c_sl, self.s_sl, self.useid
+                self.seg_data, self.drop_perc, self.c_sl, self.s_sl, self.useid, self.ground_type
             )
         else:
             example = get_inst_seg_example(
-                self.seg_data, self.drop_perc, self.c_sl, self.s_sl, self.useid
+                self.seg_data, self.drop_perc, self.c_sl, self.s_sl, self.useid, self.ground_type
             )
             viewer_pos, viewer_look = du.get_random_viewer_info(self.c_sl)
             target_coord = torch.tensor(su.index_to_coord(example["target"], self.c_sl))
@@ -174,10 +189,15 @@ if __name__ == "__main__":
     )
     parser.add_argument("--useid", action="store_true", help="should we use the block id")
     parser.add_argument("--drop_perc", type=float, default=0.8, help="should we use the block id")
+    parser.add_argument("--ground_type", type=str, default=None, help="ground type")
     opts = parser.parse_args()
 
     dataset = SegmentContextInstanceData(
-        nexamples=3, use_direction=opts.use_direction, drop_perc=opts.drop_perc, useid=opts.useid
+        nexamples=3,
+        use_direction=opts.use_direction,
+        drop_perc=opts.drop_perc,
+        useid=opts.useid,
+        ground_type=opts.ground_type,
     )
     vis = GeoscorerDatasetVisualizer(dataset)
     for n in range(len(dataset)):

@@ -126,7 +126,7 @@ vector<uint8_t> Encoder::heldItemChangePacket(uint8_t i) {
   return packet(0x1a, THRESHOLD);
 }
 
-vector<uint8_t> Encoder::creativeInventoryActionPacket(uint8_t index, Slot s) {
+vector<uint8_t> Encoder::creativeInventoryActionPacket(int16_t index, Slot s) {
   uint16(index);
   slot(s);
   return packet(0x1b, THRESHOLD);
@@ -178,18 +178,26 @@ vector<uint8_t> Encoder::playerFinishedDiggingPacket(BlockPos pos) {
   return packet(0x14, THRESHOLD);
 }
 
-vector<uint8_t> Encoder::playerDropItemStackPacket() {
+vector<uint8_t> Encoder::playerDropItemStackInHandPacket() {
   varint(3); // drop the entire selected stack
   position(0, 0, 0); // location is always set to 0/0/0
   byte(0); // face is always set to -Y(0)
   return packet(0x14, THRESHOLD);
 }
 
-vector<uint8_t> Encoder::playerDropItemPacket() {
+vector<uint8_t> Encoder::playerDropItemInHandPacket() {
   varint(4); // drop the selected item
   position(0, 0, 0); // location is always set to 0/0/0
   byte(0); // face is always set to -Y(0)
   return packet(0x14, THRESHOLD);
+}
+
+vector<uint8_t> Encoder::playerDropItemStackPacket(Slot slot) {
+  return creativeInventoryActionPacket(-1, slot);
+}
+
+vector<uint8_t> Encoder::playerSetInventorySlotPacket(int16_t index, Slot slot) {
+  return creativeInventoryActionPacket(index, slot);
 }
 
 vector<uint8_t> Encoder::clickWindowPacket(uint8_t windowId, uint16_t idx, bool rightClick,

@@ -17,6 +17,7 @@
 class Client {
   const long STEP_COOLDOWN_MS = 125;
   const uint16_t HELD_ITEM_IDX = 36;  // see player inventory diagram
+  const long TICK_PER_SEC = 20; // MC time is based on ticks, where 20 ticks happen every second
 
  public:
   static constexpr double HEIGHT = 1.5;
@@ -55,6 +56,15 @@ class Client {
   // Return a list of all chat strings received to date
   const std::vector<std::string>& getChatHistory();
 
+  // Time is based on ticks, where 20 ticks happen every second (default).
+  // There are 24000 ticks in a day, making Minecraft days exactly 20 minutes long.
+  // Always incrementing
+  long getWorldAge() { return gameState_->getWorldAge(); }
+
+  // The time of day is based on the timestamp modulo 24000 (default).
+  // 0 is sunrise, 6000 is noon, 12000 is sunset, and 18000 is midnight.
+  long getTimeOfDay() { return gameState_->getTimeOfDay(); }
+
   // Attempts a step in the (x, z) plane. It will step up or fall down a
   // single block if necessary, otherwise movement is prohibited. i.e.
   // its y-position can change by at most 1 per step.
@@ -80,6 +90,11 @@ class Client {
 
   // Return a list of all item stacks in the map, with their *absolute* positions
   std::vector<ItemStack> getItemStacks();
+
+  std::optional<ItemStack> getItemStack(unsigned long entityId) { return gameState_->getItemStack(entityId); }
+
+  // Check if a given item stack is on the ground
+  bool isItemStackOnGround(uint64_t entityId);
 
   // Return the Player struct for the named player
   std::optional<Player> getOtherPlayerByName(const std::string& name);
@@ -124,10 +139,18 @@ class Client {
   bool digFeet();
 
   // Drop the selected item (stacks)
-  // dropItemStack() drops the entire stack, while
-  // dropItem() only drops the currently selected item
-  void dropItemStack();
-  void dropItem();
+  // dropItemStackInHand() drops the entire stack in hand, while
+  // dropItemInHand() only drops the currently selected item
+  void dropItemStackInHand();
+  void dropItemInHand();
+  bool dropInventoryItemStack(uint16_t id, uint8_t meta, uint8_t count);
+
+  void setInventorySlot(int16_t index, uint16_t id, uint8_t meta, uint8_t count);
+
+  const std::vector<Slot>& getPlayerInventory() { return gameState_->getPlayerInventory(); }
+  std::unordered_map<Item, uint8_t> getInventoryItemsCounts() { return gameState_->getInventoryItemsCounts(); }
+
+  uint64_t getInventoryItemCount(uint16_t id, uint8_t meta) { return gameState_->getInventoryItemCount(id, meta); }
 
   // Turn counter-clockwise by `angle` degrees
   void turnAngle(float angle);

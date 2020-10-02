@@ -49,12 +49,13 @@ class TestDialogueManager(unittest.TestCase):
         super(TestDialogueManager, self).__init__(*args, **kwargs)
         opts = AttributeDict(
             {
-                "QA_nsp_model_path": "models/ttad/ttad.pth",
-                "nsp_embeddings_path": "models/ttad/ttad_ft_embeds.pth",
-                "nsp_grammar_path": "models/ttad/dialogue_grammar.json",
-                "nsp_data_dir": "models/ttad_bert_updated/annotated_data/",
-                "nsp_model_dir": "models/ttad_bert_updated/model/",
-                "ground_truth_data_dir": "models/ttad_bert_updated/ground_truth/",
+                "QA_nsp_model_path": "models/semantic_parser/ttad/ttad.pth",
+                "nsp_embeddings_path": "models/semantic_parser/ttad/ttad_ft_embeds.pth",
+                "nsp_grammar_path": "models/semantic_parser/ttad/dialogue_grammar.json",
+                "nsp_data_dir": "datasets/annotated_data/",
+                "nsp_model_dir": "models/semantic_parser/ttad_bert_updated/",
+                "ground_truth_data_dir": "datasets/ground_truth/",
+                "no_ground_truth": False,
                 "web_app": False,
             }
         )

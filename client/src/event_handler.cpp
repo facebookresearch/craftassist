@@ -126,6 +126,17 @@ void EventHandler::handle(EntityHeadLookEvent e) {
   gameState_->setPlayerYaw(e.entityId, e.yaw);
 }
 
+void EventHandler::handle(DestroyEntitiesEvent e) {
+  LOG(INFO) << "-- Destroy [" << e.count<< "] entities --";
+  int cnt = 0;
+  for (uint64_t eid: e.entityIds) {
+    if (gameState_->deleteObject(eid) == 1 && gameState_->deleteItemStack(eid) == 1) {
+      LOG(INFO) << "[" << cnt << "] Removed entity from client memory with id: " << eid;
+    }
+    cnt++;
+  }
+}
+
 void EventHandler::handle(EntityTeleportEvent e) {
   optional<Mob> mob = gameState_->getMob(e.entityId);
   if (mob) {
@@ -185,6 +196,9 @@ void EventHandler::handle(SpawnObjectEvent e) {
 void EventHandler::handle(SpawnItemStackEvent e) {
   optional<Object> object = gameState_->getObject(e.entityId);
   if (object) {
+    LOG(INFO) << "Update Item Stack Metadata, eid:" << e.entityId
+              << ", item: " << e.item
+              << ", pos: " << object->pos;
     ItemStack itemStack = {object->uuid, e.entityId, e.item, object->pos};
     gameState_->setItemStack(itemStack);
   }
@@ -193,6 +207,11 @@ void EventHandler::handle(SpawnItemStackEvent e) {
 void EventHandler::handle(UpdateHealthEvent e) {
   gameState_->setHealth(e.health);
   gameState_->setFoodLevel(e.foodLevel);
+}
+
+void EventHandler::handle(TimeUpdateEvent e) {
+  gameState_->setWorldAge(e.worldAge);
+  gameState_->setTimeOfDay(e.timeOfDay);
 }
 
 void EventHandler::handle(CollectItemEvent e) {

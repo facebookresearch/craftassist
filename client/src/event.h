@@ -91,6 +91,11 @@ struct EntityHeadLookEvent {
   float yaw;
 };
 
+struct DestroyEntitiesEvent {
+  unsigned long count;
+  std::vector<uint64_t> entityIds;
+};
+
 struct WindowItemsEvent {
   uint8_t windowId;
   std::vector<Slot> slots;
@@ -135,6 +140,11 @@ struct CollectItemEvent {
 struct UpdateHealthEvent {
   float health;
   uint32_t foodLevel;
+};
+
+struct TimeUpdateEvent {
+  long worldAge;
+  long timeOfDay;
 };
 
 struct OpenWindowEvent {

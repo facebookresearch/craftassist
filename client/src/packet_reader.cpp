@@ -104,6 +104,9 @@ thread PacketReader::startThread() {
             case 0x2f:
               playerPositionAndLook();
               break;
+            case 0x32:
+              destroyEntities();
+              break;
             case 0x36:
               entityHeadLook();
               break;
@@ -121,6 +124,9 @@ thread PacketReader::startThread() {
               break;
             case 0x41:
               updateHealth();
+              break;
+            case 0x47:
+              timeUpdate();
               break;
             case 0x4b:
               collectItem();
@@ -498,6 +504,16 @@ void PacketReader::entityHeadLook() {
   eventHandler_->handle(e);
 }
 
+void PacketReader::destroyEntities() {
+  unsigned long count = readVarint();
+  vector<uint64_t> entityIds;
+  for (int i = 0; i < (long)count; i++) {
+    entityIds.push_back(readVarint());
+  }
+  DestroyEntitiesEvent e = {count, entityIds};
+  eventHandler_->handle(e);
+}
+
 // TODO: fix hacky
 void PacketReader::entityMetadata() {
   unsigned long entityId = readVarint();
@@ -718,6 +734,13 @@ void PacketReader::updateHealth() {
   skipRest();  // skip food saturation level from the packet
 
   UpdateHealthEvent e = {health, foodLevel};
+  eventHandler_->handle(e);
+}
+
+void PacketReader::timeUpdate() {
+  long worldAge = readInt64();
+  long timeOfDay = readInt64();
+  TimeUpdateEvent e = {worldAge, timeOfDay};
   eventHandler_->handle(e);
 }
 

@@ -6,7 +6,7 @@ import re
 import time
 
 from core import BaseAgent
-from util import hash_user
+from base_util import hash_user
 
 random.seed(0)
 
@@ -20,9 +20,10 @@ random.seed(0)
 class LocoMCAgent(BaseAgent):
     def __init__(self, opts, name=None):
         logging.info("Agent.__init__ started")
-        name = name or default_agent_name()
-        super(LocoMCAgent, self).__init__(opts, name=name)
+        self.name = name or default_agent_name()
+        self.opts = opts
         self.init_physical_interfaces()
+        super(LocoMCAgent, self).__init__(opts, name=self.name)
         self.uncaught_error_count = 0
         self.last_chat_time = 0
         self.last_task_memid = None

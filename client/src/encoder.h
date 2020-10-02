@@ -45,15 +45,17 @@ class Encoder {
   std::vector<uint8_t> teleportConfirmPacket(long teleportId);
   std::vector<uint8_t> keepalivePacket(long keepaliveId);
   std::vector<uint8_t> heldItemChangePacket(uint8_t i);
-  std::vector<uint8_t> creativeInventoryActionPacket(uint8_t index, Slot slot);
+  std::vector<uint8_t> creativeInventoryActionPacket(int16_t index, Slot slot);
   std::vector<uint8_t> playerBlockPlacementPacket(BlockPos p);
   std::vector<uint8_t> playerUseEntityPacket(BlockPos p);
   std::vector<uint8_t> playerUseItemPacket();
   std::vector<uint8_t> playerLookPacket(float yaw, float pitch, bool onGround);
   std::vector<uint8_t> playerStartDiggingPacket(BlockPos pos);
   std::vector<uint8_t> playerFinishedDiggingPacket(BlockPos pos);
-  std::vector<uint8_t> playerDropItemStackPacket();
-  std::vector<uint8_t> playerDropItemPacket();
+  std::vector<uint8_t> playerDropItemStackInHandPacket();
+  std::vector<uint8_t> playerDropItemInHandPacket();
+  std::vector<uint8_t> playerDropItemStackPacket(Slot slot);
+  std::vector<uint8_t> playerSetInventorySlotPacket(int16_t index, Slot slot);
 
   std::vector<uint8_t> clickWindowPacket(uint8_t windowId, uint16_t slot, bool rightClick,
                                          uint16_t counter, Slot clicked);

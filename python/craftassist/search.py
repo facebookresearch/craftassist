@@ -8,11 +8,11 @@ import numpy as np
 import time
 
 from block_data import PASSABLE_BLOCKS
-import util
+from mc_util import adjacent, manhat_dist
 
 
-def depth_first_search(blocks_shape, pos, fn, adj_fn=util.adjacent):
-    """Do depth-first search on array with blocks_shape starting 
+def depth_first_search(blocks_shape, pos, fn, adj_fn=adjacent):
+    """Do depth-first search on array with blocks_shape starting
     from pos
 
     Calls fn(p) on each index `p` in DFS-order. If fn returns True,
@@ -93,14 +93,14 @@ def _astar(X, start, goal, approx=0):
     visited = set()
     came_from = {}
     q = PriorityQueue()
-    q.push(start, util.manhat_dist(start, goal))
+    q.push(start, manhat_dist(start, goal))
     G = np.full_like(X, np.iinfo(np.uint32).max, "uint32")
     G[start] = 0
 
     while len(q) > 0:
         _, p = q.pop()
 
-        if util.manhat_dist(p, goal) <= approx:
+        if manhat_dist(p, goal) <= approx:
             path = []
             while p in came_from:
                 path.append(p)
@@ -108,7 +108,7 @@ def _astar(X, start, goal, approx=0):
             return [start] + list(reversed(path))
 
         visited.add(p)
-        for a in util.adjacent(p):
+        for a in adjacent(p):
             if (
                 a in visited
                 or a[0] < 0
@@ -126,7 +126,7 @@ def _astar(X, start, goal, approx=0):
                 continue
             came_from[a] = p
             G[a] = g
-            f = g + util.manhat_dist(a, goal)
+            f = g + manhat_dist(a, goal)
             if q.contains(a):
                 q.replace(a, f)
             else:

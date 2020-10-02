@@ -3,6 +3,16 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 import numpy as np
 import torch
+import os
+import sys
+import random
+
+CRAFTASSIST_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../")
+TEST_DIR = os.path.join(CRAFTASSIST_DIR, "test/")
+sys.path.append(CRAFTASSIST_DIR)
+sys.path.append(TEST_DIR)
+
+from world import World, Opt, flat_ground_generator
 
 """
 Generic Spatial Utils
@@ -124,6 +134,29 @@ def combine_seg_context(seg, context, seg_shift, seg_mult=1):
     return completed_context
 
 
+def convert_sparse_context_seg_to_target_coord_shifted_seg(context_sparse, seg_sparse, c_sl, s_sl):
+    shifted_seg_sparse, shift_vec = shift_sparse_voxel_to_origin(seg_sparse)
+    target_coord = [-x for x in shift_vec]
+    return target_coord, shift_vec, shifted_seg_sparse
+
+
+def convert_sparse_context_seg_target_to_example(
+    context_sparse, shifted_seg_sparse, target_coord, c_sl, s_sl, useid, schem_sparse=None
+):
+    context_dense = get_dense_array_from_sl(context_sparse, c_sl, useid)
+    seg_dense = get_dense_array_from_sl(shifted_seg_sparse, s_sl, useid)
+    target_index = coord_to_index(target_coord, c_sl)
+    example = {
+        "context": torch.from_numpy(context_dense),
+        "seg": torch.from_numpy(seg_dense),
+        "target": torch.tensor([target_index]),
+    }
+    if schem_sparse:
+        schem_dense = get_dense_array_from_sl(schem_sparse, c_sl, useid)
+        example["schematic"] = torch.from_numpy(schem_dense)
+    return example
+
+
 def convert_sparse_context_seg_to_example(
     context_sparse, seg_sparse, c_sl, s_sl, useid, schem_sparse=None
 ):
@@ -141,3 +174,42 @@ def convert_sparse_context_seg_to_example(
         schem_dense = get_dense_array_from_sl(schem_sparse, c_sl, useid)
         example["schematic"] = torch.from_numpy(schem_dense)
     return example
+
+
+def add_ground_to_context(context_sparse, target_coord, flat=True, random_height=True):
+    min_z = min([c[0][2] for c in context_sparse] + [target_coord[2].item()])
+    max_ground_depth = min_z
+    if max_ground_depth == 0:
+        return
+    if random_height:
+        ground_depth = random.randint(1, max_ground_depth)
+    else:
+        ground_depth = max_ground_depth
+
+    pos_z = 63
+
+    shift = (-16, pos_z - 1 - ground_depth, -16)
+    spec = {
+        "players": [],
+        "item_stacks": [],
+        "mobs": [],
+        "agent": {"pos": (0, pos_z, 0)},
+        "coord_shift": shift,
+    }
+    world_opts = Opt()
+    world_opts.sl = 32
+
+    if flat or max_ground_depth == 1:
+        spec["ground_generator"] = flat_ground_generator
+        spec["ground_args"] = {"ground_depth": ground_depth}
+    else:
+        world_opts.avg_ground_height = max_ground_depth // 2
+        world_opts.hill_scale = max_ground_depth // 2
+    world = World(world_opts, spec)
+
+    ground_blocks = []
+    for l, d in world.blocks_to_dict().items():
+        shifted_l = tuple([l[i] - shift[i] for i in range(3)])
+        xzy_to_xyz = [shifted_l[0], shifted_l[2], shifted_l[1]]
+        ground_blocks.append((xzy_to_xyz, d))
+    context_sparse += ground_blocks

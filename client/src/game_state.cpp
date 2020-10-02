@@ -127,6 +127,9 @@ vector<Mob> GameState::getMobs() {
 
 void GameState::setObject(Object object) { objects_[object.entityId] = object; }
 
+// uint8_t GameState::deleteObject(unsigned long entityId) {LOG(INFO) << "objects_" << objects_.size();printObjectMap();objects_.erase(entityId);LOG(INFO) << objects_.size();printObjectMap();return 0;}
+uint8_t GameState::deleteObject(unsigned long entityId) {return objects_.erase(entityId);}
+
 optional<Object> GameState::getObject(unsigned long entityId) {
   auto objectIter = objects_.find(entityId);
   if (objectIter == objects_.end()) {
@@ -146,6 +149,9 @@ vector<Object> GameState::getObjects() {
 }
 
 void GameState::setItemStack(ItemStack itemStack) { itemStacks_[itemStack.entityId] = itemStack; }
+
+// uint8_t GameState::deleteItemStack(unsigned long entityId) {LOG(INFO) << "itemStack_" << itemStacks_.size();printItemStackMap();itemStacks_.erase(entityId);LOG(INFO) << itemStacks_.size(); printItemStackMap();return 0; }
+uint8_t GameState::deleteItemStack(unsigned long entityId) {return itemStacks_.erase(entityId);}
 
 optional<ItemStack> GameState::getItemStack(unsigned long entityId) {
   auto itemStackIter = itemStacks_.find(entityId);
@@ -174,7 +180,6 @@ void GameState::setItemStackDeltaCount(unsigned long entityId, uint8_t deltaCoun
   item.count += deltaCount;
   p->item = item;
   setItemStack(*p);
-  p = getItemStack(entityId);
 }
 
 optional<Player> GameState::getOtherPlayerByName(const string& name) {
@@ -215,7 +220,17 @@ void GameState::setOpenWindowItems(const vector<Slot>& slots) {
   currentOpenWindow_ = slots;
 }
 
-unordered_map<Item, uint8_t> GameState::getInventoryItemCounts() {
+uint64_t GameState::getInventoryItemCount(uint16_t id, uint8_t meta) {
+  uint64_t count = 0;
+  for (Slot slot : playerInventory_) {
+    if (slot.id == id && slot.meta == meta) {
+      count += slot.count;
+    }
+  }
+  return count;
+}
+
+unordered_map<Item, uint8_t> GameState::getInventoryItemsCounts() {
   unordered_map<Item, uint8_t> m;
   for (Slot slot : playerInventory_) {
     if (slot.id == 0) {
@@ -225,4 +240,39 @@ unordered_map<Item, uint8_t> GameState::getInventoryItemCounts() {
     m[item] += slot.count;
   }
   return m;
+}
+
+void GameState::setPlayerInventory(std::vector<Slot> slots) {
+  playerInventory_ = slots;
+  LOG(INFO) << "-- Set player inventory --";
+  int i = 0;
+  for (Slot slot: playerInventory_) {
+    LOG(INFO) << "index: " << i << ", slot: " << slot;
+    i++;
+  }
+}
+
+void GameState::setPlayerInventorySlot(uint16_t idx, Slot slot) {
+  playerInventory_[idx] = slot;
+  LOG(INFO) << "Set player inventory slot, idx: " << idx << ", slot: " << slot;
+}
+
+bool GameState::isItemStackOnGround(unsigned long entityId) {
+  if (getItemStack(entityId) != std::nullopt) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void GameState::printObjectMap() {
+  for (auto it = objects_.begin(); it != objects_.end(); ++it) {
+    LOG(INFO) << it-> first;
+  }
+}
+
+void GameState::printItemStackMap() {
+  for (auto it = itemStacks_.begin(); it != itemStacks_.end(); ++it) {
+    LOG(INFO) << it-> first;
+  }
 }

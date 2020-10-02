@@ -404,10 +404,8 @@ class Spawn(TemplateObject):
     """This template object repesents the Spawn command."""
 
     def generate_description(self, arg_index=0, index=0, templ_index=0):
-        phrase = random.choice(["spawn", "create", "produce", "generate", "give me"])
-        prefix_choice = ["can you", "please", "can you please"]
-        if phrase != "give me":
-            prefix_choice.append("help me")
+        phrase = random.choice(["spawn", "create", "produce", "generate"])
+        prefix_choice = ["can you", "please", "can you please", "help me"]
         prefix = random.choice(["", random.choice(prefix_choice)])
         command = (" ".join([prefix, phrase])).strip()
         return command

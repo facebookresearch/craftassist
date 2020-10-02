@@ -17,11 +17,51 @@ def maybe_or(sql, a):
         return sql
 
 
-class ReferenceObjectSearcher:
-    def __init__(self, self_memid=SELFID):
+# TODO counts
+def get_property_value(agent_memory, mem, prop):
+    # order of precedence:
+    # 1: main memory table
+    # 2: table corresponding to the nodes .TABLE
+    # 3: triple with the nodes memid as subject and prop as predicate
+
+    # is it in the main memory table?
+    cols = [c[1] for c in agent_memory._db_read("PRAGMA table_info(Memories)")]
+    if prop in cols:
+        cmd = "SELECT " + prop + " FROM Memories WHERE uuid=?"
+        r = agent_memory._db_read(cmd, mem.memid)
+        return r[0][0]
+    # is it in the mem.TABLE?
+    T = mem.TABLE
+    cols = [c[1] for c in agent_memory._db_read("PRAGMA table_info({})".format(T))]
+    if prop in cols:
+        cmd = "SELECT " + prop + " FROM " + T + " WHERE uuid=?"
+        r = agent_memory._db_read(cmd, mem.memid)
+        return r[0][0]
+    # is it a triple?
+    triples = agent_memory.get_triples(subj=mem.memid, pred_text=prop, return_obj_text="always")
+    if len(triples) > 0:
+        return triples[0][2]
+
+    return None
+
+
+class MemorySearcher:
+    def __init__(self, self_memid=SELFID, search_data=None):
         self.self_memid = self_memid
+        self.search_data = search_data
+
+    def search(self, memory, search_data=None) -> List["ReferenceObjectNode"]:  # noqa T484
+        raise NotImplementedError
+
+
+class ReferenceObjectSearcher(MemorySearcher):
+    def __init__(self, self_memid=SELFID, search_data=None):
+        super().__init__(self_memid=SELFID, search_data=None)
 
     def is_filter_empty(self, filter_dict):
+        r = filter_dict.get("special")
+        if r and len(r) > 0:
+            return False
         r = filter_dict.get("ref_obj_range")
         if r and len(r) > 0:
             return False
@@ -135,7 +175,31 @@ class ReferenceObjectSearcher:
             args.append(self.self_memid)
         return query, args
 
-    def search(self, memory, filter_dict) -> List["ReferenceObjectNode"]:  # noqa T484
+    # flag (default) so that it makes a copy of speaker_look etc so that if the searcher is called
+    # later so it doesn't return the new position of the agent/speaker/speakerlook
+    # how to parse this distinction?
+    def handle_special(self, memory, search_data):
+        d = search_data.get("special")
+        if not d:
+            return []
+        if d.get("SPEAKER"):
+            return [memory.get_player_by_eid(d["SPEAKER"])]
+        if d.get("SPEAKER_LOOK"):
+            memids = memory._db_read_one(
+                'SELECT uuid FROM ReferenceObjects WHERE ref_type="attention" AND type_name=?',
+                d["SPEAKER_LOOK"],
+            )
+            if memids:
+                memid = memids[0]
+                mem = memory.get_location_by_id(memid)
+                return [mem]
+        if d.get("AGENT"):
+            return [memory.get_player_by_eid(d["AGENT"])]
+        if d.get("DUMMY"):
+            return [d["DUMMY"]]
+        return []
+
+    def search(self, memory, search_data=None) -> List["ReferenceObjectNode"]:  # noqa T484
         """Find ref_objs matching the given filters
         filter_dict has children:
             "ref_obj_range", dict, with keys "min<column_name>" or "max<column_name>", 
@@ -153,7 +217,13 @@ class ReferenceObjectSearcher:
                   or t = {"pred_text": <pred>, "obj": <obj_memid>}
                   currently returns memories with all triples matched 
         """
-        query, args = self.get_query(filter_dict)
+        if not search_data:
+            search_data = self.search_data
+        assert search_data
+        if search_data.get("special"):
+            return self.handle_special(memory, search_data)
+        query, args = self.get_query(search_data)
+        self.search_data = search_data
         memids = [m[0] for m in memory._db_read(query, *args)]
         return [memory.get_mem_by_id(memid) for memid in memids]
 

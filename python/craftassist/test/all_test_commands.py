@@ -1,4 +1,27 @@
-from base_agent.dialogue_objects import SPEAKERLOOK
+from base_agent.dialogue_objects import SPEAKERLOOK, AGENTPOS
+from copy import deepcopy
+
+FILTERS = {
+    "that cow": {"has_name": "cow", "contains_coreference": "resolved", "location": SPEAKERLOOK},
+    "that cube": {"has_name": "cube", "contains_coreference": "resolved", "location": SPEAKERLOOK},
+    "a cow": {"has_name": "cow"},
+    "a cube": {"has_name": "cube"},
+    "where I am looking": {"location": SPEAKERLOOK},
+    "my location": {"location": AGENTPOS},
+}
+
+REFERENCE_OBJECTS = {
+    "where I am looking": {
+        "filters": FILTERS["where I am looking"],
+        "text_span": "where I'm looking",
+    },
+    "that cow": {"filters": FILTERS["that cow"]},
+    "a cow": {"filters": FILTERS["a cow"]},
+    "that cube": {"filters": FILTERS["that cube"]},
+    "a cube": {"filters": FILTERS["a cube"]},
+    "me": {"special_reference": "AGENT"},
+}
+
 
 INTERPRETER_POSSIBLE_ACTIONS = {
     "destroy_speaker_look": {
@@ -407,6 +430,157 @@ PUT_MEMORY_COMMANDS = {
         "upsert": {"memory_data": {"memory_type": "TRIPLE", "has_tag": "fluffy"}},
     },
 }
+
+
+def append_output(filt, output):
+    new_filt = deepcopy(filt)
+    new_filt["output"] = output
+    return new_filt
+
+
+ATTRIBUTES = {
+    "x": {"attribute": "x"},
+    "distance from me": {
+        "attribute": {
+            "linear_extent": {
+                "relative_direction": "AWAY",
+                "source": {"special_reference": "SPEAKER"},
+            }
+        }
+    },
+    "distance from that cube": {
+        "attribute": {
+            "linear_extent": {
+                "relative_direction": "AWAY",
+                "source": REFERENCE_OBJECTS["that cube"],
+            }
+        }
+    },
+}
+
+CONDITIONS = {
+    "a cow has x greater than 5": {
+        "condition_type": "COMPARATOR",
+        "condition": {
+            "input_left": {"value_extractor": append_output(FILTERS["a cow"], ATTRIBUTES["x"])},
+            "comparison_type": "GREATER_THAN",
+            "input_right": {"value_extractor": "5"},
+        },
+    },
+    "that cow has x greater than 5": {
+        "condition_type": "COMPARATOR",
+        "condition": {
+            "input_left": {"value_extractor": append_output(FILTERS["that cow"], ATTRIBUTES["x"])},
+            "comparison_type": "GREATER_THAN",
+            "input_right": {"value_extractor": "5"},
+        },
+    },
+    "that cow is closer than 2 steps to me": {
+        "condition_type": "COMPARATOR",
+        "condition": {
+            "input_left": {
+                "value_extractor": append_output(
+                    FILTERS["that cow"], ATTRIBUTES["distance from me"]
+                )
+            },
+            "comparison_type": "LESS_THAN",
+            "input_right": {"value_extractor": "2"},
+        },
+    },
+    "2 minutes": {
+        "condition_type": "TIME",
+        "condition": {
+            "comparator": {
+                "comparison_measure": "minutes",
+                "input_left": {"value_extractor": "NULL"},
+                "comparison_type": "GREATER_THAN",
+                "input_right": {"value_extractor": "2"},
+            }
+        },
+    },
+    "18 seconds": {
+        "condition_type": "TIME",
+        "condition": {
+            "comparator": {
+                "comparison_measure": "seconds",
+                "input_left": {"value_extractor": "NULL"},
+                "comparison_type": "GREATER_THAN",
+                "input_right": {"value_extractor": "18"},
+            }
+        },
+    },
+}
+
+CONDITIONS["18 seconds after that cow has x greater than 5"] = {
+    "condition_type": "TIME",
+    "event": CONDITIONS["that cow has x greater than 5"],
+    "condition": {
+        "comparator": {
+            "comparison_measure": "seconds",
+            "input_left": {"value_extractor": "NULL"},
+            "comparison_type": "GREATER_THAN",
+            "input_right": {"value_extractor": "18"},
+        }
+    },
+}
+
+
+STOP_CONDITION_COMMANDS = {
+    "go left until that cow is closer than 2 steps to me": {
+        "action_sequence": [
+            {
+                "action_type": "MOVE",
+                "location": {
+                    "reference_object": {"special_reference": "AGENT"},
+                    "relative_direction": "LEFT",
+                },
+                "stop_condition": CONDITIONS["that cow is closer than 2 steps to me"],
+            }
+        ],
+        "dialogue_type": "HUMAN_GIVE_COMMAND",
+    },
+    "follow the cow for 2 minutes": {
+        "action_sequence": [
+            {
+                "action_type": "MOVE",
+                "location": {"reference_object": {"filters": {"has_name": "cow"}}},
+                "stop_condition": CONDITIONS["2 minutes"],
+            }
+        ],
+        "dialogue_type": "HUMAN_GIVE_COMMAND",
+    },
+    "follow the cow for 18 seconds": {
+        "action_sequence": [
+            {
+                "action_type": "MOVE",
+                "location": {"reference_object": {"filters": {"has_name": "cow"}}},
+                "stop_condition": CONDITIONS["18 seconds"],
+            }
+        ],
+        "dialogue_type": "HUMAN_GIVE_COMMAND",
+    },
+    "follow the cow for 18 seconds after it has x greater than 5": {
+        "action_sequence": [
+            {
+                "action_type": "MOVE",
+                "location": {"reference_object": {"filters": {"has_name": "cow"}}},
+                "stop_condition": CONDITIONS["18 seconds after that cow has x greater than 5"],
+            }
+        ],
+        "dialogue_type": "HUMAN_GIVE_COMMAND",
+    },
+    "follow the cow until it has x greater than 5": {
+        "action_sequence": [
+            {
+                "action_type": "MOVE",
+                "location": {"reference_object": {"filters": {"has_name": "cow"}}},
+                "stop_condition": CONDITIONS["that cow has x greater than 5"],
+            }
+        ],
+        "dialogue_type": "HUMAN_GIVE_COMMAND",
+    },
+}
+
 
 OTHER_COMMANDS = {
     "the weather is good": {"dialogue_type": "NOOP"},

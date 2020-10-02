@@ -48,7 +48,7 @@ RUN conda create -n minecraft_env python==3.7.4 pip numpy scikit-learn==0.19.1 p
     conda init bash && \
     source ~/.bashrc && \
     source activate /root/miniconda3/envs/minecraft_env && \
-    curl https://raw.githubusercontent.com/fairinternal/minecraft/master/requirements.txt?token=ANXAMPCPGDKWBRT4VI2C7E27B6F54 -o requirements.txt && \
+    curl https://raw.githubusercontent.com/fairinternal/minecraft/master/requirements.txt?token=AAJ762VW6G4BNNZQD2UWNQK7NWA7M -o requirements.txt && \
     pip install -r requirements.txt && \
     conda install -c conda-forge opencv && \
     pip install webcolors==1.10 && \

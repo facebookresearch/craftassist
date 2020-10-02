@@ -26,6 +26,7 @@ class BaseAgentTest(unittest.TestCase):
         opts.semseg_model_path = ""
         opts.geoscorer_model_path = ""
         opts.web_app = False
+        opts.no_ground_truth = True
         # test does not instantiate cpp client
         opts.port = -1
         opts.no_default_behavior = False

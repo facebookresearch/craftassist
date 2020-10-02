@@ -8,7 +8,7 @@ import numpy as np
 import tasks
 import shapes
 import search
-from util import ErrorWithResponse
+from mc_util import ErrorWithResponse
 
 # FIXME! actual jump on client
 jump = [{"translate": (0, 1, 0)}, {"translate": (0, -1, 0)}]

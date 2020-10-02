@@ -6,7 +6,7 @@ import os
 import unittest
 
 import shapes
-from util import euclid_dist
+from mc_util import euclid_dist
 from base_craftassist_test_case import BaseCraftassistTestCase
 
 
@@ -14,10 +14,10 @@ class Opt:
     pass
 
 
-TTAD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "../models/ttad_bert_updated/model/")
-TTAD_BERT_DATA_DIR = os.path.join(
-    os.path.dirname(__file__), "../models/ttad_bert_updated/annotated_data/"
+TTAD_MODEL_DIR = os.path.join(
+    os.path.dirname(__file__), "../models/semantic_parser/ttad_bert_updated/"
 )
+TTAD_BERT_DATA_DIR = os.path.join(os.path.dirname(__file__), "../datasets/annotated_data/")
 
 
 class PutMemoryTestCase(BaseCraftassistTestCase):
@@ -29,6 +29,7 @@ class PutMemoryTestCase(BaseCraftassistTestCase):
         opts.model_base_path = None
         opts.QA_nsp_model_path = None
         opts.ground_truth_data_dir = ""
+        opts.no_ground_truth = True
         opts.web_app = False
         super().setUp(agent_opts=opts)
 

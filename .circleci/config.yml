@@ -34,9 +34,15 @@ jobs:
             chmod 400 docker/mcdeploy.key
 
       - run:
+          name: Deploy AWS S3 access key
+          command: |
+            echo ${AWS_S3_ACCESS_KEY_ID} > docker/AWS_S3_ACCESS_KEY_ID.txt
+            echo ${AWS_S3_SECRET_ACCESS_KEY} > docker/AWS_S3_SECRET_ACCESS_KEY.txt
+
+      - run:
           name: Build docker containers
           command: make -C docker build
-      
+
       - run:
           name: Python linter checks (flake8)
           command: |
@@ -51,7 +57,13 @@ jobs:
 
       - run:
           name: Python unit tests
-          command: docker run --entrypoint=/minecraft/python/craftassist/test.sh craftassist
+          command: |
+              mkdir shared
+              docker run --name mc-tests -v $(pwd):/shared -w /shared --entrypoint=/minecraft/python/craftassist/test.sh craftassist
+              docker cp mc-tests:/shared shared
+              pip3 install codecov
+              CODECOV_TOKEN="318c7f7e-54eb-4692-8651-8ea48857c3a7"
+              bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN -s "shared" -f 'test*.xml' -n "locobot tests"|| echo "Codecov did not collect coverage reports"
 
       - run:
           name: Push versioned docker containers
@@ -111,7 +123,7 @@ jobs:
         name: Pull docker image
         command: |
           set -ex
-          export DOCKER_IMAGE=theh1ghwayman/locobot-assistant:2.0
+          export DOCKER_IMAGE=theh1ghwayman/locobot-assistant:4.0
           echo Pulling docker image $DOCKER_IMAGE
           docker pull $DOCKER_IMAGE >/dev/null
 
@@ -122,10 +134,15 @@ jobs:
 
           cd ${HOME}/project/
 
-          export DOCKER_IMAGE=theh1ghwayman/locobot-assistant:2.0
-          docker run --gpus all  --ipc=host -v $(pwd):/remote -w /remote ${DOCKER_IMAGE} .circleci/locobot_tests.sh
+          export DOCKER_IMAGE=theh1ghwayman/locobot-assistant:4.0
+          mkdir shared
+          docker run --gpus all --name loco-img --ipc=host -v $(pwd):/shared -w /shared ${DOCKER_IMAGE} .circleci/locobot_tests.sh
+          docker cp loco-img:/shared shared
+          pip install codecov
+          CODECOV_TOKEN="318c7f7e-54eb-4692-8651-8ea48857c3a7"
+          bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN -s "shared" -f 'test*.xml' -n "locobot tests"|| echo "Codecov did not collect coverage reports"
 
-    
+
 workflows:
   build:
     jobs:

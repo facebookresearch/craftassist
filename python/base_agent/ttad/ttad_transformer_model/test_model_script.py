@@ -12,8 +12,8 @@ from train_model import *
 
 from pprint import pprint
 
-model = "python/craftassist/models/ttad_bert_updated/model/caip_test_model.pth"
-args_path = "python/craftassist/models/ttad_bert_updated/model/caip_test_model_args.pk"
+model = "python/craftassist/models/semantic_parser/ttad_bert_updated/caip_test_model.pth"
+args_path = "python/craftassist/models/semantic_parser/ttad_bert_updated/caip_test_model_args.pk"
 args = pickle.load(open(args_path, "rb"))
 
 tokenizer = AutoTokenizer.from_pretrained(args.pretrained_encoder_name)

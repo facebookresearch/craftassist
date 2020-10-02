@@ -1,16 +1,22 @@
-# FIXME fix util imports
 import os
 import sys
 
-import util
-from util import XYZ, IDM, to_block_pos, pos_to_np, euclid_dist
+from mc_util import (
+    XYZ,
+    IDM,
+    to_block_pos,
+    pos_to_np,
+    euclid_dist,
+    diag_adjacent,
+    capped_line_of_sight,
+)
 from typing import Tuple, List
 from block_data import BORING_BLOCKS
 
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(BASE_AGENT_ROOT)
 
-from base_agent.memory_nodes import PlayerNode
+from base_agent.memory_nodes import PlayerNode, AttentionNode
 from mc_memory_nodes import BlockObjectNode
 
 
@@ -29,12 +35,23 @@ class LowLevelMCPerception:
             for mob in self.agent.get_mobs():
                 if euclid_dist(self.agent.pos, pos_to_np(mob.pos)) < self.memory.perception_range:
                     self.memory.set_mob_position(mob)
+            item_stack_set = set()
             for item_stack in self.agent.get_item_stacks():
+                item_stack_set.add(item_stack.entityId)
                 if (
                     euclid_dist(self.agent.pos, pos_to_np(item_stack.pos))
                     < self.memory.perception_range
                 ):
                     self.memory.set_item_stack_position(item_stack)
+            old_item_stacks = self.memory.get_all_item_stacks()
+            if old_item_stacks:
+                for old_item_stack in old_item_stacks:
+                    memid = old_item_stack[0]
+                    eid = old_item_stack[1]
+                    if eid not in item_stack_set:
+                        self.memory.untag(memid, "_on_ground")
+                    else:
+                        self.memory.tag(memid, "_on_ground")
 
         # note: no "force"; these run on every perceive call.  assumed to be fast
         self.update_self_memory()
@@ -53,7 +70,7 @@ class LowLevelMCPerception:
             cmd, p.entityId, p.name, p.pos.x, p.pos.y, p.pos.z, p.look.pitch, p.look.yaw, memid
         )
 
-    def update_other_players(self, player_list: List):
+    def update_other_players(self, player_list: List, force=False):
         # input is a list of player_structs from agent
         for p in player_list:
             mem = self.memory.get_player_by_eid(p.entityId)
@@ -68,6 +85,22 @@ class LowLevelMCPerception:
             self.memory._db_write(
                 cmd, p.entityId, p.name, p.pos.x, p.pos.y, p.pos.z, p.look.pitch, p.look.yaw, memid
             )
+            loc = capped_line_of_sight(self.agent, p)
+            loc[1] += 1
+            memids = self.memory._db_read_one(
+                'SELECT uuid FROM ReferenceObjects WHERE ref_type="attention" AND type_name=?',
+                p.entityId,
+            )
+            if memids:
+                self.memory._db_write(
+                    "UPDATE ReferenceObjects SET x=?, y=?, z=? WHERE uuid=?",
+                    loc[0],
+                    loc[1],
+                    loc[2],
+                    memids[0],
+                )
+            else:
+                AttentionNode.create(self.memory, loc, attender=p.entityId)
 
     # TODO replace name by eid everywhere
     def get_player_struct_by_name(self, name):
@@ -142,7 +175,7 @@ class LowLevelMCPerception:
 
         adjacent = [
             self.memory.get_object_info_by_xyz(a, "BlockObjects", just_memid=False)
-            for a in util.diag_adjacent(xyz)
+            for a in diag_adjacent(xyz)
         ]
 
         if idm[0] == 0:
@@ -213,7 +246,7 @@ class LowLevelMCPerception:
             agent_placed = True
         for player_struct in self.agent.get_other_players():
             if (
-                util.euclid_dist(util.pos_to_np(player_struct.pos), xyz) < 5
+                euclid_dist(pos_to_np(player_struct.pos), xyz) < 5
                 and player_struct.mainHand.id == bid
             ):
                 interesting = True

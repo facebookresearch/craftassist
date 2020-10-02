@@ -3,69 +3,45 @@ Copyright (c) Facebook, Inc. and its affiliates.
 """
 
 import logging
-import Levenshtein
 import numpy as np
+import math
 import random
 import re
 from typing import cast, List, Tuple, Union, Optional, Dict
 
-from base_agent.dialogue_objects import ConfirmReferenceObject, SPEAKERLOOK
+from base_agent.dialogue_objects import ConfirmReferenceObject, SPEAKERLOOK, tags_from_dict
 import block_data
-import minecraft_specs
 import heuristic_perception
 import rotation
 import size_words
 from base_agent.memory_nodes import ReferenceObjectNode
-from base_agent.stop_condition import StopCondition, NeverStopCondition
-from mc_stop_condition import AgentAdjacentStopCondition
 from .reference_object_helpers import compute_locations
-
-# FIXME!
-from base_agent.util import euclid_dist, ErrorWithResponse, NextDialogueStep
-
-from util import (
+from .block_helpers import get_block_type
+from mc_util import (
     Block,
-    Hole,
-    IDM,
     T,
     XYZ,
     most_common_idm,
-    capped_line_of_sight,
     object_looked_at,
-    pos_to_np,
-    to_block_pos,
+    euclid_dist,
+    ErrorWithResponse,
+    NextDialogueStep,
 )
 from word2number.w2n import word_to_num
 from word_maps import SPECIAL_SHAPE_FNS, SPECIAL_SHAPES_CANONICALIZE
 
 
-# FIXME!? maybe start using triples appropriately now?
-def tags_from_dict(d):
-    return [
-        strip_prefix(tag, "the ")
-        for key, tag in d.items()
-        if key.startswith("has_") and isinstance(tag, str)
-    ]
-
-
 def get_special_reference_object(interpreter, speaker, S):
     # TODO/FIXME! add things to workspace memory
-    if S == "SPEAKER_LOOK":
-        player_struct = interpreter.agent.perception_modules[
-            "low_level"
-        ].get_player_struct_by_name(speaker)
-        loc = capped_line_of_sight(interpreter.agent, player_struct)
-        memid = interpreter.memory.add_location((int(loc[0]), int(loc[1]), int(loc[2])))
-        mem = interpreter.memory.get_location_by_id(memid)
+    # TODO/FIXME! remove all direct references to perception modules here, go through memory
+    # in particular get_player_struct_by_name.... get the eid from memory
 
-    elif S == "SPEAKER":
+    if S == "SPEAKER_LOOK" or S == "SPEAKER":
         p = interpreter.agent.perception_modules["low_level"].get_player_struct_by_name(speaker)
-        mem = interpreter.memory.get_player_by_eid(p.entityId)
-
+        f = {"special": {S: p.entityId}}
     elif S == "AGENT":
         p = interpreter.agent.get_player()
-        mem = interpreter.memory.get_player_by_eid(p.entityId)
-
+        f = {"special": {S: p.entityId}}
     elif type(S) is dict:
         coord_span = S["coordinates_span"]
         loc = cast(XYZ, tuple(int(float(w)) for w in re.findall("[-0-9.]+", coord_span)))
@@ -74,7 +50,29 @@ def get_special_reference_object(interpreter, speaker, S):
             raise ErrorWithResponse("I don't understand what location you're referring to")
         memid = interpreter.memory.add_location((int(loc[0]), int(loc[1]), int(loc[2])))
         mem = interpreter.memory.get_location_by_id(memid)
-    return mem
+        f = {"special": {"DUMMY": mem}}
+    mems = interpreter.memory.get_reference_objects(f)
+    if not mems:
+        # need a better interface for this, don't need to run full perception
+        # just to force speakerlook in memory
+        # TODO force if look is stale, not just if it doesn't exist
+        # this branch shouldn't occur
+        # interpreter.agent.perceive(force=True)
+        raise ErrorWithResponse(
+            "I think you are pointing at something but I don't know what it is"
+        )
+    return mems[0]
+
+
+def interpret_relative_direction(interpreter, location_d):
+    steps = location_d.get("steps", None)
+    if steps is not None:
+        try:
+            steps = math.ceil(float(steps))
+        except:
+            steps = None
+    reldir = location_d.get("relative_direction")
+    return steps, reldir
 
 
 def interpret_reference_object(
@@ -83,10 +81,13 @@ def interpret_reference_object(
     d,
     only_voxels=False,
     only_physical=False,
+    only_in_inventory=False,
+    only_on_ground=False,
     only_destructible=False,
     not_location=False,
     limit=1,
     loose_speakerlook=False,
+    allow_clarification=True,
 ) -> List[ReferenceObjectNode]:
     """this tries to find a ref obj memory matching the criteria from the
     ref_obj_dict
@@ -104,6 +105,8 @@ def interpret_reference_object(
         mem = F["contains_coreference"]
         if isinstance(mem, ReferenceObjectNode):
             return [mem]
+        elif mem == "resolved":
+            pass
         else:
             logging.error("bad coref_resolve -> {}".format(mem))
 
@@ -113,6 +116,10 @@ def interpret_reference_object(
             tags.append("_voxel_object")
         if only_physical:
             tags.append("_physical_object")
+        if only_in_inventory:
+            tags.append("_in_inventory")
+        if only_on_ground:
+            tags.append("_on_ground")
         if only_destructible:
             tags.append("_destructible")
         # FIXME hack until memory_filters supprts "not"
@@ -125,7 +132,7 @@ def interpret_reference_object(
                 interpreter, speaker, candidates, d, limit=limit, loose=loose_speakerlook
             )
             return [mem for _, mem in r]
-        else:
+        elif allow_clarification:
             # no candidates found; ask Clarification
             # TODO: move ttad call to dialogue manager and remove this logic
             interpreter.action_dict_frozen = True
@@ -150,6 +157,8 @@ def interpret_reference_object(
             interpreter.provisional["F"] = F
             interpreter.dialogue_stack.append_new(ConfirmReferenceObject, mem)
             raise NextDialogueStep()
+        else:
+            raise ErrorWithResponse("I don't know what you're referring to")
 
     else:
         # clarification answered
@@ -158,8 +167,7 @@ def interpret_reference_object(
             # TODO: learn from the tag!  put it in memory!
             return [interpreter.provisional.get("object_mem")] * limit
         else:
-            # TODO: error handling here ?
-            return []
+            raise ErrorWithResponse("I don't know what you're referring to")
 
 
 def interpret_shape_schematic(
@@ -307,10 +315,18 @@ def interpret_reference_location(interpreter, speaker, d):
         ref_obj_2 = d.get("reference_object_2")
         if ref_obj_1 and ref_obj_2:
             mem1 = interpret_reference_object(
-                interpreter, speaker, ref_obj_1, loose_speakerlook=loose_speakerlook
+                interpreter,
+                speaker,
+                ref_obj_1,
+                loose_speakerlook=loose_speakerlook,
+                allow_clarification=False,
             )[0]
             mem2 = interpret_reference_object(
-                interpreter, speaker, ref_obj_2, loose_speakerlook=True
+                interpreter,
+                speaker,
+                ref_obj_2,
+                loose_speakerlook=loose_speakerlook,
+                allow_clarification=False,
             )[0]
             if mem1 is None or mem2 is None:
                 raise ErrorWithResponse("I don't know what you're referring to")
@@ -348,7 +364,8 @@ def interpret_point_target(interpreter, speaker, d):
     # TODO: We might want to specifically check for BETWEEN/INSIDE, I'm not sure
     # what the +1s are in the return value
     mems = interpret_reference_location(interpreter, speaker, d["location"])
-    loc, _ = compute_locations(interpreter, speaker, d, mems)
+    steps, reldir = interpret_relative_direction(interpreter.agent, d)
+    loc, _ = compute_locations(interpreter, speaker, mems, steps, reldir)
     return (loc[0], loc[1] + 1, loc[2], loc[0], loc[1] + 1, loc[2])
 
 
@@ -394,10 +411,8 @@ def interpret_facing(interpreter, speaker, d):
             left = "left" in span or "leave" in span  # lemmatizer :)
             degrees = number_from_span(span) or 90
             if degrees > 0 and left:
-                print(-degrees)
                 return {"relative_yaw": -degrees}
             else:
-                print(degrees)
                 return {"relative_yaw": degrees}
         else:
             pass
@@ -417,54 +432,22 @@ def interpret_facing(interpreter, speaker, d):
             pass
     elif d.get("location"):
         mems = interpret_reference_location(interpreter, speaker, d["location"])
-        loc, _ = compute_locations(interpreter, speaker, d, mems)
+        steps, reldir = interpret_relative_direction(interpreter, d["location"])
+        loc, _ = compute_locations(interpreter, speaker, mems, steps, reldir)
         return {"head_xyz": loc}
     else:
         raise ErrorWithResponse("I am not sure where you want me to turn")
 
 
-def interpret_stop_condition(interpreter, speaker, d) -> Optional[StopCondition]:
-    if d.get("condition_type") == "NEVER":
-        return NeverStopCondition(interpreter.agent)
-    elif d.get("condition_type") == "ADJACENT_TO_BLOCK_TYPE":
-        block_type = d["block_type"]
-        bid, meta = get_block_type(block_type)
-        return AgentAdjacentStopCondition(interpreter.agent, bid)
-    else:
-        return None
-
-
-# TODO: This seems like a good candidate for cognition
-def get_holes(interpreter, speaker, location, limit=1, all_proximity=10) -> List[Tuple[XYZ, Hole]]:
-    holes: List[Hole] = heuristic_perception.get_all_nearby_holes(interpreter.agent, location)
-    candidates: List[Tuple[XYZ, Hole]] = [
-        (to_block_pos(np.mean(hole[0], axis=0)), hole) for hole in holes
-    ]
-    if len(candidates) > 0:
-        # NB(demiguo): by default, we fill the hole the player is looking at
-        player_struct = interpreter.agent.perception_modules[
-            "low_level"
-        ].get_player_struct_by_name(speaker)
-        centroid_hole = object_looked_at(interpreter.agent, candidates, player_struct, limit=limit)
-        if centroid_hole is None or len(centroid_hole) == 0:
-            # NB(demiguo): if there's no hole in front of the player, we will fill the nearest hole
-            speaker_pos = (
-                interpreter.agent.perception_modules["low_level"]
-                .get_player_struct_by_name(speaker)
-                .pos
-            )
-            speaker_pos = to_block_pos(pos_to_np(speaker_pos))
-            if limit == "ALL":
-                return list(
-                    filter(lambda c: euclid_dist(c[0], speaker_pos) <= all_proximity, candidates)
-                )
-            else:
-                candidates.sort(key=lambda c: euclid_dist(c[0], speaker_pos))
-                return candidates[:limit]
-        else:
-            return centroid_hole
-    else:
-        return []
+# def interpret_stop_condition(interpreter, speaker, d) -> Optional[StopCondition]:
+#    if d.get("condition_type") == "NEVER":
+#        return NeverStopCondition(interpreter.agent)
+#    elif d.get("condition_type") == "ADJACENT_TO_BLOCK_TYPE":
+#        block_type = d["block_type"]
+#        bid, meta = get_block_type(block_type)
+#        return AgentAdjacentStopCondition(interpreter.agent, bid)
+#    else:
+#        return None
 
 
 def get_reference_objects(interpreter, *tags) -> List[Tuple[XYZ, ReferenceObjectNode]]:
@@ -524,7 +507,8 @@ def filter_by_sublocation(
             pass  # fall back to no reference direction
         elif reldir == "BETWEEN":
             mems = interpret_reference_location(interpreter, speaker, location)
-            ref_loc, _ = compute_locations(interpreter, speaker, d, mems)
+            steps, reldir = interpret_relative_direction(interpreter, d)
+            ref_loc, _ = compute_locations(interpreter, speaker, mems, steps, reldir)
             candidates.sort(key=lambda c: euclid_dist(c[0], ref_loc))
             return candidates[:limit]
         else:
@@ -557,7 +541,8 @@ def filter_by_sublocation(
     else:  # is it even possible to end up in this branch? FIXME?
         # no reference direction: choose the closest
         mems = interpret_reference_location(interpreter, speaker, location)
-        ref_loc, _ = compute_locations(interpreter, speaker, d, mems)
+        steps, reldir = interpret_relative_direction(interpreter, d)
+        ref_loc, _ = compute_locations(interpreter, speaker, mems, steps, reldir)
         if limit == "ALL":
             return list(filter(lambda c: euclid_dist(c[0], ref_loc) <= all_proximity, candidates))
         else:
@@ -579,35 +564,11 @@ def get_repeat_num(d) -> Union[int, str]:
     return 1
 
 
-# TODO FILTERS!
-def get_block_type(s) -> IDM:
-    """string -> (id, meta)
-    or  {"has_x": span} -> (id, meta) """
-
-    name_to_bid = minecraft_specs.get_block_data()["name_to_bid"]
-    if type(s) is str:
-        s_aug = s + " block"
-        _, closest_match = min(
-            [(name, id_meta) for (name, id_meta) in name_to_bid.items() if id_meta[0] < 256],
-            key=lambda x: min(Levenshtein.distance(x[0], s), Levenshtein.distance(x[0], s_aug)),
-        )
+def get_repeat_dir(d):
+    if "repeat" in d:
+        direction_name = d.get("repeat", {}).get("repeat_dir", "FRONT")
+    elif "schematic" in d:
+        direction_name = d["schematic"].get("repeat", {}).get("repeat_dir", "FRONT")
     else:
-        if "has_colour" in s:
-            c = block_data.COLOR_BID_MAP.get(s["has_colour"])
-            if c is not None:
-                closest_match = random.choice(c)
-        if "has_block_type" in s:
-            _, closest_match = min(
-                [(name, id_meta) for (name, id_meta) in name_to_bid.items() if id_meta[0] < 256],
-                key=lambda x: min(
-                    Levenshtein.distance(x[0], s), Levenshtein.distance(x[0], s_aug)
-                ),
-            )
-
-    return closest_match
-
-
-def strip_prefix(s, pre):
-    if s.startswith(pre):
-        return s[len(pre) :]
-    return s
+        direction_name = None
+    return direction_name

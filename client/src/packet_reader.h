@@ -73,10 +73,12 @@ class PacketReader {
   void setSlot();
   void entityLook();
   void entityHeadLook();
+  void destroyEntities();
   void serverDifficulty();
   void spawnObject();
   void spawnMob();
   void updateHealth();
+  void timeUpdate();
   void collectItem();
   void confirmTransaction();
   void entityEquipment();

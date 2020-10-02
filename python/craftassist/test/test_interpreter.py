@@ -10,7 +10,7 @@ from base_agent.dialogue_objects import SPEAKERLOOK
 from base_craftassist_test_case import BaseCraftassistTestCase
 from dialogue_objects.interpreter_helper import NextDialogueStep
 from typing import List
-from util import Block, strip_idmeta, euclid_dist
+from mc_util import Block, strip_idmeta, euclid_dist
 from all_test_commands import *
 
 

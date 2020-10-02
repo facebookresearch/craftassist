@@ -1,10 +1,21 @@
 # syntax = docker/dockerfile:experimental
 FROM nvidia/cudagl:10.1-base-ubuntu18.04 as base
 
-ADD ./locobot_install_all.sh locobot_install_all.sh
-RUN bash ./locobot_install_all.sh -t sim_only -p 3
+RUN export DEBIAN_FRONTEND=noninteractive; \
+    export DEBCONF_NONINTERACTIVE_SEEN=true; \
+    echo 'tzdata tzdata/Areas select Etc' | debconf-set-selections; \
+    echo 'tzdata tzdata/Zones/Etc select UTC' | debconf-set-selections; \
+    apt-get update -qqy \
+    && apt-get install -qqy --no-install-recommends \
+       tzdata \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt install -y psmisc curl
+RUN apt update && apt install -y psmisc curl lsb-release sudo
+
+
+RUN curl 'https://raw.githubusercontent.com/facebookresearch/pyrobot/Develop/robots/LoCoBot/install/locobot_install_all.sh' > locobot_install_all.sh && bash locobot_install_all.sh -t sim_only -p 3 -l interbotix && rm ./locobot_install_all.sh
+
 
 SHELL ["/bin/bash", "-c"]
 
@@ -46,7 +57,8 @@ RUN patchelf --set-rpath '$ORIGIN' /root/pyenv_pyrobot_python3/lib/python3.6/sit
 # tested pyrobot commit that works with Habitat
 RUN cd ~/low_cost_ws/src/pyrobot && git checkout Develop && \
     git pull https://github.com/facebookresearch/pyrobot Develop && \
-    git checkout 94fc6d6d177f5ac737e82b04844ff792d94b0dc5 && \
+    git checkout de3e54ea9e1196ea96caf8672646d5dfd63a3731 && \
     . /root/pyenv_pyrobot_python3/bin/activate && . /root/pyrobot_catkin_ws/devel/setup.bash && \
+    pip install -e . && \
     pip install -e . && \
     pip install netifaces pyro4

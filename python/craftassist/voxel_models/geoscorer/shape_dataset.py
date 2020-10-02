@@ -35,6 +35,8 @@ def get_shape(name="random", max_size=20, opts=None):
         name = "random"
     if name == "random":
         name = random.choice(SHAPENAMES)
+        while name in ("HOLLOW_RECTANGLE", "RECTANGULOID_FRAME", "HOLLOW_TRIANGLE"):
+            name = random.choice(SHAPENAMES)
     if not opts:
         opts = SHAPE_HELPERS[name](max_size)
     opts["labelme"] = False
@@ -327,7 +329,13 @@ def get_shape_dir_target(viewer_pos, dir_vec, c_sizes, s_sizes, c_sl, max_shift=
 # Returns a 32x32x32 context, 8x8x8 segment, 6 viewer, 1 direction, 1 target
 class SegmentContextShapeDirData(torch.utils.data.Dataset):
     def __init__(
-        self, nexamples=100000, context_side_length=32, seg_side_length=8, useid=False, max_shift=0
+        self,
+        nexamples=100000,
+        context_side_length=32,
+        seg_side_length=8,
+        useid=False,
+        max_shift=0,
+        ground_type=None,
     ):
         self.c_sl = context_side_length
         self.s_sl = seg_side_length
@@ -335,6 +343,7 @@ class SegmentContextShapeDirData(torch.utils.data.Dataset):
         self.useid = useid
         self.examples = []
         self.max_shift = max_shift
+        self.ground_type = ground_type
 
     def _get_example(self):
         # note that seg_sparse is not in target location
@@ -344,12 +353,17 @@ class SegmentContextShapeDirData(torch.utils.data.Dataset):
         target = get_shape_dir_target(
             viewer_pos, dir_vec, c_sizes, s_sizes, self.c_sl, self.max_shift
         )
+        if self.ground_type is not None:
+            target_coord = su.index_to_coord(target, self.c_sl)
+            su.add_ground_to_context(
+                context_sparse, target_coord, flat=(self.ground_type == "flat")
+            )
         context = su.get_dense_array_from_sl(context_sparse, self.c_sl, self.useid)
         seg = su.get_dense_array_from_sl(seg_sparse, self.s_sl, self.useid)
         return {
             "context": torch.from_numpy(context),
             "seg": torch.from_numpy(seg),
-            "target": target,
+            "target": torch.tensor([target]),
             "viewer_pos": viewer_pos,
             "dir_vec": dir_vec,
         }
@@ -364,7 +378,7 @@ class SegmentContextShapeDirData(torch.utils.data.Dataset):
 if __name__ == "__main__":
     from visualization_utils import GeoscorerDatasetVisualizer
 
-    dataset = SegmentContextShapeDirData(nexamples=3)
+    dataset = SegmentContextShapeDirData(nexamples=3, ground_type="hilly")
 
     vis = GeoscorerDatasetVisualizer(dataset)
     for n in range(len(dataset)):

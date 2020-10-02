@@ -6,7 +6,7 @@ Copyright (c) Facebook, Inc. and its affiliates.
 to support it."""
 import logging
 
-from base_agent.util import NextDialogueStep, ErrorWithResponse
+from base_agent.base_util import NextDialogueStep, ErrorWithResponse
 
 
 class DialogueStack(object):

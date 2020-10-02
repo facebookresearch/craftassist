@@ -92,6 +92,7 @@ class SegmentContextGlueCubesData(torch.utils.data.Dataset):
         use_direction=False,
         fixed_cube_size=None,
         fixed_center=False,
+        ground_type=None,
     ):
         self.c_sl = context_side_length
         self.s_sl = seg_side_length
@@ -101,6 +102,7 @@ class SegmentContextGlueCubesData(torch.utils.data.Dataset):
         self.use_direction = use_direction
         self.fixed_cube_size = fixed_cube_size
         self.fixed_center = fixed_center
+        self.ground_type = ground_type
 
     def _get_example(self):
         if not self.use_direction:
@@ -114,6 +116,9 @@ class SegmentContextGlueCubesData(torch.utils.data.Dataset):
             dgc = directional_glue_cubes(
                 self.c_sl, self.s_sl, self.fixed_cube_size, self.fixed_center
             )
+            if self.ground_type is not None:
+                flat = self.ground_type == "flat"
+                su.add_ground_to_context(dgc["context_sparse"], dgc["target_coord"], flat=flat)
             example = su.convert_sparse_context_seg_to_example(
                 dgc["context_sparse"], dgc["seg_sparse"], self.c_sl, self.s_sl, self.useid
             )
@@ -144,6 +149,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--fixed_cube_size", type=int, default=None, help="fix the size of the cubes"
     )
+    parser.add_argument(
+        "--ground_type", type=str, default=None, help="ground type to use (None|flat|hilly)"
+    )
     opts = parser.parse_args()
 
     dataset = SegmentContextGlueCubesData(
@@ -151,6 +159,8 @@ if __name__ == "__main__":
         use_direction=opts.use_direction,
         fixed_center=opts.fixed_center,
         fixed_cube_size=opts.fixed_cube_size,
+        useid=True,
+        ground_type=opts.ground_type,
     )
     vis = GeoscorerDatasetVisualizer(dataset)
     for n in range(len(dataset)):

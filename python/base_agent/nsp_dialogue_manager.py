@@ -32,13 +32,13 @@ from post_process_logical_form import post_process_logical_form
 dirname = os.path.dirname(__file__)
 web_app_filename = os.path.join(dirname, "../craftassist/webapp_data.json")
 
-from util import hash_user
+from base_util import hash_user
 
 sp = spacy.load("en_core_web_sm")
 
 
 class NSPDialogueManager(DialogueManager):
-    def __init__(self, agent, dialogue_object_classes, opts, no_ground_truth_actions=False):
+    def __init__(self, agent, dialogue_object_classes, opts):
         super(NSPDialogueManager, self).__init__(agent, None)
         # "dialogue_object_classes" should be a dict with keys
         # interpeter, get_memory, and put_memory;
@@ -59,13 +59,17 @@ class NSPDialogueManager(DialogueManager):
             "help",
             "do something",
         ]
-        # Load bot greetings
-        greetings_path = opts.ground_truth_data_dir + "greetings.txt"
-        if os.path.isfile(greetings_path):
-            with open(greetings_path) as f:
-                self.botGreetings = [cmd.rstrip() for cmd in f]
+        safety_words_path = opts.ground_truth_data_dir + "safety.txt"
+        if os.path.isfile(safety_words_path):
+            self.safety_words = self.get_safety_words(safety_words_path)
         else:
-            self.botGreetings = ["hi", "hello", "hey"]
+            self.safety_words = []
+        # Load bot greetings
+        greetings_path = opts.ground_truth_data_dir + "greetings.json"
+        if os.path.isfile(greetings_path):
+            self.botGreetings = json.load(open(greetings_path))
+        else:
+            self.botGreetings = {"hello": ["hi", "hello", "hey"], "goodbye": ["bye"]}
         logging.info("using QA_model_path={}".format(opts.QA_nsp_model_path))
         logging.info("using model_dir={}".format(opts.nsp_model_dir))
 
@@ -97,7 +101,7 @@ class NSPDialogueManager(DialogueManager):
         # ground_truth_data is the ground truth action dict from templated
         # generations and will be queried first if checked in.
         self.ground_truth_actions = {}
-        if not no_ground_truth_actions:
+        if not opts.no_ground_truth:
             if os.path.isdir(opts.ground_truth_data_dir):
                 files = glob(opts.ground_truth_data_dir + "datasets/*.txt")
                 for dataset in files:
@@ -133,8 +137,9 @@ class NSPDialogueManager(DialogueManager):
         # is one of the scripted ones
         if any([chat in self.botCapabilityQuery for chat in preprocessed_chatstrs]):
             return BotCapabilities(**self.dialogue_object_parameters)
-        if any([chat in self.botGreetings for chat in preprocessed_chatstrs]):
-            return BotGreet(**self.dialogue_object_parameters)
+        for greeting_type in self.botGreetings:
+            if any([chat in self.botGreetings[greeting_type] for chat in preprocessed_chatstrs]):
+                return BotGreet(greeting_type, **self.dialogue_object_parameters)
 
         # NOTE: preprocessing in model code is different, this shouldn't break anything
         logical_form = self.get_logical_form(s=preprocessed_chatstrs[0], model=self.model)

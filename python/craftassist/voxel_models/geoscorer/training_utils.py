@@ -9,6 +9,7 @@ import sys
 import argparse
 import torch
 import string
+import json
 from shutil import copyfile
 from inspect import currentframe, getframeinfo
 from datetime import datetime
@@ -89,12 +90,19 @@ def setup_dataset_and_loader(opts):
         "fixed_cube_size": opts.get("fixed_cube_size", None),
         "fixed_center": opts.get("fixed_center", False),
         "max_shift": opts.get("max_shift", 0),
+        "ground_type": opts.get("ground_type", None),
     }
+    config = opts.get("dataset_config", None)
+    if config is not None:
+        print("loaded config from", config)
+        with open(config, "r") as f:
+            config = json.load(f)
     dataset = cd.SegmentContextData(
         nexamples=opts["epochsize"],
         useid=opts["useid"],
         extra_params=extra_params,
         ratios=parse_dataset_ratios(opts),
+        config=config,
     )
     dataloader = get_dataloader(dataset=dataset, opts=opts, collate_fxn=multitensor_collate_fxn)
     return dataset, dataloader
@@ -270,6 +278,12 @@ def get_train_parser():
     )
     parser.add_argument(
         "--max_shift", type=int, default=6, help="max amount to offset shape_dir target"
+    )
+    parser.add_argument(
+        "--ground_type", type=str, default=None, help="ground type to include in datasets"
+    )
+    parser.add_argument(
+        "--dataset_config", type=str, default=None, help="for more complex training"
     )
 
     # Directional Placement Flags

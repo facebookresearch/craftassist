@@ -6,7 +6,7 @@ import unittest
 
 import shapes
 from mc_memory import MCAgentMemory
-from .utils import Mob, Pos, Look
+from utils import Mob, Pos, Look
 from entities import MOBS_BY_ID
 from base_craftassist_test_case import BaseCraftassistTestCase
 from all_test_commands import *

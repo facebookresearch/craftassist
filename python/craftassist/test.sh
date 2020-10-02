@@ -4,4 +4,8 @@
 
 
 cd $(dirname $0)
-python3 -m unittest discover
+coverage run --source . -m unittest discover
+status=$?
+coverage report
+coverage xml -o /shared/test_MC.xml
+exit $status

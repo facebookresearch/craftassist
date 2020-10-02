@@ -6,8 +6,7 @@ from test.fake_agent import FakeAgent
 
 # from craftassist.test.fake_agent import FakeAgent
 from typing import Dict
-from util import XYZ, IDM
-from utils import Player, Pos, Look, Item
+from mc_util import Player, Pos, Look, Item, XYZ, IDM
 from world import World, Opt, flat_ground_generator
 
 

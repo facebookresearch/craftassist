@@ -54,7 +54,9 @@ class PutMemoryHandler(DialogueObject):
             import ipdb
 
             ipdb.set_trace()
-        r = interpret_reference_object(self, self.speaker_name, ref_obj_d["reference_object"])
+        r = interpret_reference_object(
+            self, self.speaker_name, ref_obj_d["reference_object"], only_physical=True
+        )
         if len(r) == 0:
             raise ErrorWithResponse("I don't know what you're referring to")
         mem = r[0]

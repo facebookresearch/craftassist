@@ -32,14 +32,14 @@ class GeoscorerDatasetVisualizer:
             raise Exception("No more examples to visualize in dataset")
         b = self.dataset[self.vis_index]
         if "schematic" in b:
-            self.sp.drawPlotly(b["schematic"])
+            self.sp.drawGeoscorerPlotly(b["schematic"])
         c_sl = b["context"].size()[0]
         self.vis_index += 1
-        self.sp.drawPlotly(b["context"])
-        self.sp.drawPlotly(b["seg"])
+        self.sp.drawGeoscorerPlotly(b["context"])
+        self.sp.drawGeoscorerPlotly(b["seg"])
         target_coord = su.index_to_coord(b["target"].item(), c_sl)
         combined_voxel = su.combine_seg_context(b["seg"], b["context"], target_coord, seg_mult=3)
-        self.sp.drawPlotly(combined_voxel)
+        self.sp.drawGeoscorerPlotly(combined_voxel)
 
         if use_model:
             b = {k: t.unsqueeze(0) for k, t in b.items()}
@@ -50,4 +50,4 @@ class GeoscorerDatasetVisualizer:
             predicted_voxel = su.combine_seg_context(
                 b["seg"], b["context"], pred_coord, seg_mult=3
             )
-            self.sp.drawPlotly(predicted_voxel)
+            self.sp.drawGeoscorerPlotly(predicted_voxel)

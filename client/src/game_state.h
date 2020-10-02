@@ -2,6 +2,7 @@
 
 
 #pragma once
+#include <iostream>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -30,6 +31,10 @@ class GameState {
   void setUuid(const std::string& uuid) { player_.uuid = uuid; }
   const std::string& getUuid() { return player_.uuid; }
   Player getPlayer() { return player_; }
+  void setWorldAge(long age) { worldAge = age; }
+  long getWorldAge() { return worldAge; }
+  void setTimeOfDay(long time) { timeOfDay = time; }
+  long getTimeOfDay() { return timeOfDay; }
 
   // Block Map
   BlockMap& getBlockMap() { return blockMap_; }
@@ -69,20 +74,24 @@ class GameState {
   void setObject(Object object);
   std::optional<Object> getObject(unsigned long entityId);
   std::vector<Object> getObjects();
+  uint8_t deleteObject(unsigned long entityId);
 
   // ItemStacks
   void setItemStack(ItemStack itemStack);
+  uint8_t deleteItemStack(unsigned long entityId);
   std::optional<ItemStack> getItemStack(unsigned long entityId);
   std::vector<ItemStack> getItemStacks();
   void setItemStackDeltaCount(unsigned long entityId, uint8_t deltaCount);
+  bool isItemStackOnGround(unsigned long entityId);
 
   // Inventory
-  void setPlayerInventory(std::vector<Slot> slots) { playerInventory_ = slots; }
-  void setPlayerInventorySlot(uint16_t idx, Slot slot) { playerInventory_[idx] = slot; }
+  void setPlayerInventory(std::vector<Slot> slots);
+  void setPlayerInventorySlot(uint16_t idx, Slot slot);
   const std::vector<Slot>& getPlayerInventory() { return playerInventory_; }
   void setCurrentHotbarIndex(uint8_t i) { currentHotbarIndex_ = i; }
   uint8_t getCurrentHotbarIndex() { return currentHotbarIndex_; }
-  std::unordered_map<Item, uint8_t> getInventoryItemCounts();
+  std::unordered_map<Item, uint8_t> getInventoryItemsCounts();
+  uint64_t getInventoryItemCount(uint16_t id, uint8_t meta);
 
   // Windows
   void setCurrentOpenWindow(uint8_t windowId, WindowType windowType);
@@ -91,6 +100,9 @@ class GameState {
   void setOpenWindowSlot(uint16_t i, Slot slot) { currentOpenWindow_[i] = slot; }
   const std::vector<Slot>& getOpenWindowItems() { return currentOpenWindow_; }
 
+  void printObjectMap();
+  void printItemStackMap();
+
  private:
   void setPlayer(const std::string& uuid, Player p) { otherPlayers_[uuid] = p; }
 
@@ -98,6 +110,8 @@ class GameState {
   Player player_;
   BlockMap blockMap_;
   GameMode gameMode_;
+  long worldAge = 0;
+  long timeOfDay = 0;
   std::vector<std::string> chatHistory_;
   std::unordered_map<std::string, std::string> otherPlayerNames_;
   std::unordered_map<std::string, Player> otherPlayers_;

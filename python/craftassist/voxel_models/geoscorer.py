@@ -33,15 +33,10 @@ class Geoscorer(object):
         self.blacklist = ["BETWEEN", "INSIDE", "AWAY", "NEAR"]
 
     # Define the circumstances where we can use geoscorer
-    def use(self, location_d, repeat_num):
-        if repeat_num > 1 or "steps" in location_d:
+    def use(self, steps, repeat_num, rel_dir):
+        if repeat_num > 1 or steps is not None:
             return False
 
-        loc_type = location_d.get("location_type", "SPEAKER_LOOK")
-        if loc_type == "COORDINATES":
-            return False
-
-        rel_dir = location_d.get("relative_direction", None)
         if rel_dir is None or rel_dir in self.blacklist:
             return False
         return True

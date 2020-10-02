@@ -15,7 +15,7 @@ BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(BASE_AGENT_ROOT)
 
 
-from base_agent.util import XYZ, Block
+from base_agent.base_util import XYZ, Block
 
 from base_agent.sql_memory import AgentMemory
 
@@ -71,9 +71,14 @@ class MCAgentMemory(AgentMemory):
         load_block_types=True,
         load_mob_types=True,
         preception_range=PERCEPTION_RANGE,
+        agent_time=None,
     ):
         super(MCAgentMemory, self).__init__(
-            db_file=db_file, schema_paths=schema_paths, db_log_path=db_log_path, nodelist=NODELIST
+            db_file=db_file,
+            schema_paths=schema_paths,
+            db_log_path=db_log_path,
+            nodelist=NODELIST,
+            agent_time=agent_time,
         )
         self.banned_default_behaviors = []  # FIXME: move into triple store?
         self._safe_pickle_saved_attrs = {}
@@ -444,6 +449,12 @@ class MCAgentMemory(AgentMemory):
     ###  ItemStacks  ###
     ####################
 
+    def update_item_stack_eid(self, memid, eid) -> "ItemStackNode":
+        r = self._db_read_one("SELECT * FROM ReferenceObjects WHERE uuid=?", memid)
+        if r:
+            self._db_write("UPDATE ReferenceObjects SET eid=? WHERE uuid=?", eid, memid)
+        return self.get_mem_by_id(memid)
+
     def set_item_stack_position(self, item_stack) -> "ItemStackNode":
         r = self._db_read_one("SELECT uuid FROM ReferenceObjects WHERE eid=?", item_stack.entityId)
         if r:
@@ -458,6 +469,10 @@ class MCAgentMemory(AgentMemory):
         else:
             memid = ItemStackNode.create(self, item_stack)
         return self.get_mem_by_id(memid)
+
+    def get_all_item_stacks(self):
+        r = self._db_read("SELECT uuid, eid FROM ReferenceObjects WHERE ref_type=?", "item_stack")
+        return r
 
     ###############
     ###  Dances  ##

@@ -42,6 +42,11 @@ class Agent {
   py::array_t<uint8_t> getBlocks(int xa, int xb, int ya, int yb, int za, int zb);
   vector<Mob> getMobs();
   vector<ItemStack> getItemStacks();
+  optional<ItemStack> getItemStack(unsigned long entityId) {
+    return client_.getItemStack(entityId);
+  }
+  bool isItemStackOnGround(uint64_t entityId);
+  uint64_t getInventoryItemCount(uint16_t id, uint8_t meta);
 
   // Return a cube of blocks centered around the agent, with radius r, in the
   // same order as getBlocks().
@@ -83,6 +88,12 @@ class Agent {
   // Return a list of blocks that have changed since the last call of this fn
   vector<py::tuple> getChangedBlocks();
 
+  // Return current world age based on ticks
+  long getWorldAge() { return client_.getWorldAge(); }
+
+  // Return time of the day based on ticks
+  long getTimeOfDay() { return client_.getTimeOfDay(); }
+
   ////////////////
   // Actions
   ////////////////
@@ -94,11 +105,20 @@ class Agent {
   // Send a "dig" packet for the block at (x, y, z)
   bool dig(int x, int y, int z) { return client_.dig({x, y, z}); }
 
-  // Drop the selected item stack
-  void dropItemStack() {client_.dropItemStack();}
+  // Drop the selected item stack in hand
+  void dropItemStackInHand() { client_.dropItemStackInHand();}
 
-  // Drop the selected item
-  void dropItem() {client_.dropItem();}
+  // Drop the selected item in hand
+  void dropItemInHand() {client_.dropItemInHand();}
+
+  // Drop the selected item stack
+  bool dropInventoryItemStack(uint16_t id, uint8_t meta, uint8_t count) { return client_.dropInventoryItemStack(id, meta, count);}
+
+  void setInventorySlot(int16_t index, uint16_t id, uint8_t meta, uint8_t count) { client_.setInventorySlot(index, id, meta, count);}
+
+  const std::vector<Slot>& getPlayerInventory() { return client_.getPlayerInventory(); }
+
+  std::unordered_map<Item, uint8_t> getInventoryItemsCounts() { return client_.getInventoryItemsCounts(); }
 
   // Broadcast the given string to the in-game chat
   void sendChat(const string& s) { client_.sendChat(s); }
@@ -232,6 +252,10 @@ vector<Mob> Agent::getMobs() { return client_.getMobs(); }
 
 vector<ItemStack> Agent::getItemStacks() { return client_.getItemStacks(); };
 
+bool Agent::isItemStackOnGround(uint64_t entityId) { return client_.isItemStackOnGround(entityId); }
+
+uint64_t Agent::getInventoryItemCount(uint16_t id, uint8_t meta) { return client_.getInventoryItemCount(id, meta); }
+
 py::tuple Agent::getVision() {
   vector<Block> blocks;
   vector<float> depth;
@@ -327,8 +351,13 @@ PYBIND11_MODULE(agent, m) {
       .def(py::init<const string&, int, const string&>())
       .def("disconnect", &Agent::disconnect, "Disconnect the agent from the server")
       .def("dig", &Agent::dig)
-      .def("drop_item_stack", &Agent::dropItemStack)
-      .def("drop_item", &Agent::dropItem)
+      .def("drop_item_stack_in_hand", &Agent::dropItemStackInHand)
+      .def("drop_item_in_hand", &Agent::dropItemInHand)
+      .def("drop_inventory_item_stack", &Agent::dropInventoryItemStack)
+      .def("set_inventory_slot", &Agent::setInventorySlot)
+      .def("get_player_inventory", &Agent::getPlayerInventory)
+      .def("get_inventory_item_count", &Agent::getInventoryItemCount)
+      .def("get_inventory_items_counts", &Agent::getInventoryItemsCounts)
       .def("send_chat", &Agent::sendChat)
       .def("set_held_item", &Agent::setHeldItem)
       .def("step_pos_x", &Agent::stepPosX)
@@ -348,6 +377,8 @@ PYBIND11_MODULE(agent, m) {
       .def("use_item", &Agent::useItem)
       .def("use_item_on_block", &Agent::useItemOnBlock)
       .def("get_item_stacks", &Agent::getItemStacks)
+      .def("get_item_stack", &Agent::getItemStack)
+      .def("is_item_stack_on_ground", &Agent::isItemStackOnGround)
       .def("craft", &Agent::craft)
       .def("get_blocks", &Agent::getBlocks)
       .def("get_local_blocks", &Agent::getLocalBlocks)
@@ -359,7 +390,9 @@ PYBIND11_MODULE(agent, m) {
       .def("get_vision", &Agent::getVision)
       .def("get_line_of_sight", &Agent::getLineOfSight)
       .def("get_player_line_of_sight", &Agent::getPlayerLineOfSight)
-      .def("get_changed_blocks", &Agent::getChangedBlocks);
+      .def("get_changed_blocks", &Agent::getChangedBlocks)
+      .def("get_world_age", &Agent::getWorldAge)
+      .def("get_time_of_day", &Agent::getTimeOfDay);
 
   py::class_<BlockPos>(m, "BlockPos")
       .def_readonly("x", &BlockPos::x)
@@ -401,6 +434,10 @@ PYBIND11_MODULE(agent, m) {
       .def_readonly("mobType", &Mob::mobType)
       .def_readonly("pos", &Mob::pos)
       .def_readonly("look", &Mob::look);
+
+  py::class_<Item>(m, "Item")
+      .def_readonly("id", &Item::id)
+      .def_readonly("meta", &Item::meta);
 
   py::class_<ItemStack>(m, "ItemStack")
       .def_readonly("uuid", &ItemStack::uuid)

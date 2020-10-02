@@ -7,7 +7,8 @@ import numpy as np
 import random
 
 from string_lists import MAP_YES, MAP_NO
-from util import pos_to_np
+from base_util import pos_to_np
+from enum import Enum
 
 
 class DialogueObject(object):
@@ -110,13 +111,24 @@ class BotCapabilities(Say):
         super().__init__(response_options, **kwargs)
 
 
+"""Types of bot greetings."""
+
+
+class GreetingType(Enum):
+    HELLO = "hello"
+    GOODBYE = "goodbye"
+
+
 """This class represents a sub-type of the Say DialogueObject above to greet
 the user as a reply to a greeting."""
 
 
 class BotGreet(Say):
-    def __init__(self, **kwargs):
-        response_options = ["hi there!", "hello", "hey", "hi"]
+    def __init__(self, greeting_type, **kwargs):
+        if greeting_type == GreetingType.GOODBYE.value:
+            response_options = ["goodbye", "bye", "see you next time!"]
+        else:
+            response_options = ["hi there!", "hello", "hey", "hi"]
         super().__init__(response_options, **kwargs)
 
 

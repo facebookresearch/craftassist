@@ -1,7 +1,8 @@
 import random
 import sys
+import argparse
 
-sys.path.append("/private/home/aszlam/fairinternal/minecraft/python/craftassist/")
+sys.path.append("/private/home/rebeccaqian/minecraft/python/craftassist/")
 import minecraft_specs
 from shape_helpers import SHAPE_NAMES
 
@@ -69,7 +70,7 @@ def get_target_object():
     shape_name_split = shape_name.split("_")
     rid = str(random.random())
     object_text = " ".join([v + ID_DELIM + rid for v in shape_name_split])
-    ref_obj = {"has_name": object_text}
+    ref_obj = {"filters": {"has_name": object_text}}
     ref_obj_text = "the " + object_text
     return ref_obj, ref_obj_text
 
@@ -275,21 +276,32 @@ class TemplateHolder:
         return modify_text, build_lf(ref_obj_dict, modify_dict)
 
 
-if __name__ == "__main__":
-    import pickle
-
-    class Opt:
-        pass
-
-    opts = Opt()
-    opts.translate_prob = 0.25
-    opts.flip_prob = 0.1
-    opts.old_blocktype = 0.25
-    opts.target_dir = "/checkpoint/aszlam/minecraft/modify_templates/"
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--target_dir",
+        default="/checkpoint/rebeccaqian/datasets/modify_templates/",
+        type=str,
+        help="where to write modify data",
+    )
+    parser.add_argument(
+        "--translate_prob", default=0.25, type=int, help="where to write modify data"
+    )
+    parser.add_argument("--flip_prob", default=0.1, type=int, help="where to write modify data")
+    parser.add_argument(
+        "--old_blocktype", default=0.25, type=str, help="where to write modify data"
+    )
+    parser.add_argument("-N", default=100, type=int, help="number of samples to generate")
+    opts = parser.parse_args()
     T = TemplateHolder(opts)
-    N = 100000
     data = []
-    for i in range(N):
+    for i in range(opts.N):
         data.append(T.generate())
-    f = open(opts.target_dir + "template_data.pkl", "wb")
-    pickle.dump(data, f)
+    f = open(opts.target_dir + "templated_modify.txt", "w")
+    for d in data:
+        cmd, action_dict = d
+        f.write("{}|{}\n".format(cmd, action_dict))
+
+
+if __name__ == "__main__":
+    main()

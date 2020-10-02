@@ -11,8 +11,14 @@ from scipy.optimize import linprog
 import logging
 import minecraft_specs
 
-####FIXME!!!
-import util
+from mc_util import (
+    manhat_dist,
+    get_locs_from_entity,
+    build_safe_diag_adjacent,
+    euclid_dist,
+    to_block_pos,
+    fill_idmeta,
+)
 
 from block_data import BORING_BLOCKS, PASSABLE_BLOCKS
 from search import depth_first_search
@@ -67,7 +73,7 @@ def closest_nearby_object(get_blocks, pos):
     if len(objects) == 0:
         return None
     centroids = [np.mean([pos for (pos, idm) in obj], axis=0) for obj in objects]
-    dists = [util.manhat_dist(c, pos) for c in centroids]
+    dists = [manhat_dist(c, pos) for c in centroids]
     return objects[np.argmin(dists)]
 
 
@@ -117,7 +123,7 @@ def find_closest_component(mask, relpos):
     if len(components) == 0:
         return None
     centroids = [np.mean(cs, axis=0) for cs in components]
-    dists = [util.manhat_dist(c, relpos) for c in centroids]
+    dists = [manhat_dist(c, relpos) for c in centroids]
     return components[np.argmin(dists)]
 
 
@@ -132,7 +138,7 @@ def connected_components(X, unique_idm=False):
     visited = np.zeros((X.shape[0], X.shape[1], X.shape[2]), dtype="bool")
     components = []
     current_component = set()
-    diag_adj = util.build_safe_diag_adjacent([0, X.shape[0], 0, X.shape[1], 0, X.shape[2]])
+    diag_adj = build_safe_diag_adjacent([0, X.shape[0], 0, X.shape[1], 0, X.shape[2]])
 
     if len(X.shape) == 3:
         X = np.expand_dims(X, axis=3)
@@ -185,14 +191,14 @@ def check_between(entities, fat_scale=0.2):
     locs = []
     means = []
     for e in entities:
-        l = util.get_locs_from_entity(e)
+        l = get_locs_from_entity(e)
         if l is not None:
             locs.append(l)
             means.append(np.mean(l, axis=0))
         else:
             # this is not a thing we know how to assign 'between' to
             return False
-    mean_separation = util.euclid_dist(means[1], means[2])
+    mean_separation = euclid_dist(means[1], means[2])
     fat = fat_scale * mean_separation
     bounding_locs = []
     for l in locs:
@@ -222,7 +228,7 @@ def find_between(entities):
     TODO: fuzz a bit if target is unreachable"""
     for e in entities:
         means = []
-        l = util.get_locs_from_entity(e)
+        l = get_locs_from_entity(e)
         if l is not None:
             means.append(np.mean(l, axis=0))
         else:
@@ -240,7 +246,7 @@ def check_inside(entities):
     TODO: "enclosed", where the object is inside in the topological sense"""
     locs = []
     for e in entities:
-        l = util.get_locs_from_entity(e)
+        l = get_locs_from_entity(e)
         if l is not None:
             locs.append(l)
         else:
@@ -273,8 +279,8 @@ def find_inside(entity):
     if hasattr(entity, "blocks"):
         if all(b == (0, 0) for b in entity.blocks.values()):
             m = np.mean(list(entity.blocks.keys()), axis=0)
-            return [util.to_block_pos(m)]
-    l = util.get_locs_from_entity(entity)
+            return [to_block_pos(m)]
+    l = get_locs_from_entity(entity)
     if l is None:
         return []
     m = np.round(np.mean(l, axis=0))
@@ -286,7 +292,7 @@ def find_inside(entity):
             for z in range(mins[2], maxes[2] + 1):
                 if check_inside([(x, y, z), entity]):
                     inside.append((x, y, z))
-    return sorted(inside, key=lambda x: util.euclid_dist(x, m))
+    return sorted(inside, key=lambda x: euclid_dist(x, m))
 
 
 def label_top_bottom_blocks(block_list, top_heuristic=15, bottom_heuristic=25):
@@ -482,7 +488,7 @@ def get_all_nearby_holes(agent, location, radius=15, store_inst_seg=True):
     # Just patch the problem here, since this function will eventually be
     # performed by an ML model
     for i, (xyzs, idm) in enumerate(holes):
-        blocks = util.fill_idmeta(agent, xyzs)
+        blocks = fill_idmeta(agent, xyzs)
         xyzs = [xyz for xyz, (d, _) in blocks if d == 0]  # remove non-air blocks
         holes[i] = (xyzs, idm)
 

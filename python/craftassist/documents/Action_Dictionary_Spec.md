@@ -28,7 +28,7 @@ The CommandDict for each action type is described in the [Action subsection]().
       "has_size" : span,
       "has_colour" : span,
       "has_name" : span,
-      "coref_resolve": span,
+      "contains_coreference": span,
       },
     },
   "answer_type": "TAG" / "EXISTS" ,
@@ -47,7 +47,7 @@ The CommandDict for each action type is described in the [Action subsection]().
       "has_size" : span,
       "has_colour" : span,
       "has_name" : span,
-      "coref_resolve" : span,
+      "contains_coreference" : span,
       <Repeat>
      },
   },
@@ -302,17 +302,7 @@ Note: for "relative_direction" == 'BETWEEN' the location dict will have two chil
       "text_span" : span,
       <Repeat>,
       "special_reference" : 'SPEAKER' / 'AGENT' / 'SPEAKER_LOOK' / {'coordinates_span' : span},
-      "filters" : {
-              "has_name" : span,
-              "has_size" : span,
-              "has_colour" : span,
-              "contains_coreference" : "yes",
-              "location" : {
-                  "contains_coreference" : "yes",
-                  "steps" : span,
-                  "relative_direction" : 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK'/ 'AWAY' / 'NEAR',
-                  <ReferenceObject> (with only: "special_reference", "has_name", "has_size", "has_color" and "contains_coreference" fields)
-               } 
+      "filters" : <FILTERS>
       }
   } 
 ```
@@ -380,3 +370,183 @@ Note: for "relative_direction" == 'BETWEEN' the location dict will have two chil
 }
 ```
 
+#### Filters ####
+
+TODO: Add "in_agent_view" like field to distinguish between "if you see a pig" vs "if there is a pig"
+Short term bridge extending vqa+ref object specificity, and adding time filtering. To be torched when we get to seq2sql.  
+
+```
+FILTERS = { "output" : "memory" / "count" / ATTRIBUTE,
+	    "contains_coreference": "yes",
+	    "argmax" : ARGMAX, 
+	    "argmin" : ARGMIN,
+	    "comparator": [COMPARATOR, ...],
+	    "has_x": span / FILTERS, 
+	    "author":  "AGENT" / "SPEAKER" / span,
+	    "location": LOCATION }
+```
+
+In the `output` field we can either have a `memory` value which means return the entire memory node, or `count` that represents the equivalent of `count(*)`or a dictionary with `memory_node` representing the table name of memory node in sql and `attribute` representing the column name of that memory node (equivalent to `Select <attribute> from memory_node`).
+
+`ATTRIBUTE` is :
+```
+{"attribute" : 'HEIGHT' / 'WIDTH' /  
+'X' / 'Y' / 'Z' / 'REF_TYPE' / 'HEAD_PITCH' / 'HEAD_YAW' / 'BODY_YAW'/   
+'NAME' / 'BORN_TIME' / 'MODIFY_TIME' / 'SPEAKER' / 'VISIT_TIME' /  
+'FINISHED_TIME' / 'CHAT' / 'LOGICAL_FORM' /  
+NUM_BLOCKS / LINEAR_EXTENT }
+```
+`COMPARATOR` is :
+```
+COMPARATOR = {
+  "input_left" : {"value_extractor" : FILTERS / ATTRIBUTE / span }
+  "comparison_type" : "GREATER_THAN" / "LESS_THAN" / "GREATER_THAN_EQUAL" / 
+                       "LESS_THAN_EQUAL" / "NOT_EQUAL" / "EQUAL" / CLOSE_TO / MOD_EQUAL /
+                       MOD_CLOSE_TO},
+  "input_right" : {"value_extractor" : FILTERS / ATTRIBUTE, span }
+  "comparison_measure" : span,
+  "set_comparison": "ANY"/ "ALL"
+}
+CLOSE_TO = {"close_tolerance": "DEFAULT"/span}
+MOD_EQUAL = {"modulus": "DEFAULT"/span}
+MOD_CLOSE = {"modulus": "DEFAULT"/span, "close_tolerance": "DEFAULT"/span}
+```
+`MOD_EQUAL` in COMPARATOR is for e.g. handling time conditions like 'every 5 seconds' ,
+`comparison_type` represents the kind of comparison (>, <, >=, != , =)
+`input_left` is the candidate on left of the comparison,
+`input_right` is the candidate on right of the comparison,
+`input_left` or `input_right` has value ATTRIBUTE when the comparator is being used as part of a filter; and is searching over variables (and where the ATTRIBUTE of the variable is used for the filter).
+`comparison_measure` is the unit (seconds, minutes, blocks etc).
+By default, the value of `comparison_measure` is 'EQUAL'.
+`set_comparison` specifies the behavior when the input_right or input_left return a list (e.g. from FILTERS).  Default is "ANY"; which means that if any of the comparisons are True, the comparator returns True.
+
+```
+ARGMAX = {"ordinal": 'FIRST' / <span>, "quantity": ATTRIBUTE}
+ARGMIN = {"ordinal": 'FIRST' / <span>, "quantity": ATTRIBUTE}
+```
+
+```
+NUM_BLOCKS = {"num_blocks": {"block_filters": {"has_x": span} }
+             }
+LINEAR_EXTENT = {"linear_extent" : {
+                    "relative_direction"": "LEFT" / "RIGHT"/ "UP" / "DOWN"/ "FRONT" / "BACK"/ "AWAY" / "INSIDE" / "OUTSIDE", 
+                    "frame": "SPEAKER" / "AGENT" / "ABSOLUTE" / {"player_span": span},
+                    "has_measure" : span,
+                    "source": REFERENCE_OBJECT,
+		                "destination": REFERENCE_OBJECT
+                    }
+                }
+```
+Here LINEAR_EXTENT is used to mean the number of steps (in "has_measure" units, default is "blocks=meters") in the direction "relative_direction" from the "source" Location in the frame of reference of "frame".  If "source" and "destination" are specified, LINEAR_EXTENT evaluates to a number; otherwise, LINEAR_EXTENT evaluates to an ATTRIBUTE, a function that eats a (list of) memor(ies) and outputs a (list of) number(s)).  LINEAR_EXTENT can be used for "distance to" via relative_direction "AWAY".  "ABSOLUTE" is the coordinate system in which the agent starts.
+
+
+
+Proposal:  add an extra "output_all" key to FILTERS, with possible values "ALL" or "RANDOM".  If the value is "ALL" returns a set of memories or values, and if "RANDOM" picks one uniformly at random. 
+
+#### Conditions ####
+
+expand "stop_conditions" to "conditions" more generally (e.g. allow "if condition" statements outside of loops).  Add an optional "on_condition" internal node to all actions.  This allows things like "move to the house and jump every third step". 
+```
+{ "dialogue_type": "HUMAN_GIVE_COMMAND",
+  "actions" : ACTION_LIST			    
+}
+```
+Where 
+
+```
+CONTROL = {
+      "repeat_count" : span,
+      "repeat_key" : 'FOR'/'ALL',
+      "on_condition": CONDITION, 
+      "stop_condition": CONDITION
+      }
+```
+
+```
+SPATIAL_CONTROL = { 
+    "direction_information": 'LEFT' / 'RIGHT'/ 'UP'/ 'DOWN'/ 'FRONT'/ 'BACK' / 
+                             'AROUND' / 'CLOCKWISE' / 'ANTICLOCKWISE' 
+      
+}
+```
+
+Note: `stop_condition` now covers number of times an action will be repeated as well.
+`on_condition` implies: when CONDITION (the value of `on_condition`) happens do action.
+`stop_condition` implies: keep doing action until CONDITION (the value of `stop_condition`) is met.
+
+control inside action implies control (with either stop_condition, on a certain condition and along a certain direction) on each instance of the action.
+control outside the action list implies control over the entire sequence of action.
+
+If TTAD outputs only a raw CONTROL dict, the interpreter should apply that to the action at the top of the bot's stack.
+CONDITION will be more explicitly defined by what works with blockly, but will be a superset of current stop conditions
+
+
+```
+ACTION_LIST = { "list": [ACTION, ..., ACTION],
+	        "control": CONTROL,
+          	"spatial_control" : SPATIAL_CONTROL
+	       }
+```
+
+```
+ACTION = {"action_type" : "DIG"/"BUILD"/ ...,
+	  ...,
+	  "action_list" : ACTION_LIST,
+	  "control": CONTROL,
+	  "spatial_control" : SPATIAL_CONTROL
+	  }
+	  
+```
+The "action_type" key specifies a single action and is mutually exclusive with the "action_list" key, which allows nesting.
+
+
+## CONDITION ##
+```
+CONDITION = {
+  "condition_type" : 'MEMORY' / 'COMPARATOR' / 'NEVER' / 'TIME' / 'ACTION' /
+                     'AND' / 'OR' / 'NOT'
+  "condition": MEMORY_CONDITION/COMPARATOR/TIME_CONDITION/ACTION_CONDITION/AND_CONDITION/OR_CONDITION/NOT_CONDITION
+  "condition_span": span}
+```
+AND OR and NOT modify other conditions:
+```
+ AND_CONDITION = {"and_condition": [CONDITION, ..., CONDITION]} 
+```
+```
+ OR_CONDITION = {"or_condition": [CONDITION, ..., CONDITION]} 
+```
+```
+ NOT_CONDITION = {"not_condition": CONDITION} 
+```
+```
+ACTION_CONDITION = {has_type: "BUILD"/"MOVE"/...,
+		    associated_chat: "THIS",
+		    "time":  "CURRENT"
+}
+```
+
+ACTION_CONDITION is true when there is a task on the stack matching the conditions.  logical_form "THIS" means the task is associated to the same chat as the command defining the ACTION_CONDITION.   "time" "CURRENT" is true while the (toplevel) task on the stack when the ACTION_CONDITION remains.   Eventually this will be expanded to FILTERS.
+```
+MEMORY_CONDITION = {
+  'memory_exists': FILTERS, 
+  'memory_modified': FILTERS}
+```
+```
+
+TIME_CONDITION = {
+    "comparator": COMPARATOR,
+    "special_time_event" : 'SUNSET / SUNRISE / DAY / NIGHT / RAIN / SUNNY',
+    "event": CONDITION,
+  }
+```
+Note that `event` in time_condition represents when to start the timer and
+`input_left` by default in time condition marks the time since the event condition.
+
+#### EVENT draft ####
+The "remove" key describes when the even should be deactivated/removed from memory; the "control" clause describes when the even tfires.  events are siblings of "action_sequence" and "dialogue_type"
+```
+EVENT = "event": {"action_sequence" : [ACTION, ...., ACTION],
+                  "control": CONTROL,
+                  "spatial_control" : SPATIAL_CONTROL
+                  "remove": CONDITION}
+```

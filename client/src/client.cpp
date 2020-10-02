@@ -1,6 +1,7 @@
 // Copyright (c) Facebook, Inc. and its affiliates.
 
 
+#include <algorithm>
 #include <errno.h>
 #include <glog/logging.h>
 #include <netdb.h>
@@ -26,6 +27,7 @@
 #include "util.h"
 
 using namespace std;
+using std::min;
 using std::nullopt;
 using std::optional;
 
@@ -346,12 +348,46 @@ bool Client::digFeet() {
   return dig(pos);
 }
 
-void Client::dropItemStack() {
-  packetWriter_->safeWrite(encoder_->playerDropItemStackPacket());
+void Client::dropItemStackInHand() {
+  packetWriter_->safeWrite(encoder_->playerDropItemStackInHandPacket());
 }
 
-void Client::dropItem() {
-  packetWriter_->safeWrite(encoder_->playerDropItemPacket());
+void Client::dropItemInHand() {
+  packetWriter_->safeWrite(encoder_->playerDropItemInHandPacket());
+}
+
+bool Client::dropInventoryItemStack(uint16_t id, uint8_t meta, uint8_t count) {
+  if (gameState_->getInventoryItemCount(id, meta) < count) {
+    return false;
+  }
+
+  for (int i = gameState_->getPlayerInventory().size(); i >= 0; i--) {
+    Slot slot = gameState_->getPlayerInventory()[i];
+    if (slot.id == id && slot.meta == meta) {
+      uint8_t delta = min(slot.count, count);
+      slot.count = slot.count - delta;
+      // set updated inventory slot first
+      gameState_->setPlayerInventorySlot(i, slot);
+      packetWriter_->safeWrite(encoder_->playerSetInventorySlotPacket(i, slot));
+      // drop item stack onto the ground
+      slot.count = delta;
+      packetWriter_->safeWrite(encoder_->playerDropItemStackPacket(slot));
+      count -= delta;
+    }
+    if (count == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void Client::setInventorySlot(int16_t index, uint16_t id, uint8_t meta, uint8_t count) {
+  Slot slot = {id, meta, count, 0};
+  packetWriter_->safeWrite(encoder_->playerSetInventorySlotPacket(index, slot));
+}
+
+bool Client::isItemStackOnGround(uint64_t entityId) {
+  return gameState_->isItemStackOnGround(entityId);
 }
 
 void Client::turnAngle(float angle) {

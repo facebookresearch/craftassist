@@ -32,6 +32,7 @@ class EventHandler {
   void handle(EntityRelativeMoveEvent e);
   void handle(EntityLookAndRelativeMoveEvent e);
   void handle(EntityHeadLookEvent e);
+  void handle(DestroyEntitiesEvent e);
   void handle(EntityTeleportEvent e);
   void handle(WindowItemsEvent e);
   void handle(SetSlotEvent e);
@@ -40,6 +41,7 @@ class EventHandler {
   void handle(SpawnObjectEvent e);
   void handle(SpawnItemStackEvent e);
   void handle(UpdateHealthEvent e);
+  void handle(TimeUpdateEvent e);
   void handle(CollectItemEvent e);
   void handle(OpenWindowEvent e);
   void handle(ConfirmTransactionEvent e);
