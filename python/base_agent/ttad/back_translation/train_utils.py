@@ -1,6 +1,6 @@
 import torch
 from dataset import *
-from modeling_gpt2 import *
+from huggingface_modeling_gpt2 import *
 from transformer import *
 
 

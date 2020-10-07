@@ -33,13 +33,19 @@ class EncoderDecoder(nn.Module):
             attention_mask=y_mask,
             encoder_hidden_states=hidden_out,
             encoder_attention_mask=x_mask,
+            use_lm=use_lm,
             labels=labels,
         )
         return dec_out
 
-    def step(self, y, x_reps):
-        """Used during beam search.
-        NOTE: This is a placeholder.
+    def step(self, x_reps, x_mask, y, y_mask, use_lm=False):
+        """No loss, used during inference.
         """
-        dec_out = self.decoder(input_ids=y, encoder_hidden_states=x_reps)
+        dec_out = self.decoder(
+            input_ids=y,
+            attention_mask=y_mask,
+            encoder_hidden_states=x_reps,
+            encoder_attention_mask=x_mask,
+            use_lm=use_lm,
+        )
         return dec_out

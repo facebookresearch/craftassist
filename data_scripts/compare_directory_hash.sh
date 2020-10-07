@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # This script checks if models and datasets are up to date, and either triggers a download or gives the user a warning to update local files.
-AGENT=$1
+if [ -z $1 ]
+then
+    AGENT="craftassist"
+    echo "Agent name not specified, defaulting to craftassist"
+else
+    AGENT=$1
+fi
 # Compute hashes for local directories
 echo "Computing hashes for python/${AGENT}/models/ and python/${AGENT}/datasets/"
 cd python/$AGENT

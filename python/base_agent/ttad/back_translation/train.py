@@ -1,16 +1,16 @@
 from transformers import AutoConfig, GPT2Tokenizer, BertTokenizer
 from os.path import isdir
 from dataset import *
-from transformers.modeling_gpt2 import *
 from transformer import *
 from torch.utils.data import DataLoader
 from datetime import date
 import argparse
 import os
 import sys
+from time import time
+from huggingface_modeling_gpt2 import *
 import logging
 import logging.handlers
-from time import time
 
 
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "../..")
@@ -33,7 +33,7 @@ def compute_accuracy(outputs, y, tokenizer):
     return acc
 
 
-def validate(model, dataset, text_tokenizer, tree_tokenizer):
+def validate(model, dataset, text_tokenizer, tree_tokenizer, args):
     valid_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=10, shuffle=False)
     tot_acc = 0.0
     tot_loss = 0.0
@@ -61,7 +61,7 @@ def validate(model, dataset, text_tokenizer, tree_tokenizer):
             x_mask = torch.tensor(x_mask)
             y = torch.tensor(y)
             y_mask = torch.tensor(y_mask)
-            out = model(x, x_mask, y, y_mask, labels)
+            out = model(x, x_mask, y, y_mask, labels, args.use_lm)
             loss, predictions = out[:2]
             # Taking the first row in the batch as logging example
             predicted_example = predictions.max(dim=-1)[1][:, :-1]
@@ -172,9 +172,12 @@ def main():
         encoder_name = "bert-base-uncased"
         decoder_name = "gpt2"
 
-    config_decoder = AutoConfig.from_pretrained(decoder_name, is_decoder=True)
-    config_decoder.add_cross_attention = True
-    encoder_name
+    if args.use_lm:
+        config_decoder = AutoConfig.from_pretrained(decoder_name, is_decoder=False)
+        config_decoder.add_cross_attention = False
+    else:
+        config_decoder = AutoConfig.from_pretrained(decoder_name, is_decoder=True)
+        config_decoder.add_cross_attention = True
     config_encoder = AutoConfig.from_pretrained(encoder_name, is_decoder=False)
     bert_tokenizer = BertTokenizer.from_pretrained(encoder_name)
     # CLS token will work as BOS token
@@ -272,7 +275,7 @@ def main():
         # Evaluating model
         encoder_decoder.eval()
         logging.info("Evaluating model")
-        validate(encoder_decoder, valid_dataset, tokenizer, bert_tokenizer)
+        validate(encoder_decoder, valid_dataset, tokenizer, bert_tokenizer, args)
 
 
 if __name__ == "__main__":

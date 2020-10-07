@@ -25,6 +25,14 @@ from dialogue_objects import GetMemoryHandler, PutMemoryHandler, Interpreter
 BASE_AGENT_ROOT = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(BASE_AGENT_ROOT)
 
+import dashboard
+
+if __name__ == "__main__":
+    # this line has to go before any imports that contain @sio.on functions
+    # or else, those @sio.on calls become no-ops
+    print("starting dashboard...")
+    dashboard.start()
+
 from base_agent.loco_mc_agent import LocoMCAgent
 from argument_parser import ArgumentParser
 
@@ -81,6 +89,9 @@ class CraftAssistAgent(LocoMCAgent):
             db_log_path="agent_memory.{}.log".format(self.name),
             agent_time=MCTime(self.get_world_time),
         )
+        file_log_handler = logging.FileHandler("agent.{}.log".format(self.name))
+        file_log_handler.setFormatter(log_formatter)
+        logging.getLogger().addHandler(file_log_handler)
         logging.info("Initialized agent memory")
 
     def init_perception(self):

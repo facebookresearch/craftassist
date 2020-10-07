@@ -3,6 +3,7 @@
 
 
 CRAFTASSIST_PATH=$PWD/python/craftassist/
+DATA_SCRIPTS_PATH=$PWD/data_scripts/compute_and_upload_checksum.sh
 
 if [ -z $1 ]
 then
@@ -32,3 +33,5 @@ echo "tar file created at ${CRAFTASSIST_PATH}$DATA_DIRNAME.tar.gz"
 
 echo "====== Uploading datasets to S3 ======"
 aws s3 cp ${CRAFTASSIST_PATH}$DATA_DIRNAME.tar.gz s3://craftassist/pubr/
+
+"$DATA_SCRIPTS_PATH"

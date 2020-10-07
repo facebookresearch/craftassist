@@ -3,7 +3,7 @@
 
 ROOTDIR=$(dirname $(dirname $(realpath $0)))/
 MODELS_DIRNAME=models_folder
-AGENT = $1
+AGENT=$1
 
 cd $ROOTDIR
 

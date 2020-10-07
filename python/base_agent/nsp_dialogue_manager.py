@@ -24,6 +24,7 @@ from base_agent.dialogue_objects import (
     coref_resolve,
     process_spans,
 )
+from mcevent import sio
 from post_process_logical_form import post_process_logical_form
 
 
@@ -116,6 +117,15 @@ class NSPDialogueManager(DialogueManager):
             "memory": self.agent.memory,
             "dialogue_stack": self.dialogue_stack,
         }
+
+        @sio.on("queryParser")
+        def query_parser(sid, data):
+            logging.info("inside query parser.....")
+            logging.info(data)
+            x = self.get_logical_form(s=data["chat"], model=self.model)
+            logging.info(x)
+            payload = {"action_dict": x}
+            sio.emit("render_parser_output", payload)
 
     def add_to_dict(self, chat_message, action_dict):  # , text):
         print("adding %r dict for message : %r" % (action_dict, chat_message))
