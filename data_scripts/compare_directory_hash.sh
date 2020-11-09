@@ -8,19 +8,25 @@ then
 else
     AGENT=$1
 fi
+
 # Compute hashes for local directories
 echo "Computing hashes for python/${AGENT}/models/ and python/${AGENT}/datasets/"
 cd python/$AGENT
-find models/ -type f ! -name '*checksum*' -not -path '*/\.*' -print0 | sort -z | xargs -0 sha1sum | sha1sum > models/checksum.txt
+# in case directories don't even exist, create them
+mkdir -p datasets
+mkdir -p models
+mkdir -p models/semantic_parser
+
+find models/semantic_parser/ -type f ! -name '*checksum*' -not -path '*/\.*' -print0 | sort -z | xargs -0 sha1sum | sha1sum > models/checksum.txt
 find datasets/ -type f ! -name '*checksum*' -not -path '*/\.*' -print0 | sort -z | xargs -0 sha1sum | sha1sum > datasets/checksum.txt
 cd ../..
 
 echo
 # Download AWS checksum
 echo "Downloading latest hash from AWS"
-curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/model_checksum.txt -o python/$AGENT/models/model_checksum_aws.txt
+curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/craftassist_models_checksum.txt -o python/$AGENT/models/model_checksum_aws.txt
 echo "Latest model hash in python/$AGENT/models/model_checksum_aws.txt"
-curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/data_checksum.txt -o python/$AGENT/datasets/data_checksum_aws.txt
+curl http://craftassist.s3-us-west-2.amazonaws.com/pubr/craftassist_datasets_checksum.txt -o python/$AGENT/datasets/data_checksum_aws.txt
 echo "Latest data hash in python/$AGENT/datasets/data_checksum_aws.txt"
 echo
 
